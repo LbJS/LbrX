@@ -2,9 +2,9 @@ import { DevtoolsOptions } from "./dev-tools-options"
 import { Subscription } from "rxjs"
 import { isDev } from "../environment/state-manager.environment"
 import { DevTools } from "./dev-tools"
-import { objectAssign, countObjChanges, isClass } from "../helpers/helpers"
 import { StoreStates } from "./store-states.enum"
 import { DEFAULT_DEV_TOOLS_OPTIONS } from "./default-dev-tools-options"
+import { isClass, objectAssign, countObjectChanges } from "../helpers"
 
 export class DevToolsManager {
 
@@ -41,7 +41,7 @@ export class DevToolsManager {
 				devTools.send({ type: `[${store.name}] - Override Store` }, this._appState)
 			}),
 			DevTools.UpdateStore$.subscribe(store => {
-				const changes = countObjChanges(this._appState[store.name], store.state)
+				const changes = countObjectChanges(this._appState[store.name], store.state)
 				if (!changes) return
 				this._appState = objectAssign(this._appState, { [store.name]: store.state })
 				devTools.send(

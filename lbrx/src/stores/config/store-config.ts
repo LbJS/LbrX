@@ -1,7 +1,7 @@
 import { isDev } from "../../environment/state-manager.environment"
-import { isFunction } from "../../helpers/helpers"
 import { StoreConfigOptions } from "./store-config-options"
 import { STORE_CONFIG_KEY } from "./store-config-key"
+import { isFunction } from "lbrx/src/helpers"
 
 const decoratorErrorMsg = `"@StoreConfig" decorator can decorate only a class!`
 

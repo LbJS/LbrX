@@ -1,10 +1,10 @@
-import { deepFreeze, isFunction, isClass, objectAssign, parse, stringify, isNull, isObject, objectCompare } from "../helpers/helpers"
 import { DevTools } from "../dev-tools/dev-tools"
 import { isDev } from "../environment/state-manager.environment"
 import { BehaviorSubject, timer, Observable } from "rxjs"
 import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from "./config"
 import { StoreDevObject } from "../dev-tools/store-dev-object"
+import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from "../helpers"
 
 export class Store<T extends object> {
 
@@ -178,7 +178,7 @@ export class Store<T extends object> {
 				filter(x => !!x),
 				map(project || ((x: T) => x as T)),
 				distinctUntilChanged((prev, curr) => {
-					if (isObject(prev)) return this.doObjectCompare ? objectCompare(prev, curr) : false
+					if (isObject(prev)) return this.doObjectCompare ? compareObjects(prev, curr) : false
 					return prev !== curr
 				}),
 			)
