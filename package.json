@@ -5,7 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "webpack --watch -d",
-		"build": "webpack -p"
+		"build": "webpack -p",
+		"test": "jest"
 	},
 	"author": "Leon",
 	"license": "ISC",
