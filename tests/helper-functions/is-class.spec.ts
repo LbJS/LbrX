@@ -9,6 +9,7 @@ describe('Helper function: isClass', () => {
 	})
 
 	it('Object should not be constructable', () => {
-		expect(isClass({})).toBeFalsy()
+		const plainObject = {}
+		expect(isClass(plainObject)).toBeFalsy()
 	})
 })
