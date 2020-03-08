@@ -10,4 +10,5 @@ describe('Helper function: isClass', () => {
 	it('Should not be constructable', () => {
 		expect(isClass({})).toBeFalsy()
 	})
+
 })
