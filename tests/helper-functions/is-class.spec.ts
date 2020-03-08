@@ -6,9 +6,7 @@ describe('Helper function: isClass', () => {
 		const person = new Person()
 		expect(isClass(person)).toBeTruthy()
 	})
-
 	it('Should not be constructable', () => {
 		expect(isClass({})).toBeFalsy()
 	})
-
 })
