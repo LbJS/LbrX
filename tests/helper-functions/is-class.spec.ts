@@ -1,6 +1,6 @@
-import { isClass } from '../../lbrx/src/helpers'
+import { isClass } from "../../lbrx/src/helpers"
 
-describe('Helper function: isClass', () => {
+describe('Helper Function - isClass():', () => {
 
 	it('Class Object should be constructable', () => {
 		class Person { }
@@ -8,7 +8,7 @@ describe('Helper function: isClass', () => {
 		expect(isClass(person)).toBeTruthy()
 	})
 
-	it('Object should not be constructable', () => {
+	it('Plain object should not be constructable', () => {
 		const plainObject = {}
 		expect(isClass(plainObject)).toBeFalsy()
 	})
