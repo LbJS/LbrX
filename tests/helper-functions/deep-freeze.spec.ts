@@ -33,43 +33,43 @@ describe('Helper Function - deepFreeze():', () => {
 		deepFreeze(person)
 	})
 
-	it(`Person's firstName property should throw on modification`, () => {
+	it(`should cause person's firstName property to throw on modification.`, () => {
 		expect(() => {
 			person.firstName = 'Something Else'
 		}).toThrow()
 	})
 
-	it(`Person's lastName property should throw on modification`, () => {
+	it(`should cause person's lastName property to throw on modification.`, () => {
 		expect(() => {
 			person.lastName = 'Something Else'
 		}).toThrow()
 	})
 
-	it(`Person's emails list should throw throw on adding a new item`, () => {
+	it(`should cause person's emails list to throw throw on adding a new item.`, () => {
 		expect(() => {
 			person.emails.push('newEmail@email.com')
 		}).toThrow()
 	})
 
-	it(`Person's emails list should throw on item's modification`, () => {
+	it(`should cause person's emails list to throw on item's modification.`, () => {
 		expect(() => {
 			person.emails[0] = 'newEmail@email.com'
 		}).toThrow()
 	})
 
-	it(`Person's address should throw on modification`, () => {
+	it(`should cause person's address to throw on modification.`, () => {
 		expect(() => {
 			person.address.city = 'some other city'
 		}).toThrow()
 	})
 
-	it(`Person's deep nested value should throw on modification`, () => {
+	it(`should cause person's deep nested value to throw on modification.`, () => {
 		expect(() => {
 			person.deepNestedObject.a.b.c = 'some other value'
 		}).toThrow()
 	})
 
-	it(`Person's birthday should throw on modification`, () => {
+	it(`should cause person's birthday to throw on modification.`, () => {
 		expect(() => {
 			person.birthday.setFullYear(1987)
 		}).toThrow()
