@@ -11,6 +11,9 @@ describe('Helper Function - deepFreeze():', () => {
 		public set lastName(value: string) {
 			this._lastName = value
 		}
+		public emails: string[] = [
+			'test@email.com'
+		]
 	}
 	let person: Person
 
@@ -19,15 +22,27 @@ describe('Helper Function - deepFreeze():', () => {
 		deepFreeze(person)
 	})
 
-	it(`Object's firstName property should be read only`, () => {
+	it(`Object's firstName property should throw on modification`, () => {
 		expect(() => {
 			person.firstName = 'Something Else'
 		}).toThrow()
 	})
 
-	it(`Object's lastName property should be read only`, () => {
+	it(`Object's lastName property should throw on modification`, () => {
 		expect(() => {
 			person.lastName = 'Something Else'
+		}).toThrow()
+	})
+
+	it(`Object's emails list should throw throw on adding a new item`, () => {
+		expect(() => {
+			person.emails.push('newEmail@email.com')
+		}).toThrow()
+	})
+
+	it(`Object's emails list should throw on item's modification`, () => {
+		expect(() => {
+			person.emails[0] = 'newEmail@email.com'
 		}).toThrow()
 	})
 })
