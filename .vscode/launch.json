@@ -21,5 +21,36 @@
 				"webpack:///./~/*": "${workspaceFolder}/node_modules/*"
 			}
 		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Debug Jest Tests",
+			"cwd": "${workspaceFolder}",
+			"args": [
+				"--inspect-brk",
+				"${workspaceRoot}/node_modules/.bin/jest",
+				"--no-cache",
+				"--watchAll",
+				"--runInBand",
+				"--config",
+				"${workspaceRoot}/jest.config.js"
+			],
+			"windows": {
+				"args": [
+					"--inspect-brk",
+					"${workspaceRoot}/node_modules/jest/bin/jest.js",
+					"--no-cache",
+					"--watchAll",
+					"--runInBand",
+					"--config",
+					"${workspaceRoot}/jest.config.js"
+				],
+			},
+			"runtimeArgs": [
+				"--nolazy"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen"
+		},
 	]
 }

@@ -1,35 +1,26 @@
-import { deepFreeze } from "../../lbrx/src/helpers"
+import { deepFreeze, isArray } from "../../lbrx/src/helpers"
+import { Person } from "../test-subjects"
 
 describe('Helper Function - deepFreeze():', () => {
 
-	class Person {
-		public firstName = 'Leon'
-		private _lastName = 'Bernstein'
-		public get lastName(): string {
-			return this._lastName
-		}
-		public set lastName(value: string) {
-			this._lastName = value
-		}
-		public emails: string[] = [
-			'test@email.com'
-		]
-		public address = {
-			city: 'Hell of a City'
-		}
-		public deepNestedObject = {
-			a: {
-				b: {
-					c: 'nested value'
-				}
-			}
-		}
-		public birthday = new Date('1986-10-12T00:00:00')
-	}
 	let person: Person
 
 	beforeEach(() => {
-		person = new Person()
+		person = new Person({
+			firstName: 'Leon',
+			emails: [
+				'someEmail@email.com'
+			],
+			address: {
+				city: 'some city'
+			},
+			birthday: new Date(),
+			nestedObject: {
+				nestedValue: {
+					randomList: []
+				}
+			}
+		})
 		deepFreeze(person)
 	})
 
@@ -47,31 +38,33 @@ describe('Helper Function - deepFreeze():', () => {
 
 	it(`should cause person's emails list to throw throw on adding a new item.`, () => {
 		expect(() => {
-			person.emails.push('newEmail@email.com')
+			if (isArray(person.emails)) person.emails.push('newEmail@email.com')
 		}).toThrow()
 	})
 
 	it(`should cause person's emails list to throw on item's modification.`, () => {
 		expect(() => {
-			person.emails[0] = 'newEmail@email.com'
+			if (isArray(person.emails)) person.emails[0] = 'newEmail@email.com'
 		}).toThrow()
 	})
 
 	it(`should cause person's address to throw on modification.`, () => {
 		expect(() => {
-			person.address.city = 'some other city'
+			if (person.address) person.address.city = 'some other city'
 		}).toThrow()
 	})
 
 	it(`should cause person's deep nested value to throw on modification.`, () => {
 		expect(() => {
-			person.deepNestedObject.a.b.c = 'some other value'
+			if (person.nestedObject?.nestedValue) {
+				person.nestedObject.nestedValue.randomList = ['some other value']
+			}
 		}).toThrow()
 	})
 
 	it(`should cause person's birthday to throw on modification.`, () => {
 		expect(() => {
-			person.birthday.setFullYear(1987)
+			person.birthday?.setFullYear(2677)
 		}).toThrow()
 	})
 })

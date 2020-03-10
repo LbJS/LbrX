@@ -8,14 +8,13 @@ import { isUndefined } from "./is-undefined"
 
 export function countObjectChanges(objA: {} | any[], objB: {} | any[]): number {
 	if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1
+	if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime() ? 0 : 1
 	let changesCount = 0
 	if (isArray(objA)) {
 		if (isArray(objB)) {
 			objA.forEach((x, i) => {
 				const y = objB[i]
-				if (isDate(x)) {
-					if (!isDate(y) || x.getTime() != y.getTime()) changesCount++
-				} else if (isObject(x)) {
+				if (isObject(x)) {
 					if (isObject(y)) {
 						changesCount += countObjectChanges(x, y)
 					} else {
@@ -25,7 +24,7 @@ export function countObjectChanges(objA: {} | any[], objB: {} | any[]): number {
 					if (x !== y) changesCount++
 				}
 			})
-			if (objB.length > objA.length) changesCount += objB.length - objA.length + 1
+			if (objB.length > objA.length) changesCount += objB.length - objA.length
 		} else {
 			changesCount++
 		}
