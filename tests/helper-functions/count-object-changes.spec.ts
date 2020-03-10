@@ -5,7 +5,7 @@ describe('Helper Function - countObjectChanges():', () => {
 
 	const expectedChanges = 13
 
-	it(`should count ${expectedChanges} changes.`, () => {
+	it(`should count ${expectedChanges} changes between two objects.`, () => {
 		const person1 = new Person({
 			firstName: 'some name',
 			lastName: 'some name',
