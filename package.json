@@ -28,5 +28,5 @@
 	"jest": {
 		"preset": "ts-jest"
 	},
-	"private": false
+	"private": true
 }
