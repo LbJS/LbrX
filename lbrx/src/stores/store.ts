@@ -5,6 +5,7 @@ import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from "./config"
 import { StoreDevObject } from "../dev-tools/store-dev-object"
 import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from "../helpers"
+import { cloneObject } from "../helpers/helper-functions/clone-object"
 
 export class Store<T extends object> {
 
@@ -176,7 +177,8 @@ export class Store<T extends object> {
 		return this._state$.asObservable()
 			.pipe(
 				filter(x => !!x),
-				map(project || ((x: T) => x as T)),
+				map(project || ((x: T) => x)),
+				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
 					if (isObject(prev)) return this.doObjectCompare ? compareObjects(prev, curr) : false
 					return prev !== curr
