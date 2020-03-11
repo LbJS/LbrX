@@ -25,8 +25,8 @@ export class Store<T extends object> {
 		this._state = value
 		this._state$.next(value)
 	}
-	public get value(): Readonly<T> {
-		return this._state as Readonly<T>
+	public get value(): T {
+		return cloneObject(this._state)
 	}
 	private _initialState: T | null = null
 	public get initialValue(): T {
@@ -98,7 +98,7 @@ export class Store<T extends object> {
 	}
 
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
-		this.state = isDev ? deepFreeze(newStateFn(this.value)) : newStateFn(this.value)
+		this.state = isDev ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
 
 	public initialize(initialState: Partial<T>): void | never {
