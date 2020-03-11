@@ -1,6 +1,6 @@
-import { initLbrxDevTools, Store, StoreConfig } from "lbrx";
+import { Store, StoreConfig, LbrXManager } from "lbrx";
 
-initLbrxDevTools()
+LbrXManager.initializeDevTools()
 
 interface User {
 	firstName: string,

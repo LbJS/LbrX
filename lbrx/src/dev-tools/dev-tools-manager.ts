@@ -17,7 +17,7 @@ export class DevToolsManager {
 	) { }
 
 	public initialize(): void {
-		if (!isDev || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
+		if (!isDev || !window || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
 		(window as any).$$stores = DevToolsStores.Stores
 		const mergedOptions = Object.assign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)

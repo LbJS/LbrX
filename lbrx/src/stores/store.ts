@@ -45,9 +45,9 @@ export class Store<T extends object> {
 	}
 	private get storage(): Storage | null {
 		return this.config.storage === Storages.local ?
-			window.localStorage :
+			localStorage :
 			this.config.storage === Storages.session ?
-				window.sessionStorage :
+				sessionStorage :
 				null
 	}
 	private get storageDelay(): number {

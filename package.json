@@ -1,8 +1,9 @@
 {
 	"name": "lbrx",
-	"version": "0.1.0",
-	"description": "",
-	"main": "index.js",
+	"version": "0.1.0-alpha",
+	"description": "State Manager for JS Apps",
+	"author": "Leon Bernstein",
+	"license": "ISC",
 	"scripts": {
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
@@ -10,8 +11,6 @@
 		"test:watch": "jest --watch",
 		"test:watchAll": "jest --watchAll"
 	},
-	"author": "Leon",
-	"license": "ISC",
 	"dependencies": {
 		"rxjs": "^6.5.4"
 	},
@@ -29,5 +28,5 @@
 	"jest": {
 		"preset": "ts-jest"
 	},
-	"private": true
+	"private": false
 }
