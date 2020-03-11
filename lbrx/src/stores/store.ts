@@ -1,4 +1,4 @@
-import { DevTools } from "../dev-tools/dev-tools"
+import { DevToolsStores } from "../dev-tools/dev-tools-stores"
 import { isDev } from "../environment/state-manager.environment"
 import { BehaviorSubject, timer, Observable } from "rxjs"
 import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
@@ -69,10 +69,10 @@ export class Store<T extends object> {
 	) {
 		this._config = storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY]
 		if (!this.config) throw new Error(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-		if (isDev) DevTools.Stores[this.storeName] = this
+		if (isDev) DevToolsStores.Stores[this.storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this.isLoading$.next(true)
-			isDev && DevTools.LoadingStore$.next(this.storeName)
+			isDev && DevToolsStores.LoadingStore$.next(this.storeName)
 		} else {
 			this._initializeStore(initialStateOrNull as T)
 		}
@@ -92,7 +92,7 @@ export class Store<T extends object> {
 			if (storedState) storedState = objectAssign(isClass(initialState) ? new (initialState as any).constructor() : {}, storedState)
 		}
 		this._setState(() => storedState || initialState)
-		isDev && DevTools.InitStore$.next(this.storeDevObject)
+		isDev && DevToolsStores.InitStore$.next(this.storeDevObject)
 		this.onAfterInit(this._state)
 	}
 
@@ -141,7 +141,7 @@ export class Store<T extends object> {
 			this.onUpdate(this._state, newState)
 			return newState
 		})
-		isDev && DevTools.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
+		isDev && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
 	}
 
 	public override(state: T): void {
@@ -152,7 +152,7 @@ export class Store<T extends object> {
 		this.onUpdate(this._state, state)
 		this.onOverride(this._state, state)
 		this._setState(() => state)
-		isDev && DevTools.OverrideStore$.next(this.storeDevObject)
+		isDev && DevToolsStores.OverrideStore$.next(this.storeDevObject)
 	}
 
 	public reset(): void | never {
@@ -166,7 +166,7 @@ export class Store<T extends object> {
 				this.onReset(state, this._initialState as T)
 				return objectAssign(isClass<T>(state) ? new (state as any).constructor() : {}, { ...this._initialState })
 			})
-			isDev && DevTools.ResetStore$.next({ name: this.storeName, state: { ...this._initialState } })
+			isDev && DevToolsStores.ResetStore$.next({ name: this.storeName, state: { ...this._initialState } })
 		}
 	}
 

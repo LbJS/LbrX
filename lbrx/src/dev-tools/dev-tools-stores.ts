@@ -1,7 +1,7 @@
 import { Subject } from "rxjs"
 import { StoreDevObject } from "./store-dev-object"
 
-export class DevTools {
+export class DevToolsStores {
 	public static readonly Stores = {}
 	public static readonly LoadingStore$ = new Subject<string>()
 	public static readonly InitStore$ = new Subject<StoreDevObject>()

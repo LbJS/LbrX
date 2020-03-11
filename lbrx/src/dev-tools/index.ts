@@ -1,5 +1,5 @@
 export * from "./default-dev-tools-options"
-export * from "./dev-tools"
+export * from "./dev-tools-stores"
 export * from "./dev-tools-manager"
 export * from "./dev-tools-options"
 export * from "./store-dev-object"

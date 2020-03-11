@@ -31,7 +31,7 @@ export function compareObjects(objA: {} | any[], objB: {} | any[]): boolean {
 	}
 	// check objectB for any extra properties
 	for (let i = 0, keys = Object.keys(objB); i < keys.length; i++) {
-		if (typeof (objA[keys[i]]) == 'undefined') return false
+		if (!objA.hasOwnProperty(keys[i])) return false
 	}
 	return true
 }
