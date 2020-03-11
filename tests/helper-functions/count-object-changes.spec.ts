@@ -203,4 +203,41 @@ describe('Helper Function - countObjectChanges():', () => {
 		})
 		expect(countObjectChanges(person1, person2)).toBe(expectedChangesG)
 	})
+
+	const expectedChangesH = 0
+	it(`should count ${expectedChangesH} changes between two objects. {testId: 8}`, () => {
+		const person1 = new Person({
+			func: () => { }
+		})
+		const person2 = new Person({
+			func: () => { }
+		})
+		expect(countObjectChanges(person1, person2)).toBe(expectedChangesH)
+	})
+
+	const expectedChangesI = 1
+	it(`should count ${expectedChangesI} changes between two objects. {testId: 9}`, () => {
+		const person1 = new Person({
+			func: () => { },
+			nestedObject: {
+				nestedValue: {
+					randomList: [
+						() => { },
+						() => { },
+					]
+				}
+			}
+		})
+		const person2 = new Person({
+			func: () => { },
+			nestedObject: {
+				nestedValue: {
+					randomList: [
+						() => { },
+					]
+				}
+			}
+		})
+		expect(countObjectChanges(person1, person2)).toBe(expectedChangesI)
+	})
 })

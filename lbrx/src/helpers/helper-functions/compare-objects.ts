@@ -1,36 +1,39 @@
+import { isArray } from "./is-array"
+import { objectKeys } from "../short-hand-functions/object-keys"
+import { isDate } from "./is-date"
+import { isObject } from "./is-object"
+import { isFunction } from "./is-function"
+
 export function compareObjects(objA: {} | any[], objB: {} | any[]): boolean {
 	if (!objA || !objB) return objA === objB
-	if (Array.isArray(objA)) {
-		if (Array.isArray(objB) &&
+	if (isDate(objA) && (!isDate(objB) || objA.getTime() != objB.getTime())) return false
+	const valueCompareHelper = (x: any, y: any): boolean => {
+		if (isObject(x)) {
+			if (!isObject(y) || !compareObjects(x, y)) return false
+		} else if (isFunction(x)) {
+			if (!isFunction(y)) return false
+		} else if (x !== y) {
+			return false
+		}
+		return true
+	}
+	if (isArray(objA)) {
+		if (isArray(objB) &&
 			objA.length == objB.length
 		) {
 			for (let i = 0; i < objA.length; i++) {
-				return compareObjects(objA[i], objB[i])
+				if (!valueCompareHelper(objA[i], objB[i])) return false
 			}
 			return true
 		}
 		return false
 	}
-	for (let i = 0, keys = Object.keys(objA); i < keys.length; i++) {
+	for (let i = 0, keys = objectKeys(objA); i < keys.length; i++) {
 		const p = keys[i]
-		// check if property is missing in one of the objects
 		if (objA.hasOwnProperty(p) != objB.hasOwnProperty(p)) return false
-		switch (typeof objA[p]) {
-			// deep compare objects
-			case 'object':
-				if (!compareObjects(objA[p], objB[p])) return false
-				break
-			// if both are functions
-			case 'function':
-				if (typeof objB[p] != 'function') return false
-				break
-			// compare values
-			default:
-				if (objA[p] !== objB[p]) return false
-		}
+		if (!valueCompareHelper(objA[p], objB[p])) return false
 	}
-	// check objectB for any extra properties
-	for (let i = 0, keys = Object.keys(objB); i < keys.length; i++) {
+	for (let i = 0, keys = objectKeys(objB); i < keys.length; i++) {
 		if (!objA.hasOwnProperty(keys[i])) return false
 	}
 	return true

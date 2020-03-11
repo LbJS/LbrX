@@ -19,6 +19,7 @@ export class Person {
 			randomList: any[]
 		}
 	} | null;
+	func: (() => void) | null
 
 	constructor({
 		firstName = null,
@@ -29,6 +30,7 @@ export class Person {
 		address = null,
 		emails = null,
 		nestedObject = null,
+		func = null
 	}: Partial<Person>
 	) {
 		this.firstName = firstName
@@ -39,6 +41,7 @@ export class Person {
 		this.address = address
 		this.emails = emails
 		this.nestedObject = nestedObject
+		this.func = func
 	}
 }
 
@@ -55,6 +58,7 @@ export class BetterPerson extends Person {
 		address = null,
 		emails = null,
 		nestedObject = null,
+		func = null,
 	}: Partial<BetterPerson>
 	) {
 		super({
@@ -66,6 +70,7 @@ export class BetterPerson extends Person {
 			address,
 			emails,
 			nestedObject,
+			func
 		})
 		this.betterDate = betterDate
 	}
