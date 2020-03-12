@@ -1,5 +1,5 @@
-import { deepFreeze, isArray } from "../../lbrx/src/helpers"
 import { Person } from "../test-subjects"
+import { deepFreeze, isArray } from "../../src/helpers"
 
 describe('Helper Function - deepFreeze():', () => {
 

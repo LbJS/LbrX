@@ -68,7 +68,7 @@
 		"main.ts"
 	],
 	"include": [
-		"../lbrx/**/*.ts",
+		"../src/**/*.ts",
 		"**/*.ts"
 	],
 }

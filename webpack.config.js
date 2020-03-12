@@ -17,7 +17,7 @@ module.exports = {
 	resolve: {
 		extensions: ['.ts', '.js'],
 		alias: {
-			lbrx: path.resolve(__dirname, 'lbrx')
+			src: path.resolve(__dirname, 'src')
 		}
 	},
 	output: {
