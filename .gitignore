@@ -3,3 +3,5 @@ playground/index.js
 .vs
 test-report.html
 lib
+.vscode
+!.vscode/launch.json
