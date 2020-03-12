@@ -4,6 +4,13 @@
 	"description": "State Manager for JS Apps",
 	"author": "Leon Bernstein",
 	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/staffoffrost/lbrx"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
@@ -29,5 +36,5 @@
 	"jest": {
 		"preset": "ts-jest"
 	},
-	"private": true
+	"private": false
 }
