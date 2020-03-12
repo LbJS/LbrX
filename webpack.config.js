@@ -6,14 +6,16 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.tsx?$/,
-				use: 'ts-loader',
+				test: /\.ts$/,
+				use: [{
+					loader: 'ts-loader?configFile=playground/tsconfig.json',
+				}],
 				exclude: /node_modules/,
 			},
 		],
 	},
 	resolve: {
-		extensions: ['.tsx', '.ts', '.js'],
+		extensions: ['.ts', '.js'],
 		alias: {
 			lbrx: path.resolve(__dirname, 'lbrx')
 		}

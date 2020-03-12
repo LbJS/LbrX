@@ -11,9 +11,13 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"types": "lib",
+	"main": "lib/index.js",
 	"scripts": {
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
+		"build:lib": "tsc -p .",
+		"publish": "publish",
 		"lint": "tslint --project tsconfig.json --config tslint.json --exclude '**/*.d.ts",
 		"test": "jest",
 		"test:watch": "jest --watch",

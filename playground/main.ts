@@ -1,4 +1,4 @@
-import { Store, StoreConfig, LbrXManager } from "lbrx";
+import { LbrXManager, StoreConfig, Store } from "../lbrx"
 
 LbrXManager.initializeDevTools()
 
