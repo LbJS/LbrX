@@ -8,7 +8,8 @@ interface User {
 }
 
 @StoreConfig({
-	storeName: 'LEON-STORE'
+	name: 'LEON-STORE',
+	// doObjectCompare: true,
 })
 class UserStore extends Store<User> {
 
@@ -21,4 +22,12 @@ class UserStore extends Store<User> {
 }
 
 // tslint:disable-next-line: no-unused-expression
-new UserStore()
+const testStore = new UserStore()
+
+testStore.select(state => state.firstName).subscribe(x => console.log(x))
+
+testStore.select().subscribe(x => console.log(x))
+
+setTimeout(() => {
+	testStore.update({ firstName: 'Leon' })
+}, 200)
