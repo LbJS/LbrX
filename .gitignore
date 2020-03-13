@@ -1,7 +1,16 @@
-node_modules
-playground/index.js
-.vs
-test-report.html
-lib
+# Dependency directories
+node_modules/
+
+# VsCode
 .vscode
 !.vscode/launch.json
+
+# Visual Studio
+.vs
+
+# Build directories
+lib
+
+# Individual files
+test-report.html
+playground/index.js
