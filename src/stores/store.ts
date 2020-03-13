@@ -38,20 +38,22 @@ export class Store<T extends object> {
 		return this._config
 	}
 	public get storeName(): string {
-		return this.config.storeName
+		return this.config.name
 	}
 	private get isResettable(): boolean {
 		return !!this.config.isResettable
 	}
 	private get storage(): Storage | null {
-		return this.config.storage === Storages.local ?
+		if (!this.config.storage) return null
+		return this.config.storage.type === Storages.local ?
 			localStorage :
-			this.config.storage === Storages.session ?
+			this.config.storage.type === Storages.session ?
 				sessionStorage :
 				null
 	}
 	private get storageDelay(): number {
-		return !!this.config.storageDelay ? this.config.storageDelay : 0
+		if (!this.config.storage) return 0
+		return !!this.config.storage.debounceTime ? this.config.storage.debounceTime : 0
 	}
 	private get doObjectCompare(): boolean {
 		return !!this.config.doObjectCompare

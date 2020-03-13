@@ -1,9 +1,11 @@
 import { Storages } from "./storages.enum";
 
 export interface StoreConfigOptions {
-	storeName: string,
+	name: string,
 	isResettable?: boolean,
-	storage?: Storages,
-	storageDelay?: number,
+	storage?: {
+		type: Storages,
+		debounceTime?: number
+	},
 	doObjectCompare?: boolean,
 }
