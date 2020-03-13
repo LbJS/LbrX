@@ -10,6 +10,7 @@ const unnecessaryPropertiesList = [
 	'scripts',
 	'devDependencies',
 	'jest',
+	'types'
 ]
 unnecessaryPropertiesList.forEach(key => {
 	delete packageJsonObj[key]
