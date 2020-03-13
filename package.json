@@ -16,8 +16,8 @@
 	"scripts": {
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
-		"build:lib": "tsc -p .",
-		"publish": "npm publish",
+		"build:lib": "tsc -p . && node build.lib.js",
+		"publish": "cd lib && npm publish",
 		"lint": "tslint --project tsconfig.json --config tslint.json --exclude '**/*.d.ts",
 		"test": "jest",
 		"test:watch": "jest --watch",
