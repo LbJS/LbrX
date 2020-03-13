@@ -1,5 +1,5 @@
 import { DevToolsStores } from "../dev-tools/dev-tools-stores"
-import { isDev } from "../mode/state-manager.mode"
+import { isDev } from "../mode/lbrx-mode"
 import { BehaviorSubject, timer, Observable } from "rxjs"
 import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from "./config"

@@ -1,4 +1,4 @@
-import { isDev } from "../../mode/state-manager.mode"
+import { isDev } from "../../mode/lbrx-mode"
 import { StoreConfigOptions } from "./store-config-options"
 import { STORE_CONFIG_KEY } from "./store-config-key"
 import { isFunction } from "src/helpers"
