@@ -1,4 +1,4 @@
-import { enableProdMode } from "./environment/state-manager.environment"
+import { enableProdMode } from "./mode/state-manager.mode"
 import { DevtoolsOptions, initLbrxDevTools } from "./dev-tools"
 
 export class LbrXManager {
