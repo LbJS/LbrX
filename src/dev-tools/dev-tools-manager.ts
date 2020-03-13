@@ -1,10 +1,10 @@
 import { DevtoolsOptions } from "./dev-tools-options"
 import { Subscription } from "rxjs"
-import { isDev } from "../mode/lbrx-mode"
 import { DevToolsStores } from "./dev-tools-stores"
 import { StoreStates } from "./store-states.enum"
 import { DEFAULT_DEV_TOOLS_OPTIONS } from "./default-dev-tools-options"
 import { isClass, objectAssign, countObjectChanges } from "../helpers"
+import { isDev } from "src/mode"
 
 export class DevToolsManager {
 

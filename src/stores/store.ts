@@ -1,11 +1,11 @@
 import { DevToolsStores } from "../dev-tools/dev-tools-stores"
-import { isDev } from "../mode/lbrx-mode"
 import { BehaviorSubject, timer, Observable } from "rxjs"
 import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from "./config"
 import { StoreDevObject } from "../dev-tools/store-dev-object"
 import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from "../helpers"
 import { cloneObject } from "../helpers/helper-functions/clone-object"
+import { isDev } from "src/mode"
 
 export class Store<T extends object> {
 

@@ -1,4 +1,4 @@
-export * from "./mode/lbrx-mode"
+export * from "./mode"
 export * from "./stores"
 export * from "./stores/config"
 export * from "./dev-tools"

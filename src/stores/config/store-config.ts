@@ -1,7 +1,7 @@
-import { isDev } from "../../mode/lbrx-mode"
 import { StoreConfigOptions } from "./store-config-options"
 import { STORE_CONFIG_KEY } from "./store-config-key"
 import { isFunction } from "src/helpers"
+import { isDev } from "src/mode"
 
 const decoratorErrorMsg = `"@StoreConfig" decorator can decorate only a class!`
 

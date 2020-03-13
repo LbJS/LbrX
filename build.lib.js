@@ -14,5 +14,6 @@ const unnecessaryPropertiesList = [
 unnecessaryPropertiesList.forEach(key => {
 	delete packageJsonObj[key]
 })
-packageJsonObj.main = 'index.js'
+packageJsonObj.main = './index.js'
+packageJsonObj.typings = './index.d.ts'
 fs.writeFileSync('lib/package.json', JSON.stringify(packageJsonObj, null, 2), 'utf-8')
