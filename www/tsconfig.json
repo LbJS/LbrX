@@ -1,12 +1,13 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
+		"sourceMap": true,
 		"baseUrl": ".",
 		"paths": {
 			"lbrx": [
 				"../src",
 				"../src/*"
-			]
+			],
 		}
 	},
 	"include": [

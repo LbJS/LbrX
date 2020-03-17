@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs'
 import { DevToolsStores } from './dev-tools-stores'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { isClass, objectAssign, countObjectChanges } from '../helpers'
+import { isClass, objectAssign, countObjectChanges, instanceHandler } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
 
 export class DevToolsManager {
@@ -67,9 +67,7 @@ export class DevToolsManager {
 								store.isLoading$.next(true)
 							}
 						} else {
-							store._setState(() => isClass(store.value || loadingStoresCache[storeName]) ?
-								objectAssign(new (store.value || loadingStoresCache[storeName]).constructor(), devToolsStoreValue) :
-								devToolsStoreValue)
+							store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
 							store.isLoading && store.isLoading$.next(false)
 							if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
 						}

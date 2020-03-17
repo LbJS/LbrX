@@ -3,8 +3,7 @@ import { BehaviorSubject, timer, Observable } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from './config'
 import { StoreDevObject } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from '../helpers'
-import { cloneObject } from '../helpers/helper-functions/clone-object'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
 
 export class Store<T extends object> {
@@ -60,7 +59,7 @@ export class Store<T extends object> {
 	}
 
 	private get storeDevObject(): StoreDevObject {
-		return { name: this.storeName, state: this._state }
+		return { name: this.storeName, state: cloneObject(this._state as T) }
 	}
 
 	constructor(initialState: null, storeConfig?: StoreConfigOptions)
@@ -84,7 +83,7 @@ export class Store<T extends object> {
 	private _initializeStore(initialState: T): void {
 		this.onBeforeInit()
 		if (this.isResettable) {
-			this._initialState = objectAssign(isClass(initialState) ? new (initialState as any).constructor() : {}, initialState)
+			this._initialState = cloneObject(initialState)
 		}
 		const storage = this.storage
 		let storedState: null | T = null
@@ -92,7 +91,7 @@ export class Store<T extends object> {
 			this._state$.pipe(debounce(() => timer(this.storageDelay)))
 				.subscribe(state => storage.setItem(this.storeName, stringify(state)))
 			storedState = parse(storage.getItem(this.storeName))
-			if (storedState) storedState = objectAssign(isClass(initialState) ? new (initialState as any).constructor() : {}, storedState)
+			if (storedState) storedState = instanceHandler(initialState, storedState)
 		}
 		this._setState(() => storedState || initialState)
 		isDev && DevToolsStores.InitStore$.next(this.storeDevObject)
@@ -140,8 +139,10 @@ export class Store<T extends object> {
 		}
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-			const newState = objectAssign(isClass(state) ? new (state as any).constructor() : {}, { ...state }, newPartialState)
-			this.onUpdate(this._state, newState)
+			const clonedState = cloneObject(state)
+			let newState = objectAssign(clonedState, newPartialState)
+			newState = instanceHandler(state, newState)
+			this.onUpdate(state, newState)
 			return newState
 		})
 		isDev && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
@@ -154,7 +155,7 @@ export class Store<T extends object> {
 		}
 		this.onUpdate(this._state, state)
 		this.onOverride(this._state, state)
-		this._setState(() => state)
+		this._setState(() => instanceHandler(this._state, state))
 		isDev && DevToolsStores.OverrideStore$.next(this.storeDevObject)
 	}
 
@@ -167,9 +168,9 @@ export class Store<T extends object> {
 		} else {
 			this._setState(state => {
 				this.onReset(state, this._initialState as T)
-				return objectAssign(isClass<T>(state) ? new (state as any).constructor() : {}, { ...this._initialState })
+				return cloneObject(this._initialState as T)
 			})
-			isDev && DevToolsStores.ResetStore$.next({ name: this.storeName, state: { ...this._initialState } })
+			isDev && DevToolsStores.ResetStore$.next({ name: this.storeName, state: cloneObject(this._initialState as T) })
 		}
 	}
 

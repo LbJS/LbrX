@@ -1,4 +1,6 @@
+export * from './instance-handler'
 export * from './compare-objects'
+export * from './clone-object'
 export * from './count-object-changes'
 export * from './deep-freeze'
 export * from './is-bool'
