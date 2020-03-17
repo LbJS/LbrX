@@ -1,0 +1,16 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"lbrx": [
+				"../src",
+				"../src/*"
+			]
+		}
+	},
+	"include": [
+		"../src/**/*ts",
+		"**/*.ts"
+	]
+}

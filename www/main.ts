@@ -29,5 +29,5 @@ testStore.select(state => state.firstName).subscribe(x => console.log(x))
 testStore.select().subscribe(x => console.log(x))
 
 setTimeout(() => {
-	testStore.update({ firstName: 'Leon' })
+	testStore.update({ firstName: 'Leon A' })
 }, 200)

@@ -8,7 +8,7 @@ module.exports = {
 			{
 				pageTitle: "Test Report",
 				theme: "darkTheme",
-				outputPath: "./tests/test-results/test-report.html"
+				outputPath: "./spec/test-results/test-report.html"
 			}
 		]
 	]
