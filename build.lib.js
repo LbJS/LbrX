@@ -2,6 +2,8 @@ const fs = require('fs')
 
 // copy README.md
 fs.createReadStream('README.md').pipe(fs.createWriteStream('lib/README.md'))
+// copy LICENSE
+fs.createReadStream('LICENSE').pipe(fs.createWriteStream('lib/LICENSE'))
 
 // copy package.json and remove unnecessary properties
 const rawJsonData = fs.readFileSync('package.json')
