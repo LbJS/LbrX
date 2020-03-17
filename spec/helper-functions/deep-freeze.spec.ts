@@ -1,5 +1,5 @@
-import { Person } from "../test-subjects"
-import { deepFreeze, isArray } from "../../src/helpers"
+import { Person } from '../test-subjects'
+import { deepFreeze, isArray } from '../../src/helpers'
 
 describe('Helper Function - deepFreeze():', () => {
 
@@ -24,37 +24,37 @@ describe('Helper Function - deepFreeze():', () => {
 		deepFreeze(person)
 	})
 
-	it(`should cause person's firstName property to throw on modification.`, () => {
+	it("should cause person's firstName property to throw on modification.", () => {
 		expect(() => {
 			person.firstName = 'Something Else'
 		}).toThrow()
 	})
 
-	it(`should cause person's lastName property to throw on modification.`, () => {
+	it("should cause person's lastName property to throw on modification.", () => {
 		expect(() => {
 			person.lastName = 'Something Else'
 		}).toThrow()
 	})
 
-	it(`should cause person's emails list to throw throw on adding a new item.`, () => {
+	it("should cause person's emails list to throw throw on adding a new item.", () => {
 		expect(() => {
 			if (isArray(person.emails)) person.emails.push('newEmail@email.com')
 		}).toThrow()
 	})
 
-	it(`should cause person's emails list to throw on item's modification.`, () => {
+	it("should cause person's emails list to throw on item's modification.", () => {
 		expect(() => {
 			if (isArray(person.emails)) person.emails[0] = 'newEmail@email.com'
 		}).toThrow()
 	})
 
-	it(`should cause person's address to throw on modification.`, () => {
+	it("should cause person's address to throw on modification.", () => {
 		expect(() => {
 			if (person.address) person.address.city = 'some other city'
 		}).toThrow()
 	})
 
-	it(`should cause person's deep nested value to throw on modification.`, () => {
+	it("should cause person's deep nested value to throw on modification.", () => {
 		expect(() => {
 			if (person.nestedObject?.nestedValue) {
 				person.nestedObject.nestedValue.randomList = ['some other value']
@@ -62,7 +62,7 @@ describe('Helper Function - deepFreeze():', () => {
 		}).toThrow()
 	})
 
-	it(`should cause person's birthday to throw on modification.`, () => {
+	it("should cause person's birthday to throw on modification.", () => {
 		expect(() => {
 			person.birthday?.setFullYear(2677)
 		}).toThrow()

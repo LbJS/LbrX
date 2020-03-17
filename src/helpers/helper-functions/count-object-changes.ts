@@ -1,10 +1,10 @@
-import { isNull } from "./is-null"
-import { isArray } from "./is-array"
-import { isDate } from "./is-date"
-import { isObject } from "./is-object"
-import { objectKeys } from "../short-hand-functions/object-keys"
-import { isFunction } from "./is-function"
-import { isUndefined } from "./is-undefined"
+import { isNull } from './is-null'
+import { isArray } from './is-array'
+import { isDate } from './is-date'
+import { isObject } from './is-object'
+import { objectKeys } from '../short-hand-functions/object-keys'
+import { isFunction } from './is-function'
+import { isUndefined } from './is-undefined'
 
 export function countObjectChanges(objA: {} | any[], objB: {} | any[]): number {
 	if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1

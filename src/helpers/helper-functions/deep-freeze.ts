@@ -23,5 +23,5 @@ export function deepFreeze<T extends {}>(object: T): Readonly<T> {
 			object[name] = deepFreeze(value)
 		}
 	}
-	return Object.freeze(object);
+	return Object.freeze(object)
 }

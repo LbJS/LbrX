@@ -1,5 +1,5 @@
-import { DevtoolsOptions, initLbrxDevTools } from "./dev-tools"
-import { enableProdMode } from "./mode"
+import { DevtoolsOptions, initLbrxDevTools } from './dev-tools'
+import { enableProdMode } from './mode'
 
 export class LbrXManager {
 

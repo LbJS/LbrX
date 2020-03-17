@@ -1,5 +1,5 @@
-import { Subject } from "rxjs"
-import { StoreDevObject } from "./store-dev-object"
+import { Subject } from 'rxjs'
+import { StoreDevObject } from './store-dev-object'
 
 export class DevToolsStores {
 	public static readonly Stores = {}

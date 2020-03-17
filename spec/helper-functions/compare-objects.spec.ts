@@ -1,9 +1,9 @@
-import { Person, BetterPerson } from "../test-subjects"
-import { compareObjects } from "../../src/helpers"
+import { Person, BetterPerson } from '../test-subjects'
+import { compareObjects } from '../../src/helpers'
 
 describe('Helper Function - compareObjects():', () => {
 
-	it(`should return that the objects are equal. {testId: 1}`, () => {
+	it('should return that the objects are equal. {testId: 1}', () => {
 		const person1 = new Person({
 			firstName: 'Leon'
 		})
@@ -13,7 +13,7 @@ describe('Helper Function - compareObjects():', () => {
 		expect(compareObjects(person1, person2)).toBeTruthy()
 	})
 
-	it(`should return that the objects are equal. {testId: 2}`, () => {
+	it('should return that the objects are equal. {testId: 2}', () => {
 		const person1 = new Person({
 			birthday: new Date(1700)
 
@@ -24,7 +24,7 @@ describe('Helper Function - compareObjects():', () => {
 		expect(compareObjects(person1, person2)).toBeTruthy()
 	})
 
-	it(`should return that the objects are equal. {testId: 3}`, () => {
+	it('should return that the objects are equal. {testId: 3}', () => {
 		const person1 = new Person({
 			nestedObject: {
 				nestedValue: {
@@ -56,7 +56,7 @@ describe('Helper Function - compareObjects():', () => {
 		expect(compareObjects(person1, person2)).toBeTruthy()
 	})
 
-	it(`should return that the objects are equal. {testId: 4}`, () => {
+	it('should return that the objects are equal. {testId: 4}', () => {
 		const person1 = new BetterPerson({
 			firstName: 'some name',
 			lastName: 'some other name',
@@ -124,7 +124,7 @@ describe('Helper Function - compareObjects():', () => {
 		expect(compareObjects(person1, person2)).toBeTruthy()
 	})
 
-	it(`should return that the objects are different. {testId: 5}`, () => {
+	it('should return that the objects are different. {testId: 5}', () => {
 		const person1 = new Person({
 			lastName: 'Leon'
 		})
@@ -134,7 +134,7 @@ describe('Helper Function - compareObjects():', () => {
 		expect(compareObjects(person1, person2)).toBeFalsy()
 	})
 
-	it(`should return that the objects are different. {testId: 6}`, () => {
+	it('should return that the objects are different. {testId: 6}', () => {
 		const person1 = new BetterPerson({
 			firstName: 'some name',
 			lastName: 'some other name',

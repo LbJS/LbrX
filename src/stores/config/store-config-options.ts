@@ -1,4 +1,4 @@
-import { Storages } from "./storages.enum";
+import { Storages } from './storages.enum'
 
 export interface StoreConfigOptions {
 	name: string,

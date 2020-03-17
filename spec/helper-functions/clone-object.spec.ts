@@ -1,5 +1,5 @@
-import { compareObjects, isObject } from "../../src/helpers"
-import { cloneObject } from "../../src/helpers/helper-functions/clone-object"
+import { compareObjects, isObject } from '../../src/helpers'
+import { cloneObject } from '../../src/helpers/helper-functions/clone-object'
 
 describe('Helper Function - cloneObject():', () => {
 
@@ -13,13 +13,13 @@ describe('Helper Function - cloneObject():', () => {
 		return true
 	}
 
-	it(`should set different references. {testId: 1}`, () => {
+	it('should set different references. {testId: 1}', () => {
 		const objA = {}
 		const objB = cloneObject(objA)
 		expect(isObjectCloned(objA, objB)).toBeTruthy()
 	})
 
-	it(`should set different references. {testId: 2}`, () => {
+	it('should set different references. {testId: 2}', () => {
 		const objA = {
 			date: new Date()
 		}
@@ -27,7 +27,7 @@ describe('Helper Function - cloneObject():', () => {
 		expect(isObjectCloned(objA, objB)).toBeTruthy()
 	})
 
-	it(`should set different references. {testId: 3}`, () => {
+	it('should set different references. {testId: 3}', () => {
 		const objA = {
 			list: [1, 2, 3]
 		}
@@ -35,7 +35,7 @@ describe('Helper Function - cloneObject():', () => {
 		expect(isObjectCloned(objA, objB)).toBeTruthy()
 	})
 
-	it(`should set different references. {testId: 4}`, () => {
+	it('should set different references. {testId: 4}', () => {
 		const objA = {
 			list: [
 				{

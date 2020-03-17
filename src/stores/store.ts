@@ -1,11 +1,11 @@
-import { DevToolsStores } from "../dev-tools/dev-tools-stores"
-import { BehaviorSubject, timer, Observable } from "rxjs"
-import { debounce, map, distinctUntilChanged, filter } from "rxjs/operators"
-import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from "./config"
-import { StoreDevObject } from "../dev-tools/store-dev-object"
-import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from "../helpers"
-import { cloneObject } from "../helpers/helper-functions/clone-object"
-import { isDev } from "lbrx/mode"
+import { DevToolsStores } from '../dev-tools/dev-tools-stores'
+import { BehaviorSubject, timer, Observable } from 'rxjs'
+import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
+import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from './config'
+import { StoreDevObject } from '../dev-tools/store-dev-object'
+import { isNull, objectAssign, isClass, stringify, parse, deepFreeze, isFunction, isObject, compareObjects } from '../helpers'
+import { cloneObject } from '../helpers/helper-functions/clone-object'
+import { isDev } from 'lbrx/mode'
 
 export class Store<T extends object> {
 
@@ -117,7 +117,7 @@ export class Store<T extends object> {
 	 *
 	 *  this.store.update({ key: value })
 	 */
-	public update(state: Partial<T>, updateName?: string): void;
+	public update(state: Partial<T>, updateName?: string): void
 	/**
 	 *
 	 * Update the store's value
@@ -129,7 +129,7 @@ export class Store<T extends object> {
 	 * })
 	 */
 	// tslint:disable-next-line: unified-signatures
-	public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void;
+	public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
 	public update(
 		stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>,
 		updateName?: string

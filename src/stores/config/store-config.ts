@@ -1,9 +1,9 @@
-import { StoreConfigOptions } from "./store-config-options"
-import { STORE_CONFIG_KEY } from "./store-config-key"
-import { isFunction } from "lbrx/helpers"
-import { isDev } from "lbrx/mode"
+import { StoreConfigOptions } from './store-config-options'
+import { STORE_CONFIG_KEY } from './store-config-key'
+import { isFunction } from 'lbrx/helpers'
+import { isDev } from 'lbrx/mode'
 
-const decoratorErrorMsg = `"@StoreConfig" decorator can decorate only a class!`
+const decoratorErrorMsg = '"@StoreConfig" decorator can decorate only a class!'
 
 export function StoreConfig(options: StoreConfigOptions):
 	<T extends new (...args: any[]) => {}>(constructor: T) => void {

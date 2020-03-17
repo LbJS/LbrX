@@ -18,7 +18,7 @@ export class Person {
 		nestedValue: {
 			randomList: any[]
 		}
-	} | null;
+	} | null
 	func: (() => void) | null
 
 	constructor({

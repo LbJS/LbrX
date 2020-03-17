@@ -1,9 +1,9 @@
-import { isDate } from "./is-date"
-import { isArray } from "./is-array"
-import { objectAssign } from "../short-hand-functions/object-assign"
-import { isObject } from "./is-object"
-import { isClass } from "./is-class"
-import { objectKeys } from "../short-hand-functions/object-keys"
+import { isDate } from './is-date'
+import { isArray } from './is-array'
+import { objectAssign } from '../short-hand-functions/object-assign'
+import { isObject } from './is-object'
+import { isClass } from './is-class'
+import { objectKeys } from '../short-hand-functions/object-keys'
 
 export function cloneObject<T = {}>(obj: T): T {
 	if (isDate(obj)) return new Date(obj) as any as T
