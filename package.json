@@ -16,9 +16,9 @@
 	"scripts": {
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
-		"build:lib": "rimraf lib/* && tsc -p . && node build.lib.js",
+		"build:lib": "rimraf lib/* && tsc -p ./src/tsconfig.json && node build.lib.js",
 		"publish": "cd lib && npm publish",
-		"lint": "tslint --project tsconfig.json --config tslint.json --exclude '**/*.d.ts",
+		"lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:watchAll": "jest --watchAll"
