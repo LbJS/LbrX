@@ -137,6 +137,6 @@ Pay attention to the values that haven't been changed. They won't trigger their 
     	userStore.reset()
     }, 550)
 
-\*\*Step 5: Debug using Redux DevTools
+**Step 5: Debug using Redux DevTools**
 
 ![ReduxDevTools](https://lh3.googleusercontent.com/8OTs0-DeqWlIGDU67xmLJCFm3gB2QVilTpUzpt3R_p-5BwS3Utam1VB18kIodxBxckO_CVUt-Ydpl41fJ4pAVspGvC0qWt8Xh3qRKUZweKTEFjQlhPvoep3xHcLSWFUj-RYJ7EeiyQ=w2400)
