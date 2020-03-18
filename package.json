@@ -8,6 +8,9 @@
 		"type": "git",
 		"url": "https://github.com/staffoffrost/lbrx"
 	},
+	"bugs": {
+		"url": "https://github.com/staffoffrost/lbrx/issues"
+	},
 	"publishConfig": {
 		"access": "public"
 	},
