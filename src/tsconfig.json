@@ -14,7 +14,8 @@
 				"./mode"
 			],
 			"lbrx/helpers": [
-				"./helpers"
+				"./helpers",
+				"./helpers/*"
 			],
 		}
 	},

@@ -1,4 +1,4 @@
-import { isClass } from '../../src/helpers'
+import { isClass } from 'lbrx/helpers'
 
 describe('Helper Function - isClass():', () => {
 

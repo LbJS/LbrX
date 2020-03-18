@@ -1,11 +1,15 @@
+import { isObject } from './is-object'
+import { isDate } from './is-date'
+import { throwError } from 'lbrx/helpers'
+
 function dateThrow(this: Date): never {
-	throw new Error(`This date: "${this.toLocaleString()}" is read only.`)
+	throwError(`This date: "${this.toLocaleString()}" is read only.`)
 }
 
 export function deepFreeze<T extends {}>(object: T): Readonly<T> {
-	for (const name of Object.getOwnPropertyNames(object)) {
-		const value = object[name]
-		if (value instanceof Date) {
+	for (const key of Object.getOwnPropertyNames(object)) {
+		const value = object[key]
+		if (isDate(value)) {
 			value.setTime = dateThrow
 			value.setFullYear = dateThrow
 			value.setMonth = dateThrow
@@ -19,8 +23,8 @@ export function deepFreeze<T extends {}>(object: T): Readonly<T> {
 			value.setUTCHours = dateThrow
 			value.setUTCMinutes = dateThrow
 			value.setUTCMilliseconds = dateThrow
-		} else if (value && typeof value == 'object') {
-			object[name] = deepFreeze(value)
+		} else if (isObject(value)) {
+			object[key] = deepFreeze(value)
 		}
 	}
 	return Object.freeze(object)

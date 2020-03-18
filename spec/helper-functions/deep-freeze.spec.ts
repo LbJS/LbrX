@@ -1,5 +1,5 @@
-import { Person } from '../test-subjects'
-import { deepFreeze, isArray } from '../../src/helpers'
+import { Person, BetterPerson } from '../test-subjects'
+import { deepFreeze, isArray } from 'lbrx/helpers'
 
 describe('Helper Function - deepFreeze():', () => {
 
@@ -65,6 +65,14 @@ describe('Helper Function - deepFreeze():', () => {
 	it("should cause person's birthday to throw on modification.", () => {
 		expect(() => {
 			person.birthday?.setFullYear(2677)
+		}).toThrow()
+	})
+
+	it("should cause better person's firstName property to throw on modification.", () => {
+		const betterPerson = new BetterPerson({})
+		deepFreeze(betterPerson)
+		expect(() => {
+			betterPerson.firstName = 'better first name'
 		}).toThrow()
 	})
 })
