@@ -177,11 +177,11 @@ export class Store<T extends object> {
 
 	public select(): Observable<T>
 	public select<R>(project: (state: T) => R): Observable<R>
-	public select<R>(project?: (state: T) => R | T): Observable<T | R> {
+	public select<R>(project?: (state: T) => R): Observable<T | R> {
 		return this._state$.asObservable()
 			.pipe(
-				filter(x => !!x),
-				map(project || ((x: T) => x)),
+				filter<T>(x => !!x),
+				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
 					if (isObject(prev) && this.#doObjectCompare) return compareObjects(prev, curr)
