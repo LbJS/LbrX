@@ -41,10 +41,18 @@ class UserStore extends Store<User> {
 
 const userStore = new UserStore()
 
-userStore.select().subscribe(x => console.log(x))
-userStore.select(state => state.firstName).subscribe(x => console.log('firstName: ' + x))
-userStore.select(state => state.firstName).subscribe(x => console.log('lastName: ' + x))
-userStore.select(state => state.address?.place).subscribe(x => console.log('address: ' + x))
+userStore
+	.select()
+	.subscribe(x => console.log(x))
+userStore
+	.select(state => state.firstName)
+	.subscribe(x => console.log('firstName: ' + x))
+userStore
+	.select(state => state.lastName)
+	.subscribe(x => console.log('lastName: ' + x))
+userStore
+	.select(state => state.address?.place)
+	.subscribe(x => console.log('address: ' + x))
 
 setTimeout(() => {
 	userStore.update({
@@ -66,3 +74,7 @@ setTimeout(() => {
 setTimeout(() => {
 	userStore.reset()
 }, 500)
+
+setTimeout(() => {
+	userStore.reset()
+}, 550)
