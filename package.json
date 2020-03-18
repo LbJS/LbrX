@@ -17,8 +17,8 @@
 	"types": "lib",
 	"main": "lib/index.js",
 	"scripts": {
-		"start": "webpack --watch -d",
-		"build": "webpack -p",
+		"start": "webpack --watch -d --progress",
+		"build": "webpack -p --progress",
 		"build:lib": "rimraf lib/* && tsc -p ./src/tsconfig.json && node build.lib.js",
 		"build:lib:test": "rimraf lib/* && tsc -p ./src/tsconfig.json && rimraf lib/*",
 		"publish": "cd lib && npm publish",
