@@ -1,10 +1,10 @@
 import { DevToolsStores } from '../dev-tools/dev-tools-stores'
-import { BehaviorSubject, timer, Observable } from 'rxjs'
+import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from './config'
 import { StoreDevObject } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject } from 'lbrx/helpers'
-import { isDev } from 'lbrx/mode'
+import { isDev, isDevTools } from 'lbrx/mode'
 
 export class Store<T extends object> {
 
@@ -32,34 +32,18 @@ export class Store<T extends object> {
 		return this._initialState as T
 	}
 
-	private _config!: StoreConfigOptions
+	#config!: StoreConfigOptions
 	public get config(): StoreConfigOptions {
-		return this._config
+		return this.#config
 	}
-	public get storeName(): string {
-		return this.config.name
-	}
-	private get isResettable(): boolean {
-		return !!this.config.isResettable
-	}
-	private get storage(): Storage | null {
-		if (!this.config.storage) return null
-		return this.config.storage.type === Storages.local ?
-			localStorage :
-			this.config.storage.type === Storages.session ?
-				sessionStorage :
-				null
-	}
-	private get storageDelay(): number {
-		if (!this.config.storage) return 0
-		return !!this.config.storage.debounceTime ? this.config.storage.debounceTime : 0
-	}
-	private get doObjectCompare(): boolean {
-		return !!this.config.doObjectCompare
-	}
+	#storeName!: string
+	#isResettable!: boolean
+	#doObjectCompare!: boolean
+	#storage!: Storage | null
+	#storageDelay!: number
 
 	private get storeDevObject(): StoreDevObject {
-		return { name: this.storeName, state: cloneObject(this._state as T) }
+		return { name: this.#storeName, state: cloneObject(this._state as T) }
 	}
 
 	constructor(initialState: null, storeConfig?: StoreConfigOptions)
@@ -69,32 +53,48 @@ export class Store<T extends object> {
 		initialStateOrNull: Partial<T> | null,
 		storeConfig?: StoreConfigOptions,
 	) {
-		this._config = storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY]
-		if (!this.config) throw new Error(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-		if (isDev) DevToolsStores.Stores[this.storeName] = this
+		this._initializeConfig(storeConfig)
+		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
+		if (isDevTools) DevToolsStores.Stores[this.#storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this.isLoading$.next(true)
-			isDev && DevToolsStores.LoadingStore$.next(this.storeName)
+			isDevTools && DevToolsStores.LoadingStore$.next(this.#storeName)
 		} else {
 			this._initializeStore(initialStateOrNull as T)
 		}
 	}
 
+	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
+		this.#config = storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY]
+		this.#storeName = this.#config.name
+		this.#isResettable = !!this.#config.isResettable
+		this.#doObjectCompare = !!this.#config.doObjectCompare
+		this.#storage = (() => {
+			if (!this.config.storage) return null
+			return this.config.storage.type === Storages.local ?
+				localStorage :
+				this.config.storage.type === Storages.session ?
+					sessionStorage :
+					null
+		})()
+		this.#storageDelay = this.#config.storage?.debounceTime || 0
+	}
+
 	private _initializeStore(initialState: T): void {
 		this.onBeforeInit()
-		if (this.isResettable) {
+		if (this.#isResettable) {
 			this._initialState = cloneObject(initialState)
 		}
-		const storage = this.storage
+		const storage = this.#storage
 		let storedState: null | T = null
 		if (storage) {
-			this._state$.pipe(debounce(() => timer(this.storageDelay)))
-				.subscribe(state => storage.setItem(this.storeName, stringify(state)))
-			storedState = parse(storage.getItem(this.storeName))
+			this._state$.pipe(debounce(() => timer(this.#storageDelay)))
+				.subscribe(state => storage.setItem(this.#storeName, stringify(state)))
+			storedState = parse(storage.getItem(this.#storeName))
 			if (storedState) storedState = instanceHandler(initialState, storedState)
 		}
 		this._setState(() => storedState || initialState)
-		isDev && DevToolsStores.InitStore$.next(this.storeDevObject)
+		isDevTools && DevToolsStores.InitStore$.next(this.storeDevObject)
 		this.onAfterInit(this._state)
 	}
 
@@ -103,8 +103,9 @@ export class Store<T extends object> {
 	}
 
 	public initialize(initialState: Partial<T>): void | never {
-		if (isDev && !this.isLoading) {
-			throw new Error("Can't initialize store that's already been initialized and its not in LOADING state!")
+		if (!this.isLoading) {
+			isDev && throwError("Can't initialize store that's already been initialized and its not in LOADING state!")
+			return
 		}
 		this._initializeStore(initialState as T)
 		this.isLoading$.next(false)
@@ -134,7 +135,7 @@ export class Store<T extends object> {
 		updateName?: string
 	): void {
 		if (this.isLoading) {
-			if (isDev) throw new Error(`Can't update ${this.storeName} while it's in loading state.`)
+			isDev && throwError(`Can't update ${this.#storeName} while it's in loading state.`)
 			return
 		}
 		this._setState(state => {
@@ -145,12 +146,12 @@ export class Store<T extends object> {
 			this.onUpdate(state, newState)
 			return newState
 		})
-		isDev && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
+		isDevTools && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
 	}
 
 	public override(state: T): void {
 		if (this.isLoading) {
-			if (isDev) throw new Error(`Can't override ${this.storeName} while it's in loading state.`)
+			isDev && throwError(`Can't override ${this.#storeName} while it's in loading state.`)
 			return
 		}
 		this.onUpdate(this._state, state)
@@ -161,16 +162,16 @@ export class Store<T extends object> {
 
 	public reset(): void | never {
 		if (this.isLoading) {
-			if (isDev) throw new Error(`Can't reset ${this.storeName} while it's in loading state.`)
+			isDev && throwError(`Can't reset ${this.#storeName} while it's in loading state.`)
 			return
-		} else if (!this.isResettable) {
-			if (isDev) throw new Error(`Store: ${this.storeName} is not configured as resettable.`)
+		} else if (!this.#isResettable) {
+			isDev && throwError(`Store: ${this.#storeName} is not configured as resettable.`)
 		} else {
 			this._setState(state => {
 				this.onReset(state, this._initialState as T)
 				return cloneObject(this._initialState as T)
 			})
-			isDev && DevToolsStores.ResetStore$.next({ name: this.storeName, state: cloneObject(this._initialState as T) })
+			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState as T) })
 		}
 	}
 
@@ -183,7 +184,7 @@ export class Store<T extends object> {
 				map(project || ((x: T) => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
-					if (isObject(prev) && this.doObjectCompare) return compareObjects(prev, curr)
+					if (isObject(prev) && this.#doObjectCompare) return compareObjects(prev, curr)
 					return prev === curr
 				}),
 			)

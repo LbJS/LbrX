@@ -1,22 +1,20 @@
 import { StoreConfigOptions } from './store-config-options'
 import { STORE_CONFIG_KEY } from './store-config-key'
-import { isFunction } from 'lbrx/helpers'
+import { isFunction, objectKeys, logError, Constructable } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
-
-const decoratorErrorMsg = '"@StoreConfig" decorator can decorate only a class!'
+import { throwError } from 'rxjs'
 
 export function StoreConfig(options: StoreConfigOptions):
-	<T extends new (...args: any[]) => {}>(constructor: T) => void {
-	return <T extends new (...args: any[]) => {}>(constructor: T): void => {
+	<T extends Constructable<T>>(constructor: T) => void {
+	return <T extends Constructable<T>>(constructor: T): void => {
 		if (isFunction(constructor)) {
 			constructor[STORE_CONFIG_KEY] = {}
-			Object.keys(options).forEach(key => {
+			objectKeys(options).forEach(key => {
 				constructor[STORE_CONFIG_KEY][key] = options[key]
 			})
-		} else if (isDev) {
-			throw new Error(decoratorErrorMsg)
 		} else {
-			console.error(decoratorErrorMsg)
+			const errorMsg = '"@StoreConfig" decorator can decorate only a class!'
+			isDev ? throwError(errorMsg) : logError(errorMsg)
 		}
 	}
 }

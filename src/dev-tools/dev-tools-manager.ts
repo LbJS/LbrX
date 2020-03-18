@@ -1,10 +1,10 @@
 import { DevtoolsOptions } from './dev-tools-options'
-import { Subscription } from 'rxjs'
+import { Subscription, throwError } from 'rxjs'
 import { DevToolsStores } from './dev-tools-stores'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler } from 'lbrx/helpers'
-import { isDev } from 'lbrx/mode'
+import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError } from 'lbrx/helpers'
+import { isDev, enableDevToolsUpdates } from 'lbrx/mode'
 
 export class DevToolsManager {
 
@@ -19,8 +19,9 @@ export class DevToolsManager {
 	public initialize(): void {
 		if (!isDev || !window || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
 		(window as any).$$stores = DevToolsStores.Stores
-		const mergedOptions = Object.assign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
+		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
+		enableDevToolsUpdates()
 		this._sub.unsubscribe()
 		this._sub = new Subscription()
 		this._appState = {}
@@ -31,7 +32,8 @@ export class DevToolsManager {
 			}),
 			DevToolsStores.InitStore$.subscribe(store => {
 				if (this._appState[store.name] && this._appState[store.name] !== StoreStates.loading) {
-					throw new Error(`There are multiple store with the same store name: "${store.name}"!`)
+					const errorMsg = `There are multiple store with the same store name: "${store.name}"!`
+					isDev ? throwError(errorMsg) : logError(errorMsg)
 				}
 				this._appState = objectAssign(this._appState, { [store.name]: store.state })
 				devTools.send({ type: `[${store.name}] - @@INIT` }, this._appState)
@@ -54,8 +56,8 @@ export class DevToolsManager {
 			}),
 			devTools.subscribe((message: any) => {
 				if (message.type != 'DISPATCH' || !message.state) return
-				const devToolsState = JSON.parse(message.state)
-				Object.keys(devToolsState).forEach((storeName: string) => {
+				const devToolsState = parse<{}>(message.state)
+				objectKeys(devToolsState).forEach((storeName: string) => {
 					const store = DevToolsStores.Stores[storeName]
 					const devToolsStoreValue = devToolsState[storeName]
 					const loadingStoresCache = this._loadingStoresCache
