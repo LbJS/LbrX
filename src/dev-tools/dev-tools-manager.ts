@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs'
 import { DevToolsStores } from './dev-tools-stores'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { isClass, objectAssign, countObjectChanges, instanceHandler } from 'lbrx/helpers'
+import { objectAssign, countObjectChanges, instanceHandler } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
 
 export class DevToolsManager {

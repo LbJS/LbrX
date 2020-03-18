@@ -11,8 +11,8 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Object compare configuration per store support for better performance with very large objects
 - [x] Store hooks
 - [x] Redux DevTools one way support
-- [ ] Redux DevTools both ways support - wip
-- [ ] Deep nested objects support - wip
+- [x] Redux DevTools both ways support
+- [ ] Deep nested objects support
 - [ ] Full spec coverage of the above - wip
 - [ ] Better playground on the repository - wip
 - [ ] Partial documentation
