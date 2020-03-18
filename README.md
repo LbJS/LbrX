@@ -12,7 +12,7 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Store hooks
 - [x] Redux DevTools one way support
 - [x] Redux DevTools both ways support
-- [ ] Deep nested objects support
+- [x] Deep nested objects support
 - [ ] Full spec coverage of the above - wip
 - [ ] Better playground on the repository - wip
 - [ ] Partial documentation
