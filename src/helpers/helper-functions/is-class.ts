@@ -1,5 +1,5 @@
 import { Constructable } from 'lbrx/helpers'
 
-export function isClass<T>(value: {}): value is Constructable<T> {
+export function isClass(value: {}): value is Constructable {
 	return value.constructor.name !== 'Object'
 }
