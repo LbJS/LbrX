@@ -20,6 +20,7 @@
 		"start": "webpack --watch -d",
 		"build": "webpack -p",
 		"build:lib": "rimraf lib/* && tsc -p ./src/tsconfig.json && node build.lib.js",
+		"build:lib:test": "rimraf lib/* && tsc -p ./src/tsconfig.json && rimraf lib/*",
 		"publish": "cd lib && npm publish",
 		"lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts --fix",
 		"test": "jest",
