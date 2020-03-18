@@ -1,6 +1,14 @@
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
+	globals: {
+		'ts-jest': {
+			tsConfig: './spec/tsconfig.json'
+		}
+	},
+	moduleNameMapper: {
+		"lbrx/helpers": "<rootDir>/src/helpers",
+	},
 	reporters: [
 		"default",
 		[

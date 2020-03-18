@@ -2,15 +2,15 @@
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
 		"baseUrl": ".",
+		"esModuleInterop": true,
 		"paths": {
-			"lbrx": [
-				"../src",
-				"../src/*"
-			]
+			"lbrx/helpers": [
+				"../src/helpers",
+			],
 		}
 	},
 	"include": [
-		"../src/**/*ts",
+		"../src/**/*.ts",
 		"**/*.ts"
 	]
 }
