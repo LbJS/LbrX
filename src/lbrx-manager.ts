@@ -1,6 +1,8 @@
 import { DevtoolsOptions, initLbrxDevTools } from './dev-tools'
 import { enableProdMode } from './mode'
 import { throwError } from 'lbrx/helpers'
+import { GlobalStoreConfigOptions } from './stores/config/global-store-config-options'
+import { setGlobalStoreConfig } from './stores/config/global-store-config'
 
 // tslint:disable: no-redundant-jsdoc
 /**
@@ -23,6 +25,14 @@ export class LbrXManager {
 	 */
 	static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): LbrXManager {
 		initLbrxDevTools(devToolsOptions)
+		return LbrXManager
+	}
+
+	/**
+	 * Sets global store configuration for all stores.
+	 */
+	static setGlobalStoreConfig(options: GlobalStoreConfigOptions): LbrXManager {
+		setGlobalStoreConfig(options)
 		return LbrXManager
 	}
 
