@@ -1,4 +1,29 @@
 
+export class Address {
+	country?: string | null
+	state?: string | null
+	region?: string | null
+	city?: string | null
+	street?: string | null
+	homeNumber?: number | string | null
+
+	constructor({
+		country = null,
+		state = null,
+		region = null,
+		city = null,
+		street = null,
+		homeNumber = null,
+	}: Partial<Address>) {
+		this.country = country
+		this.state = state
+		this.region = region
+		this.city = city
+		this.state = street
+		this.homeNumber = homeNumber
+	}
+}
+
 export class Person {
 	firstName: string | null
 	lastName: string | null
@@ -12,7 +37,7 @@ export class Person {
 		city?: string | null
 		street?: string | null
 		homeNumber?: number | string | null
-	} | null
+	} | null | Address
 	emails: string[] | null
 	nestedObject: {
 		nestedValue: {
