@@ -1,6 +1,6 @@
 import { objectKeys, isNull, isDate, isObject, isFunction, isArray, isUndefined } from 'lbrx/helpers'
 
-export function countObjectChanges(objA: {} | unknown[], objB: {} | unknown[]): number {
+export function countObjectChanges(objA: object | unknown[], objB: object | unknown[]): number {
 	if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1
 	if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime() ? 0 : 1
 	let changesCount = 0
