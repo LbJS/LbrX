@@ -49,4 +49,21 @@ describe('Helper Function - cloneObject():', () => {
 		const objB = cloneObject(objA)
 		expect(isObjectCloned(objA, objB)).toBeTruthy()
 	})
+
+	it('should copy all properties', () => {
+		class Person { }
+		const objA = {
+			a: 'a',
+			b: 2,
+			c: null,
+			arr: [1, 2, 3],
+			date: new Date(),
+			nested: {
+				nested: 'x',
+				person: new Person()
+			}
+		}
+		const objB = cloneObject(objA)
+		expect(isObjectCloned(objA, objB)).toBeTruthy()
+	})
 })
