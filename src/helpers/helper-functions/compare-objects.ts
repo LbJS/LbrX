@@ -1,9 +1,9 @@
 import { isDate, isObject, isFunction, isArray, objectKeys } from 'lbrx/helpers'
 
-export function compareObjects(objA: {} | any[], objB: {} | any[]): boolean {
+export function compareObjects(objA: {} | unknown[], objB: {} | unknown[]): boolean {
 	if (!objA || !objB) return objA === objB
 	if (isDate(objA) && (!isDate(objB) || objA.getTime() != objB.getTime())) return false
-	const compareHelper = (x: any, y: any): boolean => {
+	const compareHelper = (x: unknown, y: unknown): boolean => {
 		if (isObject(x)) {
 			if (!isObject(y) || !compareObjects(x, y)) return false
 		} else if (isFunction(x)) {
