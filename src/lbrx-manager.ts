@@ -2,8 +2,10 @@ import { DevtoolsOptions, initLbrxDevTools } from './dev-tools'
 import { enableProdMode } from './mode'
 import { throwError } from 'lbrx/helpers'
 
+// tslint:disable: no-redundant-jsdoc
 /**
  * LbrX static builder class.
+ * @static
  */
 export class LbrXManager {
 

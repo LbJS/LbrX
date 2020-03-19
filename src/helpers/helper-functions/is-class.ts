@@ -1,5 +1,6 @@
 import { Constructable } from 'lbrx/helpers'
+import { isObject } from './is-object'
 
 export function isClass(value: object): value is Constructable {
-	return value && value.constructor.name !== 'Object'
+	return isObject(value) && value.constructor.name !== 'Object'
 }

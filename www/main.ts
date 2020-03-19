@@ -1,4 +1,4 @@
-import { LbrXManager, StoreConfig, Store, Storages } from 'lbrx'
+import { LbrXManager, StoreConfig, Store, Storages, ObjectCompareTypes } from 'lbrx'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
@@ -25,11 +25,11 @@ function createLeon(): User {
 
 @StoreConfig({
 	name: 'LEON-STORE',
-	doObjectCompare: true,
+	objectCompareType: ObjectCompareTypes.advanced,
 	isResettable: true,
 	storage: {
 		type: Storages.session,
-		debounceTime: 2000
+		debounceTime: 500
 	}
 })
 class UserStore extends Store<User> {

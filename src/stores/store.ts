@@ -1,9 +1,9 @@
 import { DevToolsStores } from '../dev-tools/dev-tools-stores'
 import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
-import { StoreConfigOptions, Storages, STORE_CONFIG_KEY } from './config'
+import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes } from './config'
 import { StoreDevObject } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, isUndefined, simpleCompareObjects, simpleObjectClone } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 
 export class Store<T extends object> {
@@ -27,7 +27,7 @@ export class Store<T extends object> {
 	public get value(): T {
 		return cloneObject(this._state)
 	}
-	private _initialState: T | null = null
+	private _initialState!: Readonly<T>
 	public get initialValue(): T {
 		return this._initialState as T
 	}
@@ -38,9 +38,11 @@ export class Store<T extends object> {
 	}
 	#storeName!: string
 	#isResettable!: boolean
-	#doObjectCompare!: boolean
+	#isSimpleCloning!: boolean
+	#objectCompareType!: ObjectCompareTypes
 	#storage!: Storage | null
 	#storageDelay!: number
+	#storageKey!: string
 
 	private get storeDevObject(): StoreDevObject {
 		return { name: this.#storeName, state: cloneObject(this._state as T) }
@@ -67,31 +69,33 @@ export class Store<T extends object> {
 	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
 		this.#config = storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY]
 		this.#storeName = this.#config.name
-		this.#isResettable = !!this.#config.isResettable
-		this.#doObjectCompare = !!this.#config.doObjectCompare
+		this.#isResettable = isUndefined(this.#config.isResettable) ? true : this.#config.isResettable
+		this.#isSimpleCloning = !!this.#config.isSimpleCloning
+		this.#objectCompareType = isUndefined(this.#config.objectCompareType) ? ObjectCompareTypes.advanced : this.#config.objectCompareType
 		this.#storage = (() => {
 			if (!this.config.storage) return null
-			return this.config.storage.type === Storages.local ?
-				localStorage :
-				this.config.storage.type === Storages.session ?
-					sessionStorage :
-					null
+			switch (this.config.storage.type) {
+				case Storages.none: return null
+				case Storages.local: return localStorage
+				case Storages.session: return sessionStorage
+				case Storages.custom: return (this.#config.storage && this.#config.storage.custom) ? this.#config.storage.custom : null
+			}
 		})()
-		this.#storageDelay = this.#config.storage?.debounceTime || 0
+		this.#storageDelay = this.#config.storage ? (this.#config.storage.debounceTime ?? 2000) : 2000
+		this.#storageKey = this.#config.storage && this.#config.storage.key || this.#storeName
 	}
 
 	private _initializeStore(initialState: T): void {
 		this.onBeforeInit()
-		if (this.#isResettable) {
-			this._initialState = cloneObject(initialState)
-		}
+		this._initialState = deepFreeze(this.#isSimpleCloning ? simpleObjectClone(initialState) : cloneObject(initialState))
 		const storage = this.#storage
 		let storedState: null | T = null
 		if (storage) {
-			this._state$.pipe(debounce(() => timer(this.#storageDelay)))
-				.subscribe(state => storage.setItem(this.#storeName, stringify(state)))
-			storedState = parse(storage.getItem(this.#storeName))
-			if (storedState) storedState = instanceHandler(initialState, storedState)
+			this._state$
+				.pipe(debounce(() => timer(this.#storageDelay)))
+				.subscribe(state => storage.setItem(this.#storageKey, stringify(state)))
+			storedState = parse(storage.getItem(this.#storageKey))
+			if (storedState && !this.#isSimpleCloning) storedState = instanceHandler(initialState, storedState)
 		}
 		this._setState(() => storedState || initialState)
 		isDevTools && DevToolsStores.InitStore$.next(this.storeDevObject)
@@ -140,9 +144,9 @@ export class Store<T extends object> {
 		}
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-			const clonedState = cloneObject(state)
+			const clonedState = this.#isSimpleCloning ? simpleObjectClone(state) : cloneObject(state)
 			let newState = objectAssign(clonedState, newPartialState)
-			newState = instanceHandler(state, newState)
+			if (!this.#isSimpleCloning) newState = instanceHandler(this._initialState, newState)
 			this.onUpdate(state, newState)
 			return newState
 		})
@@ -154,9 +158,8 @@ export class Store<T extends object> {
 			isDev && throwError(`Can't override ${this.#storeName} while it's in loading state.`)
 			return
 		}
-		this.onUpdate(this._state, state)
 		this.onOverride(this._state, state)
-		this._setState(() => instanceHandler(this._state, state))
+		this._setState(() => this.#isSimpleCloning ? state : instanceHandler(this._initialState, state))
 		isDev && DevToolsStores.OverrideStore$.next(this.storeDevObject)
 	}
 
@@ -168,10 +171,10 @@ export class Store<T extends object> {
 			isDev && throwError(`Store: ${this.#storeName} is not configured as resettable.`)
 		} else {
 			this._setState(state => {
-				this.onReset(state, this._initialState as T)
-				return cloneObject(this._initialState as T)
+				this.onReset(state, this._initialState)
+				return this.#isSimpleCloning ? simpleObjectClone(this._initialState) : cloneObject(this._initialState)
 			})
-			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState as T) })
+			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
 		}
 	}
 
@@ -184,7 +187,13 @@ export class Store<T extends object> {
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
-					if (this.#doObjectCompare && isObject(prev) && isObject(curr)) return compareObjects(prev, curr)
+					if (isObject(prev) && isObject(curr)) {
+						switch (this.#objectCompareType) {
+							case ObjectCompareTypes.advanced: return compareObjects(prev, curr)
+							case ObjectCompareTypes.simple: return simpleCompareObjects(prev, curr)
+							case ObjectCompareTypes.reference: { }
+						}
+					}
 					return prev === curr
 				}),
 			)
@@ -198,20 +207,20 @@ export class Store<T extends object> {
 	/**
 	 * @Override
 	 */
-	protected onAfterInit(state: T): void { }
+	protected onAfterInit(state: Readonly<T>): void { }
 
 	/**
 	 * @Override
 	 */
-	protected onOverride(oldState: T, newState: T): void { }
+	protected onOverride(oldState: Readonly<T>, newState: T): void { }
 
 	/**
 	 * @Override
 	 */
-	protected onUpdate(oldState: T, newState: T): void { }
+	protected onUpdate(oldState: Readonly<T>, newState: T): void { }
 
 	/**
 	 * @Override
 	 */
-	protected onReset(oldState: T, initialState: T): void { }
+	protected onReset(currentState: Readonly<T>, initialState: Readonly<T>): void { }
 }

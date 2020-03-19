@@ -1,11 +1,12 @@
-import { Storages } from './storages.enum'
+import { GlobalStoreConfigOptions } from './global-store-config-options'
 
-export interface StoreConfigOptions {
+/**
+ * Store configuration options.
+ */
+export interface StoreConfigOptions extends GlobalStoreConfigOptions {
+	/**
+	 * Store's name will be used for Redux DevTools and cache storage's key if storage is configured.
+	 * @warning Store's name must be unique!
+	 */
 	name: string,
-	isResettable?: boolean,
-	storage?: {
-		type: Storages,
-		debounceTime?: number
-	},
-	doObjectCompare?: boolean,
 }
