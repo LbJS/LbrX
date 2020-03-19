@@ -184,7 +184,7 @@ export class Store<T extends object> {
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
-					if (isObject(prev) && this.#doObjectCompare) return compareObjects(prev, curr)
+					if (this.#doObjectCompare && isObject(prev) && isObject(curr)) return compareObjects(prev, curr)
 					return prev === curr
 				}),
 			)

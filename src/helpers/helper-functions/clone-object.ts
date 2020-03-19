@@ -1,6 +1,6 @@
 import { isDate, isArray, objectAssign, isObject, isClass, objectKeys } from 'lbrx/helpers'
 
-export function cloneObject<T>(obj: T): T {
+export function cloneObject<T extends object>(obj: T): T {
 	if (isDate(obj)) return new Date(obj) as any
 	let copy: T | [] | null = null
 	if (isArray(obj)) {
@@ -10,7 +10,7 @@ export function cloneObject<T>(obj: T): T {
 			if (isObject(copy[i])) copy[i] = cloneObject(copy[i])
 		}
 	} else if (isObject(obj)) {
-		copy = objectAssign(isClass(obj) ? new obj.constructor() as T : {}, obj)
+		copy = objectAssign(isClass(obj) ? new obj.constructor() as T : {} as T, obj)
 		for (let i = 0, keys = objectKeys(copy); i < keys.length; i++) {
 			if (isObject(copy[keys[i]])) copy[keys[i]] = cloneObject(copy[keys[i]])
 		}

@@ -1,6 +1,6 @@
 import { objectAssign, objectKeys, isDate, cloneObject, isClass, isObject } from 'lbrx/helpers'
 
-export function instanceHandler<T = {}>(instancedObject: T, plainObject: T): T {
+export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
 	if (isDate(instancedObject)) return new Date(plainObject as any) as any as T
 	let copy = cloneObject(plainObject)
 	if (isClass(instancedObject)) {
