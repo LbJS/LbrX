@@ -3,7 +3,7 @@ import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes } from './config'
 import { StoreDevObject } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, isUndefined, simpleCompareObjects, simpleObjectClone } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, isUndefined, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 
 export class Store<T extends object> {
@@ -24,12 +24,12 @@ export class Store<T extends object> {
 		this._state = value
 		this._state$.next(value)
 	}
-	public get value(): T {
-		return cloneObject(this._state)
+	public get value(): T | null {
+		return this._state ? this.#clone(this._state) : null
 	}
 	private _initialState!: Readonly<T>
-	public get initialValue(): T {
-		return this._initialState as T
+	public get initialValue(): Readonly<T> {
+		return this._initialState
 	}
 
 	#config!: StoreConfigOptions
@@ -43,9 +43,11 @@ export class Store<T extends object> {
 	#storage!: Storage | null
 	#storageDelay!: number
 	#storageKey!: string
+	#clone!: (obj: T) => T
+	#compare!: (objA: T, pbjB: T) => boolean
 
 	private get storeDevObject(): StoreDevObject {
-		return { name: this.#storeName, state: cloneObject(this._state as T) }
+		return { name: this.#storeName, state: cloneObject(this._state) }
 	}
 
 	constructor(initialState: null, storeConfig?: StoreConfigOptions)
@@ -71,7 +73,15 @@ export class Store<T extends object> {
 		this.#storeName = this.#config.name
 		this.#isResettable = isUndefined(this.#config.isResettable) ? true : this.#config.isResettable
 		this.#isSimpleCloning = !!this.#config.isSimpleCloning
+		this.#clone = this.#isSimpleCloning ? simpleCloneObject : cloneObject
 		this.#objectCompareType = isUndefined(this.#config.objectCompareType) ? ObjectCompareTypes.advanced : this.#config.objectCompareType
+		this.#compare = (() => {
+			switch (this.#objectCompareType) {
+				case ObjectCompareTypes.advanced: return compareObjects
+				case ObjectCompareTypes.simple: return simpleCompareObjects
+				case ObjectCompareTypes.reference: return (a: T, b: T) => a === b
+			}
+		})()
 		this.#storage = (() => {
 			if (!this.config.storage) return null
 			switch (this.config.storage.type) {
@@ -87,7 +97,7 @@ export class Store<T extends object> {
 
 	private _initializeStore(initialState: T): void {
 		this.onBeforeInit()
-		this._initialState = deepFreeze(this.#isSimpleCloning ? simpleObjectClone(initialState) : cloneObject(initialState))
+		this._initialState = deepFreeze(this.#clone(initialState))
 		const storage = this.#storage
 		let storedState: null | T = null
 		if (storage) {
@@ -144,7 +154,7 @@ export class Store<T extends object> {
 		}
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-			const clonedState = this.#isSimpleCloning ? simpleObjectClone(state) : cloneObject(state)
+			const clonedState = this.#clone(state)
 			let newState = objectAssign(clonedState, newPartialState)
 			if (!this.#isSimpleCloning) newState = instanceHandler(this._initialState, newState)
 			this.onUpdate(state, newState)
@@ -172,7 +182,7 @@ export class Store<T extends object> {
 		} else {
 			this._setState(state => {
 				this.onReset(state, this._initialState)
-				return this.#isSimpleCloning ? simpleObjectClone(this._initialState) : cloneObject(this._initialState)
+				return this.#clone(this._initialState)
 			})
 			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
 		}
@@ -187,13 +197,7 @@ export class Store<T extends object> {
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
-					if (isObject(prev) && isObject(curr)) {
-						switch (this.#objectCompareType) {
-							case ObjectCompareTypes.advanced: return compareObjects(prev, curr)
-							case ObjectCompareTypes.simple: return simpleCompareObjects(prev, curr)
-							case ObjectCompareTypes.reference: { }
-						}
-					}
+					if (isObject(prev) && isObject(curr)) this.#compare(prev, curr)
 					return prev === curr
 				}),
 			)

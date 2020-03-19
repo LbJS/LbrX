@@ -1,4 +1,4 @@
-import { instanceHandler, isDate, simpleObjectClone } from 'lbrx/helpers'
+import { instanceHandler, isDate, simpleCloneObject } from 'lbrx/helpers'
 import { Person, Address } from '../test-subjects'
 
 describe('Helper Function - instanceHandler():', () => {
@@ -7,7 +7,7 @@ describe('Helper Function - instanceHandler():', () => {
 		const person = new Person({
 			firstName: 'leon'
 		})
-		const personCopy = instanceHandler(person, simpleObjectClone(person))
+		const personCopy = instanceHandler(person, simpleCloneObject(person))
 		expect(personCopy instanceof Person).toBeTruthy()
 	})
 
@@ -18,7 +18,7 @@ describe('Helper Function - instanceHandler():', () => {
 				city: 'super city'
 			})
 		})
-		const personCopy = instanceHandler(person, simpleObjectClone(person))
+		const personCopy = instanceHandler(person, simpleCloneObject(person))
 		expect(personCopy.address instanceof Address).toBeTruthy()
 	})
 
@@ -26,7 +26,7 @@ describe('Helper Function - instanceHandler():', () => {
 		const person = new Person({
 			someDate: new Date()
 		})
-		const personCopy = instanceHandler(person, simpleObjectClone(person))
+		const personCopy = instanceHandler(person, simpleCloneObject(person))
 		expect(isDate(personCopy.someDate)).toBeTruthy()
 	})
 })
