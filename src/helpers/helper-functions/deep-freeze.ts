@@ -4,7 +4,7 @@ function dateThrow(this: Date): never {
 	throwError(`This date: "${this.toLocaleString()}" is read only.`)
 }
 
-export function deepFreeze<T extends {}>(object: T): Readonly<T> {
+export function deepFreeze<T extends object>(object: T): Readonly<T> {
 	for (const key of Object.getOwnPropertyNames(object)) {
 		const value = object[key]
 		if (isDate(value)) {
