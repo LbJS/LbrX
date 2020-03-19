@@ -4,8 +4,7 @@ import { isFunction, objectKeys, logError, Class } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
 import { throwError } from 'rxjs'
 
-export function StoreConfig(options: StoreConfigOptions):
-	<T extends Class>(constructor: T) => void {
+export function StoreConfig(options: StoreConfigOptions): <T extends Class>(constructor: T) => void {
 	return <T extends Class>(constructor: T): void => {
 		if (isFunction(constructor)) {
 			constructor[STORE_CONFIG_KEY] = {}
