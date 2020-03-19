@@ -1,8 +1,4 @@
-import { isClass } from './is-class'
-import { cloneObject } from './clone-object'
-import { isDate } from './is-date'
-import { isObject } from './is-object'
-import { objectAssign, objectKeys } from 'lbrx/helpers'
+import { objectAssign, objectKeys, isDate, cloneObject, isClass, isObject } from 'lbrx/helpers'
 
 export function instanceHandler<T = {}>(instancedObject: T, plainObject: T): T {
 	if (isDate(instancedObject)) return new Date(plainObject as any) as any as T

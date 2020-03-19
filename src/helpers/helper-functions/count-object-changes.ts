@@ -1,16 +1,10 @@
-import { isNull } from './is-null'
-import { isArray } from './is-array'
-import { isDate } from './is-date'
-import { isObject } from './is-object'
-import { objectKeys } from '../short-hand-functions/object-keys'
-import { isFunction } from './is-function'
-import { isUndefined } from './is-undefined'
+import { objectKeys, isNull, isDate, isObject, isFunction, isArray, isUndefined } from 'lbrx/helpers'
 
-export function countObjectChanges(objA: {} | any[], objB: {} | any[]): number {
+export function countObjectChanges(objA: {} | unknown[], objB: {} | unknown[]): number {
 	if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1
 	if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime() ? 0 : 1
 	let changesCount = 0
-	const comparisonHelper = (x: any, y: any): void => {
+	const comparisonHelper = (x: unknown, y: unknown): void => {
 		if (isObject(x)) {
 			if (isObject(y)) {
 				changesCount += countObjectChanges(x, y)

@@ -1,5 +1,4 @@
-import { compareObjects, isObject } from '../../src/helpers'
-import { cloneObject } from '../../src/helpers/helper-functions/clone-object'
+import { compareObjects, isObject, cloneObject } from 'lbrx/helpers'
 
 describe('Helper Function - cloneObject():', () => {
 

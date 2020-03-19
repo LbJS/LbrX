@@ -1,5 +1,5 @@
 import { Person, BetterPerson } from '../test-subjects'
-import { compareObjects } from '../../src/helpers'
+import { compareObjects } from 'lbrx/helpers'
 
 describe('Helper Function - compareObjects():', () => {
 
