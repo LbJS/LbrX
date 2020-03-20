@@ -6,9 +6,39 @@ import { StoreDevObject } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 
+/**
+ * @example
+ * const createUiState: UiState = () => {
+ * 	return {...}
+ * }
+ *
+ * `@`StoreConfig({
+ * 	name: 'UI-STORE'
+ * })
+ * export class UiStore extends Store<UiState> {
+ *
+ * 	constructor() {
+ * 		super(createUiState())
+ * 	}
+ * }
+ */
 export class Store<T extends object> {
 
+	/**
+	 * Weather or not the store is in it's loading state.
+	 * - If the initial value at the constructor is null,
+	 * the store will automatically set it self to a loading state and
+	 * then will set it self to none loading state after it wil be initialized.
+	 * - While the store is in loading state, no values will be emitted to state's subscribers.
+	 */
 	public readonly isLoading$ = new BehaviorSubject<boolean>(false)
+	/**
+	 * Weather or not the store is in it's loading state.
+	 * - If the initial value at the constructor is null,
+	 * the store will automatically set it self to a loading state and
+	 * then will set it self to none loading state after it wil be initialized.
+	 * - While the store is in loading state, no values will be emitted to state's subscribers.
+	 */
 	public get isLoading(): boolean {
 		return this.isLoading$.getValue()
 	}
@@ -41,7 +71,7 @@ export class Store<T extends object> {
 	#isSimpleCloning!: boolean
 	#objectCompareType!: ObjectCompareTypes
 	#storage!: Storage | null
-	#storageDelay!: number
+	#storageDebounce!: number
 	#storageKey!: string
 	#clone!: (obj: T) => T
 	#compare!: (objA: T, pbjB: T) => boolean
@@ -98,7 +128,7 @@ export class Store<T extends object> {
 			'Session-Storage',
 			this.#config.storage.custom ? 'Custom' : 'none'
 		][this.#config.storage.type]
-		this.#storageDelay = this.#config.storage.debounceTime as number
+		this.#storageDebounce = this.#config.storage.debounceTime as number
 		this.#storageKey = this.#config.storage.key || this.#storeName
 		this.#config.storage.key = this.#storageKey
 	}
@@ -110,7 +140,7 @@ export class Store<T extends object> {
 		let storedState: null | T = null
 		if (storage) {
 			this._state$
-				.pipe(debounce(() => timer(this.#storageDelay)))
+				.pipe(debounce(() => timer(this.#storageDebounce)))
 				.subscribe(state => storage.setItem(this.#storageKey, stringify(state)))
 			storedState = parse(storage.getItem(this.#storageKey))
 			if (storedState && !this.#isSimpleCloning) storedState = instanceHandler(initialState, storedState)
@@ -124,12 +154,12 @@ export class Store<T extends object> {
 		this.state = isDev ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
 
-	public initialize(initialState: Partial<T>): void | never {
-		if (!this.isLoading) {
-			isDev && throwError("Can't initialize store that's already been initialized and its not in LOADING state!")
+	public initialize(initialState: T): void | never {
+		if (!this.isLoading || this.value) {
+			isDev && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
 			return
 		}
-		this._initializeStore(initialState as T)
+		this._initializeStore(initialState)
 		this.isLoading$.next(false)
 	}
 
@@ -201,7 +231,7 @@ export class Store<T extends object> {
 	public select<R>(project?: (state: T) => R): Observable<T | R> {
 		return this._state$.asObservable()
 			.pipe(
-				filter<T>(x => !!x),
+				filter<T>(x => !!x && !this.isLoading),
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? cloneObject(x) : x),
 				distinctUntilChanged((prev, curr) => {
