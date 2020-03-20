@@ -2,7 +2,7 @@
 /**
  * Supported storages.
  */
-export enum Storages {
+export const enum Storages {
 	/**
 	 * Disables any state's value cache storage.
 	 */

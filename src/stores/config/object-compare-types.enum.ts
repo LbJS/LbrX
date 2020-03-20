@@ -2,7 +2,7 @@
 /**
  * Object compare types.
  */
-export enum ObjectCompareTypes {
+export const enum ObjectCompareTypes {
 	/**
 	 * Object's change detection will be checked by object's reference.
 	 * - Very fast for big objects and heavy callbacks.

@@ -19,8 +19,9 @@ export interface GlobalStoreConfigOptions {
 	 * @default
 	 * storage = {
 	 * 	type = Storages.none,
-	 * 	debounceTime = 2000
-	 * 	key = "{storesName}"
+	 * 	debounceTime = 2000,
+	 * 	key = "{storesName}",
+	 * custom = null
 	 * }
 	 */
 	storage?: {
@@ -41,11 +42,11 @@ export interface GlobalStoreConfigOptions {
 		 * @default
 		 * key = "{storesName}"
 		 */
-		key?: string,
+		key?: string | null,
 		/**
 		 * Custom storage-api. Will be used if custom storage type was selected.
 		 */
-		custom?: Storage
+		custom?: Storage | null
 	},
 	/**
 	 * Object's change detection strategy.

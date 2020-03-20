@@ -1,9 +1,9 @@
 import { DevToolsStores } from '../dev-tools/dev-tools-stores'
 import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
-import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes } from './config'
+import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { StoreDevObject } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, isUndefined, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 
 export class Store<T extends object> {
@@ -32,8 +32,8 @@ export class Store<T extends object> {
 		return this._initialState
 	}
 
-	#config!: StoreConfigOptions
-	public get config(): StoreConfigOptions {
+	#config!: Required<StoreConfigOptionsInfo>
+	public get config(): StoreConfigOptionsInfo {
 		return this.#config
 	}
 	#storeName!: string
@@ -72,10 +72,10 @@ export class Store<T extends object> {
 		this.#config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
 		delete this.constructor[STORE_CONFIG_KEY]
 		this.#storeName = this.#config.name
-		this.#isResettable = isUndefined(this.#config.isResettable) ? true : this.#config.isResettable
-		this.#isSimpleCloning = !!this.#config.isSimpleCloning
+		this.#isResettable = this.#config.isResettable
+		this.#isSimpleCloning = this.#config.isSimpleCloning
 		this.#clone = this.#isSimpleCloning ? simpleCloneObject : cloneObject
-		this.#objectCompareType = isUndefined(this.#config.objectCompareType) ? ObjectCompareTypes.advanced : this.#config.objectCompareType
+		this.#objectCompareType = this.#config.objectCompareType
 		this.#compare = (() => {
 			switch (this.#objectCompareType) {
 				case ObjectCompareTypes.advanced: return compareObjects
@@ -83,17 +83,24 @@ export class Store<T extends object> {
 				case ObjectCompareTypes.reference: return (a: T, b: T) => a === b
 			}
 		})()
+		this.#config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this.#objectCompareType]
 		this.#storage = (() => {
-			if (!this.config.storage) return null
-			switch (this.config.storage.type) {
+			switch (this.#config.storage.type) {
 				case Storages.none: return null
 				case Storages.local: return localStorage
 				case Storages.session: return sessionStorage
-				case Storages.custom: return (this.#config.storage && this.#config.storage.custom) ? this.#config.storage.custom : null
+				case Storages.custom: return this.#config.storage.custom ? this.#config.storage.custom : null
 			}
 		})()
-		this.#storageDelay = this.#config.storage ? (this.#config.storage.debounceTime ?? 2000) : 2000
-		this.#storageKey = this.#config.storage && this.#config.storage.key || this.#storeName
+		this.#config.storageTypeName = [
+			'none',
+			'Local-Storage',
+			'Session-Storage',
+			this.#config.storage.custom ? 'Custom' : 'none'
+		][this.#config.storage.type]
+		this.#storageDelay = this.#config.storage.debounceTime as number
+		this.#storageKey = this.#config.storage.key || this.#storeName
+		this.#config.storage.key = this.#storageKey
 	}
 
 	private _initializeStore(initialState: T): void {
