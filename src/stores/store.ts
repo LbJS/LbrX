@@ -5,6 +5,10 @@ import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, Sto
 import { StoreDevObject } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
+import { GlobalErrorStore } from './global-error-store'
+
+// tslint:disable: no-redundant-jsdoc
+// tslint:disable: unified-signatures
 
 /**
  * @example
@@ -33,19 +37,29 @@ export class Store<T extends object> {
 	 */
 	public readonly isLoading$ = new BehaviorSubject<boolean>(false)
 	/**
-	 * Weather or not the store is in it's loading state.
-	 * - If the initial value at the constructor is null,
-	 * the store will automatically set it self to a loading state and
-	 * then will set it self to none loading state after it wil be initialized.
-	 * - While the store is in loading state, no values will be emitted to state's subscribers.
+	 * Returns the value from isLoading$.
 	 */
 	public get isLoading(): boolean {
 		return this.isLoading$.getValue()
 	}
 
-	public error: string | object | null = null
-	public get isError(): boolean {
-		return !!this.error
+	private readonly _error$ = new BehaviorSubject<any>(null)
+	/**
+	 * Store's error state.
+	 */
+	public get error$(): Observable<any> {
+		return this._error$.asObservable()
+	}
+	/**
+	 * @get Returns the value from error$
+	 * @set Sets store's error state and also sets global error state.
+	 */
+	public get error(): any {
+		return this._error$.getValue()
+	}
+	public set error(value: any) {
+		this._error$.next(value)
+		GlobalErrorStore.setGlobalError(value)
 	}
 
 	private readonly _state$ = new BehaviorSubject<T | null>(null)
@@ -54,15 +68,25 @@ export class Store<T extends object> {
 		this._state = value
 		this._state$.next(value)
 	}
+	/**
+	 * Returns stores current state's value.
+	 */
 	public get value(): T | null {
 		return this._state ? this.#clone(this._state) : null
 	}
+
 	private _initialState!: Readonly<T>
-	public get initialValue(): Readonly<T> {
-		return this._initialState
+	/**
+	 * Returns stores initial state's value.
+	 */
+	public get initialValue(): Readonly<T> | null {
+		return this.#clone(this._initialState)
 	}
 
 	#config!: Required<StoreConfigOptionsInfo>
+	/**
+	 * Returns store's active configuration.
+	 */
 	public get config(): StoreConfigOptionsInfo {
 		return this.#config
 	}
@@ -80,8 +104,50 @@ export class Store<T extends object> {
 		return { name: this.#storeName, state: cloneObject(this._state) }
 	}
 
+	/**
+	 * Will be triggered only once, before the store would set it's initial state's value.
+	 * - Allows state's value modification before initialization.
+	 * @override
+	 */
+	protected onBeforeInit?: (() => T | void) | ((initialState: T) => T | void)
+	/**
+	 * Will be triggered only once, after the store would complete the initialization.
+	 * - Allows state's value modification after initialization.
+	 * @override
+	 */
+	protected onAfterInit?: (() => T | void) | ((state: T) => T | void)
+	/**
+	 * Will be triggered on every update just before the new state's value is set,
+	 * but after the new value is ready.
+	 * - Allows new state modification just before it becomes the new state's value.
+	 * @override
+	 */
+	protected onUpdate?: (() => T | void) | ((newState: T) => T | void) | ((newState: T, oldState: Readonly<T>) => T | void)
+	/**
+	 * Will be triggered on every state's override just before the new state's value is set.
+	 * - Allows new state modification just before it becomes the new state's value.
+	 * @override
+	 */
+	protected onOverride?: (() => T | void) | ((newState: T) => T | void) | ((newState: T, oldState: Readonly<T>) => T | void)
+	/**
+	 * Will be triggered on every state's reset just before the initial value is set.
+	 * - Allows the initial state's value modification just before it becomes the new state's value.
+	 * @override
+	 */
+	protected onReset?: (() => T | void) | ((initialState: T) => T | void) | ((initialState: T, currentState: Readonly<T>) => T | void)
+
+	/**
+	 * @param initialState - Null as an initial state will activate stores loading state.
+	 * @param storeConfig ? - Set this parameter only if you creating
+	 * store's instance without extending it.
+	 */
 	constructor(initialState: null, storeConfig?: StoreConfigOptions)
-	// tslint:disable-next-line: unified-signatures
+	/**
+	 * @param initialState - Set all state's params for the initial value. Use Null for
+	 * unneeded properties instead of undefined.
+	 * @param storeConfig ?- Set this parameter only if you creating
+	 * store's instance without extending it.
+	 */
 	constructor(initialState: T, storeConfig?: StoreConfigOptions)
 	constructor(
 		initialStateOrNull: T | null,
@@ -134,7 +200,10 @@ export class Store<T extends object> {
 	}
 
 	private _initializeStore(initialState: T): void {
-		this.onBeforeInit()
+		if (this.onBeforeInit) {
+			const modifiedInitialState: T | void = this.onBeforeInit(initialState)
+			if (modifiedInitialState) initialState = modifiedInitialState
+		}
 		this._initialState = deepFreeze(this.#clone(initialState))
 		const storage = this.#storage
 		let storedState: null | T = null
@@ -146,8 +215,11 @@ export class Store<T extends object> {
 			if (storedState && !this.#isSimpleCloning) storedState = instanceHandler(initialState, storedState)
 		}
 		this._setState(() => storedState || initialState)
+		if (this.onAfterInit) {
+			const modifiedState: T | void = this.onAfterInit(this.#clone(this._state))
+			if (modifiedState) this._setState(() => modifiedState)
+		}
 		isDevTools && DevToolsStores.InitStore$.next(this.storeDevObject)
-		this.onAfterInit(this._state)
 	}
 
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
@@ -155,7 +227,7 @@ export class Store<T extends object> {
 	}
 
 	public initialize(initialState: T): void | never {
-		if (!this.isLoading || this.value) {
+		if (!this.isLoading || this._initialState) {
 			isDev && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
 			return
 		}
@@ -180,7 +252,6 @@ export class Store<T extends object> {
 	 *   return {...}
 	 * })
 	 */
-	// tslint:disable-next-line: unified-signatures
 	public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
 	public update(
 		stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>,
@@ -195,7 +266,10 @@ export class Store<T extends object> {
 			const clonedState = this.#clone(state)
 			let newState = objectAssign(clonedState, newPartialState)
 			if (!this.#isSimpleCloning) newState = instanceHandler(this._initialState, newState)
-			this.onUpdate(state, newState)
+			if (this.onUpdate) {
+				const newModifiedState: T | void = this.onUpdate(newState, state)
+				if (newModifiedState) newState = newModifiedState
+			}
 			return newState
 		})
 		isDevTools && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
@@ -206,7 +280,10 @@ export class Store<T extends object> {
 			isDev && throwError(`Can't override ${this.#storeName} while it's in loading state.`)
 			return
 		}
-		this.onOverride(this._state, state)
+		if (this.onOverride) {
+			const modifiedState: T | void = this.onOverride(state, this._state)
+			if (modifiedState) state = modifiedState
+		}
 		this._setState(() => this.#isSimpleCloning ? state : instanceHandler(this._initialState, state))
 		isDev && DevToolsStores.OverrideStore$.next(this.storeDevObject)
 	}
@@ -219,8 +296,9 @@ export class Store<T extends object> {
 			isDev && throwError(`Store: ${this.#storeName} is not configured as resettable.`)
 		} else {
 			this._setState(state => {
-				this.onReset(state, this._initialState)
-				return this.#clone(this._initialState)
+				let modifiedInitialState: T | void
+				if (this.onReset) modifiedInitialState = this.onReset(this._initialState, state)
+				return this.#clone(modifiedInitialState || this._initialState)
 			})
 			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
 		}
@@ -240,29 +318,4 @@ export class Store<T extends object> {
 				}),
 			)
 	}
-
-	/**
-	 * @Override
-	 */
-	protected onBeforeInit(): void { }
-
-	/**
-	 * @Override
-	 */
-	protected onAfterInit(state: Readonly<T>): void { }
-
-	/**
-	 * @Override
-	 */
-	protected onOverride(oldState: Readonly<T>, newState: T): void { }
-
-	/**
-	 * @Override
-	 */
-	protected onUpdate(oldState: Readonly<T>, newState: T): void { }
-
-	/**
-	 * @Override
-	 */
-	protected onReset(currentState: Readonly<T>, initialState: Readonly<T>): void { }
 }

@@ -1,4 +1,5 @@
 export * from './stores/store'
+export * from './stores/global-error-store'
 export * from './stores/config/global-store-config-options'
 export * from './stores/config/store-config-options'
 export * from './stores/config/store-config-options-info'

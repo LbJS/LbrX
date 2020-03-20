@@ -34,6 +34,10 @@ function createLeon(): User {
 })
 class UserStore extends Store<User> {
 
+	protected onBeforeInit = (state: User): void => {
+		console.log(state)
+	}
+
 	constructor() {
 		super(createLeon())
 	}
