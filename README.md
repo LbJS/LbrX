@@ -13,10 +13,10 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Redux DevTools one way support
 - [x] Redux DevTools both ways support
 - [x] Deep nested objects support
+- [x] Global default store configurations
 - [ ] Full spec coverage of the above - wip
 - [ ] Better playground on the repository - wip
 - [ ] Partial documentation
-- [ ] Global default store configurations
 - [ ] Serialization and denationalization configuration for browser storage
 - [ ] **List Store**
 - [ ] Full spec coverage of the above
@@ -59,11 +59,11 @@ This is an object oriented State Manager that's build for JavaScript application
 
     @StoreConfig({
     	name: 'LEON-STORE',
-    	doObjectCompare: true,
-    	isResettable: true,
+    	objectCompareType: ObjectCompareTypes.advanced,
+    	isResettable: true
     	storage: {
     		type: Storages.session,
-    		debounceTime: 2000
+    		debounceTime: 500
     	}
     })
     class UserStore extends Store<User> {
