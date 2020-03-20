@@ -52,9 +52,9 @@ export class Store<T extends object> {
 
 	constructor(initialState: null, storeConfig?: StoreConfigOptions)
 	// tslint:disable-next-line: unified-signatures
-	constructor(initialState: Partial<T>, storeConfig?: StoreConfigOptions)
+	constructor(initialState: T, storeConfig?: StoreConfigOptions)
 	constructor(
-		initialStateOrNull: Partial<T> | null,
+		initialStateOrNull: T | null,
 		storeConfig?: StoreConfigOptions,
 	) {
 		this._initializeConfig(storeConfig)
@@ -64,7 +64,7 @@ export class Store<T extends object> {
 			this.isLoading$.next(true)
 			isDevTools && DevToolsStores.LoadingStore$.next(this.#storeName)
 		} else {
-			this._initializeStore(initialStateOrNull as T)
+			this._initializeStore(initialStateOrNull)
 		}
 	}
 
