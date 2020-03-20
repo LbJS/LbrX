@@ -69,7 +69,8 @@ export class Store<T extends object> {
 	}
 
 	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
-		this.#config = storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY]
+		this.#config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
+		delete this.constructor[STORE_CONFIG_KEY]
 		this.#storeName = this.#config.name
 		this.#isResettable = isUndefined(this.#config.isResettable) ? true : this.#config.isResettable
 		this.#isSimpleCloning = !!this.#config.isSimpleCloning
