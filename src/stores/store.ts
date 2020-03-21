@@ -1,8 +1,8 @@
-import { DevToolsStores } from '../dev-tools/dev-tools-stores'
+import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
 import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
-import { StoreDevObject } from '../dev-tools/store-dev-object'
+import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
@@ -111,8 +111,8 @@ export class Store<T extends object> {
 	#clone!: (obj: T) => T
 	#compare!: (objA: T, pbjB: T) => boolean
 
-	private get storeDevObject(): StoreDevObject {
-		return { name: this.#storeName, state: cloneObject(this._state) }
+	private get devData(): DevToolsDataStruct {
+		return { name: this.#storeName, state: this.#clone(this._state) }
 	}
 
 	//#endregion config
@@ -176,10 +176,10 @@ export class Store<T extends object> {
 	private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
 		this._initializeConfig(storeConfig)
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-		if (isDevTools) DevToolsStores.Stores[this.#storeName] = this
+		if (isDevTools) DevToolsSubjects.stores[this.#storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this.isLoading$.next(true)
-			isDevTools && DevToolsStores.LoadingStore$.next(this.#storeName)
+			isDevTools && DevToolsSubjects.loadingEvent$.next(this.#storeName)
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
@@ -240,7 +240,7 @@ export class Store<T extends object> {
 			const modifiedState: T | void = this.onAfterInit(this.#clone(this._state))
 			if (modifiedState) this._setState(() => modifiedState)
 		}
-		isDevTools && DevToolsStores.InitStore$.next(this.storeDevObject)
+		isDevTools && DevToolsSubjects.initEvent$.next(this.devData)
 	}
 
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
@@ -304,7 +304,7 @@ export class Store<T extends object> {
 			}
 			return newState
 		})
-		isDevTools && DevToolsStores.UpdateStore$.next(updateName ? objectAssign(this.storeDevObject, { updateName }) : this.storeDevObject)
+		isDevTools && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
 	}
 
 	public override(state: T): void {
@@ -317,7 +317,7 @@ export class Store<T extends object> {
 			if (modifiedState) state = modifiedState
 		}
 		this._setState(() => this.#isSimpleCloning ? state : instanceHandler(this._initialState, state))
-		isDev && DevToolsStores.OverrideStore$.next(this.storeDevObject)
+		isDev && DevToolsSubjects.overrideEvent$.next(this.devData)
 	}
 
 	public reset(): void | never {
@@ -332,7 +332,7 @@ export class Store<T extends object> {
 				if (this.onReset) modifiedInitialState = this.onReset(this._initialState, state)
 				return this.#clone(modifiedInitialState || this._initialState)
 			})
-			isDevTools && DevToolsStores.ResetStore$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
+			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
 		}
 	}
 
