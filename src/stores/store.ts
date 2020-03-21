@@ -28,6 +28,8 @@ import { GlobalErrorStore } from './global-error-store'
  */
 export class Store<T extends object> {
 
+	//#region loading-state
+
 	/**
 	 * Weather or not the store is in it's loading state.
 	 * - If the initial value at the constructor is null,
@@ -42,6 +44,9 @@ export class Store<T extends object> {
 	public get isLoading(): boolean {
 		return this.isLoading$.getValue()
 	}
+
+	//#endregion loading-state
+	//#region error-api
 
 	private readonly _error$ = new BehaviorSubject<any>(null)
 	/**
@@ -61,6 +66,9 @@ export class Store<T extends object> {
 		this._error$.next(value)
 		GlobalErrorStore.setGlobalError(value)
 	}
+
+	//#endregion error-api
+	//#region state-properties
 
 	private readonly _state$ = new BehaviorSubject<T | null>(null)
 	private _state!: Readonly<T>
@@ -83,6 +91,9 @@ export class Store<T extends object> {
 		return this.#clone(this._initialState)
 	}
 
+	//#endregion state-properties
+	//#region config
+
 	#config!: Required<StoreConfigOptionsInfo>
 	/**
 	 * Returns store's active configuration.
@@ -103,6 +114,9 @@ export class Store<T extends object> {
 	private get storeDevObject(): StoreDevObject {
 		return { name: this.#storeName, state: cloneObject(this._state) }
 	}
+
+	//#endregion config
+	//#region hooks
 
 	/**
 	 * Will be triggered only once, before the store would set it's initial state's value.
@@ -136,6 +150,9 @@ export class Store<T extends object> {
 	 */
 	protected onReset?: (() => T | void) | ((initialState: T) => T | void) | ((initialState: T, currentState: Readonly<T>) => T | void)
 
+	//#endregion hooks
+	//#region constructor
+
 	/**
 	 * @param initialState - Null as an initial state will activate stores loading state.
 	 * @param storeConfig ? - Set this parameter only if you creating
@@ -149,10 +166,14 @@ export class Store<T extends object> {
 	 * store's instance without extending it.
 	 */
 	constructor(initialState: T, storeConfig?: StoreConfigOptions)
-	constructor(
-		initialStateOrNull: T | null,
-		storeConfig?: StoreConfigOptions,
-	) {
+	constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
+		this._main(initialStateOrNull, storeConfig)
+	}
+
+	//#endregion constructor
+	//#region private-section
+
+	private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
 		this._initializeConfig(storeConfig)
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
 		if (isDevTools) DevToolsStores.Stores[this.#storeName] = this
@@ -225,6 +246,9 @@ export class Store<T extends object> {
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
 		this.state = isDev ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
+
+	//#endregion private-section
+	//#region public-api
 
 	/**
 	 * Use this method to initialize the store.
@@ -326,4 +350,6 @@ export class Store<T extends object> {
 				}),
 			)
 	}
+
+	//#endregion public-api
 }
