@@ -79,8 +79,8 @@ export class Store<T extends object> {
 	/**
 	 * Returns stores current state's value.
 	 */
-	public get value(): T | null {
-		return this._state ? this.#clone(this._state) : null
+	public get value(): T {
+		return this._state ? this._clone(this._state) : this._state
 	}
 
 	private _initialState!: Readonly<T>
@@ -88,31 +88,31 @@ export class Store<T extends object> {
 	 * Returns stores initial state's value.
 	 */
 	public get initialValue(): Readonly<T> | null {
-		return this.#clone(this._initialState)
+		return this._clone(this._initialState)
 	}
 
 	//#endregion state-properties
 	//#region config
 
-	#config!: StoreConfigOptionsInfo
+	private _config!: StoreConfigOptionsInfo
 	/**
 	 * Returns store's active configuration.
 	 */
 	public get config(): StoreConfigOptionsInfo {
-		return this.#config
+		return this._config
 	}
-	#storeName!: string
-	#isResettable!: boolean
-	#isSimpleCloning!: boolean
-	#objectCompareType!: ObjectCompareTypes
-	#storage!: Storage | null
-	#storageDebounce!: number
-	#storageKey!: string
-	#clone!: (obj: T) => T
-	#compare!: (objA: T, pbjB: T) => boolean
+	private _storeName!: string
+	private _isResettable!: boolean
+	private _isSimpleCloning!: boolean
+	private _objectCompareType!: ObjectCompareTypes
+	private _storage!: Storage | null
+	private _storageDebounce!: number
+	private _storageKey!: string
+	private _clone!: (obj: T) => T
+	private _compare!: (objA: T, pbjB: T) => boolean
 
 	private get devData(): DevToolsDataStruct {
-		return { name: this.#storeName, state: this.#clone(this._state) }
+		return { name: this._storeName, state: this._clone(this._state) }
 	}
 
 	//#endregion config
@@ -176,48 +176,48 @@ export class Store<T extends object> {
 	private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
 		this._initializeConfig(storeConfig)
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-		if (isDevTools) DevToolsSubjects.stores[this.#storeName] = this
+		if (isDevTools) DevToolsSubjects.stores[this._storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this.isLoading$.next(true)
-			isDevTools && DevToolsSubjects.loadingEvent$.next(this.#storeName)
+			isDevTools && DevToolsSubjects.loadingEvent$.next(this._storeName)
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
 	}
 
 	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
-		this.#config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
+		this._config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
 		delete this.constructor[STORE_CONFIG_KEY]
-		this.#storeName = this.#config.name
-		this.#isResettable = this.#config.isResettable
-		this.#isSimpleCloning = this.#config.isSimpleCloning
-		this.#clone = this.#isSimpleCloning ? simpleCloneObject : cloneObject
-		this.#objectCompareType = this.#config.objectCompareType
-		this.#compare = (() => {
-			switch (this.#objectCompareType) {
+		this._storeName = this._config.name
+		this._isResettable = this._config.isResettable
+		this._isSimpleCloning = this._config.isSimpleCloning
+		this._clone = this._isSimpleCloning ? simpleCloneObject : cloneObject
+		this._objectCompareType = this._config.objectCompareType
+		this._compare = (() => {
+			switch (this._objectCompareType) {
 				case ObjectCompareTypes.advanced: return compareObjects
 				case ObjectCompareTypes.simple: return simpleCompareObjects
 				case ObjectCompareTypes.reference: return (a: T, b: T) => a === b
 			}
 		})()
-		this.#config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this.#objectCompareType]
-		this.#storage = (() => {
-			switch (this.#config.storageType) {
+		this._config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
+		this._storage = (() => {
+			switch (this._config.storageType) {
 				case Storages.none: return null
 				case Storages.local: return localStorage
 				case Storages.session: return sessionStorage
-				case Storages.custom: return this.#config.customStorage ? this.#config.customStorage : null
+				case Storages.custom: return this._config.customStorage ? this._config.customStorage : null
 			}
 		})()
-		this.#config.storageTypeName = [
+		this._config.storageTypeName = [
 			'none',
 			'Local-Storage',
 			'Session-Storage',
-			this.#config.customStorage ? 'Custom' : 'none'
-		][this.#config.storageType]
-		this.#storageDebounce = this.#config.storageDebounceTime
-		this.#storageKey = this.#config.storageKey || this.#storeName
-		this.#config.storageKey = this.#storageKey
+			this._config.customStorage ? 'Custom' : 'none'
+		][this._config.storageType]
+		this._storageDebounce = this._config.storageDebounceTime
+		this._storageKey = this._config.storageKey || this._storeName
+		this._config.storageKey = this._storageKey
 	}
 
 	private _initializeStore(initialState: T): void {
@@ -225,19 +225,19 @@ export class Store<T extends object> {
 			const modifiedInitialState: T | void = this.onBeforeInit(initialState)
 			if (modifiedInitialState) initialState = modifiedInitialState
 		}
-		this._initialState = deepFreeze(this.#clone(initialState))
-		const storage = this.#storage
+		this._initialState = deepFreeze(this._clone(initialState))
+		const storage = this._storage
 		let storedState: null | T = null
 		if (storage) {
 			this._state$
-				.pipe(debounce(() => timer(this.#storageDebounce)))
-				.subscribe(state => storage.setItem(this.#storageKey, stringify(state)))
-			storedState = parse(storage.getItem(this.#storageKey))
-			if (storedState && !this.#isSimpleCloning) storedState = instanceHandler(initialState, storedState)
+				.pipe(debounce(() => timer(this._storageDebounce)))
+				.subscribe(state => storage.setItem(this._storageKey, stringify(state)))
+			storedState = parse(storage.getItem(this._storageKey))
+			if (storedState && !this._isSimpleCloning) storedState = instanceHandler(initialState, storedState)
 		}
 		this._setState(() => storedState || initialState)
 		if (this.onAfterInit) {
-			const modifiedState: T | void = this.onAfterInit(this.#clone(this._state))
+			const modifiedState: T | void = this.onAfterInit(this._clone(this._state))
 			if (modifiedState) this._setState(() => modifiedState)
 		}
 		isDevTools && DevToolsSubjects.initEvent$.next(this.devData)
@@ -286,14 +286,14 @@ export class Store<T extends object> {
 		updateName?: string
 	): void {
 		if (this.isLoading) {
-			logError(`Can't update ${this.#storeName} while it's in loading state.`)
+			logError(`Can't update ${this._storeName} while it's in loading state.`)
 			return
 		}
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-			const clonedState = this.#clone(state)
+			const clonedState = this._clone(state)
 			let newState = mergeObjects(clonedState, newPartialState)
-			if (!this.#isSimpleCloning) newState = instanceHandler(this._initialState, newState)
+			if (!this._isSimpleCloning) newState = instanceHandler(this._initialState, newState)
 			if (this.onUpdate) {
 				const newModifiedState: T | void = this.onUpdate(newState, state)
 				if (newModifiedState) newState = newModifiedState
@@ -308,14 +308,14 @@ export class Store<T extends object> {
 	 */
 	public override(state: T): void {
 		if (this.isLoading) {
-			logError(`Can't override ${this.#storeName} while it's in loading state.`)
+			logError(`Can't override ${this._storeName} while it's in loading state.`)
 			return
 		}
 		if (this.onOverride) {
 			const modifiedState: T | void = this.onOverride(state, this._state)
 			if (modifiedState) state = modifiedState
 		}
-		this._setState(() => this.#isSimpleCloning ? state : instanceHandler(this._initialState, state))
+		this._setState(() => this._isSimpleCloning ? state : instanceHandler(this._initialState, state))
 		isDev && DevToolsSubjects.overrideEvent$.next(this.devData)
 	}
 
@@ -324,18 +324,18 @@ export class Store<T extends object> {
 	 */
 	public reset(): void | never {
 		if (this.isLoading) {
-			logError(`Can't reset ${this.#storeName} while it's in loading state.`)
+			logError(`Can't reset ${this._storeName} while it's in loading state.`)
 			return
-		} else if (!this.#isResettable) {
-			const errMsg = `Store: ${this.#storeName} is not configured as resettable.`
+		} else if (!this._isResettable) {
+			const errMsg = `Store: ${this._storeName} is not configured as resettable.`
 			isDev ? throwError(errMsg) : logError(errMsg)
 		} else {
 			this._setState(state => {
 				let modifiedInitialState: T | void
 				if (this.onReset) modifiedInitialState = this.onReset(this._initialState, state)
-				return this.#clone(modifiedInitialState || this._initialState)
+				return this._clone(modifiedInitialState || this._initialState)
 			})
-			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this.#storeName, state: this.#clone(this._initialState) })
+			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
 		}
 	}
 
@@ -368,9 +368,9 @@ export class Store<T extends object> {
 			.pipe(
 				filter<T>(x => !!x && !this.isLoading),
 				map<T, R | T>(project || (x => x)),
-				map(x => isObject(x) ? this.#clone(x) : x),
+				map(x => isObject(x) ? this._clone(x) : x),
 				distinctUntilChanged((prev, curr) => {
-					if (isObject(prev) && isObject(curr)) this.#compare(prev, curr)
+					if (isObject(prev) && isObject(curr)) this._compare(prev, curr)
 					return prev === curr
 				}),
 			)
