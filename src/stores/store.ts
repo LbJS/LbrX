@@ -332,7 +332,7 @@ export class Store<T extends object> {
 				if (this.onReset) modifiedInitialState = this.onReset(this._initialState, state)
 				return this.#clone(modifiedInitialState || this._initialState)
 			})
-			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this.#storeName, state: cloneObject(this._initialState) })
+			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this.#storeName, state: this.#clone(this._initialState) })
 		}
 	}
 
@@ -343,7 +343,7 @@ export class Store<T extends object> {
 			.pipe(
 				filter<T>(x => !!x && !this.isLoading),
 				map<T, R | T>(project || (x => x)),
-				map(x => isObject(x) ? cloneObject(x) : x),
+				map(x => isObject(x) ? this.#clone(x) : x),
 				distinctUntilChanged((prev, curr) => {
 					if (isObject(prev) && isObject(curr)) this.#compare(prev, curr)
 					return prev === curr
