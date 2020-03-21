@@ -226,8 +226,16 @@ export class Store<T extends object> {
 		this.state = isDev ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
 
+	/**
+	 * Use this method to initialize the store.
+	 * - Use only if the constructor state's value was null.
+	 * - Will throw in development mode if the store is not in loading state
+	 * or it was initialized before.
+	 * - In production mode, this method will be ignored if the store is not in loading state
+	 * or it was initialized before.
+	 */
 	public initialize(initialState: T): void | never {
-		if (!this.isLoading || this._initialState) {
+		if (!this.isLoading || this._initialState || this._state) {
 			isDev && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
 			return
 		}
