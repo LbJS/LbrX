@@ -13,41 +13,29 @@ export interface GlobalStoreConfigOptions {
 	 */
 	isResettable?: boolean,
 	/**
-	 * Configures the cache storage for the state's value.
-	 * - If cached value will be found at store's initialization, this cached value will be used instead of the initial value.
-	 * - Store's name will be used as storage's key unless configured otherwise.
+	 * Sets the type of storage to be used for caching.
+	 * - If cached value would be found at store's initialization, this cached value will be used instead of the initial value.
 	 * @default
-	 * storage = {
-	 * 	type = Storages.none,
-	 * 	debounceTime = 2000,
-	 * 	key = "{storesName}",
-	 * custom = null
-	 * }
+	 * type = Storages.none
 	 */
-	storage?: {
-		/**
-		 * Sets the type of storage to be used for caching.
-		 * @default
-		 * type = Storages.none
-		 */
-		type: Storages,
-		/**
-		 * Sets the debounce time (in milliseconds) that will be used before storing the state's value.
-		 * @default
-		 * debounceTime = 2000
-		 */
-		debounceTime?: number,
-		/**
-		 * Sets the key for the value.
-		 * @default
-		 * key = "{storesName}"
-		 */
-		key?: string | null,
-		/**
-		 * Custom storage-api. Will be used if custom storage type was selected.
-		 */
-		custom?: Storage | null
-	},
+	storageType?: Storages,
+	/**
+	 * Sets the debounce time (in milliseconds) that will be used before storing the state's value.
+	 * @default
+	 * debounceTime = 2000
+	 */
+	storageDebounceTime?: number,
+	/**
+	 * Sets the key for the value.
+	 * - If not configures, stores name will be used instead.
+	 * @default
+	 * key = "{storesName}"
+	 */
+	storageKey?: string | null,
+	/**
+	 * Custom storage-api. Will be used if custom storage type was selected.
+	 */
+	customStorage?: Storage | null
 	/**
 	 * Object's change detection strategy.
 	 * Performance may vary depends on object's size and the wight of the callbacks.

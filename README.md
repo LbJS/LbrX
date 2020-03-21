@@ -60,11 +60,9 @@ This is an object oriented State Manager that's build for JavaScript application
     @StoreConfig({
     	name: 'LEON-STORE',
     	objectCompareType: ObjectCompareTypes.advanced,
-    	isResettable: true
-    	storage: {
-    		type: Storages.session,
-    		debounceTime: 500
-    	}
+    	isResettable: true,
+    	storageType: Storages.session,
+    	storageDebounceTime: 500
     })
     class UserStore extends Store<User> {
 

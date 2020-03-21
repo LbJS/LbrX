@@ -27,10 +27,8 @@ function createLeon(): User {
 	name: 'LEON-STORE',
 	objectCompareType: ObjectCompareTypes.advanced,
 	isResettable: true,
-	storage: {
-		type: Storages.session,
-		debounceTime: 500
-	}
+	storageType: Storages.session,
+	storageDebounceTime: 500
 })
 class UserStore extends Store<User> {
 

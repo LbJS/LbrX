@@ -94,7 +94,7 @@ export class Store<T extends object> {
 	//#endregion state-properties
 	//#region config
 
-	#config!: Required<StoreConfigOptionsInfo>
+	#config!: StoreConfigOptionsInfo
 	/**
 	 * Returns store's active configuration.
 	 */
@@ -202,22 +202,22 @@ export class Store<T extends object> {
 		})()
 		this.#config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this.#objectCompareType]
 		this.#storage = (() => {
-			switch (this.#config.storage.type) {
+			switch (this.#config.storageType) {
 				case Storages.none: return null
 				case Storages.local: return localStorage
 				case Storages.session: return sessionStorage
-				case Storages.custom: return this.#config.storage.custom ? this.#config.storage.custom : null
+				case Storages.custom: return this.#config.customStorage ? this.#config.customStorage : null
 			}
 		})()
 		this.#config.storageTypeName = [
 			'none',
 			'Local-Storage',
 			'Session-Storage',
-			this.#config.storage.custom ? 'Custom' : 'none'
-		][this.#config.storage.type]
-		this.#storageDebounce = this.#config.storage.debounceTime as number
-		this.#storageKey = this.#config.storage.key || this.#storeName
-		this.#config.storage.key = this.#storageKey
+			this.#config.customStorage ? 'Custom' : 'none'
+		][this.#config.storageType]
+		this.#storageDebounce = this.#config.storageDebounceTime
+		this.#storageKey = this.#config.storageKey || this.#storeName
+		this.#config.storageKey = this.#storageKey
 	}
 
 	private _initializeStore(initialState: T): void {
