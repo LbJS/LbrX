@@ -338,7 +338,29 @@ export class Store<T extends object> {
 		}
 	}
 
+	/**
+	 * Returns whole state as an Observable.
+	 * @example
+	 * state$ = this.store.select()
+	 *
+	 * myFunc() {
+	 * 	this.tate$.subscribe(state => {
+	 * 		// do some work...
+	 * 	})
+	 * }
+	 */
 	public select(): Observable<T>
+	/**
+	 * Returns partial state as an Observable.
+	 * @example
+	 * isSideNavOpen$ = this.store.select(state => state.isSideNavOpen)
+	 *
+	 * myFunc() {
+	 * 	this.isSideNavOpen$.subscribe(isSideNavOpen => {
+	 * 		// do some work...
+	 * 	})
+	 * }
+	 */
 	public select<R>(project: (state: T) => R): Observable<R>
 	public select<R>(project?: (state: T) => R): Observable<T | R> {
 		return this._state$.asObservable()
