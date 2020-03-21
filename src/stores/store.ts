@@ -3,7 +3,7 @@ import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
 
@@ -268,18 +268,14 @@ export class Store<T extends object> {
 	}
 
 	/**
-	 *
+	 * Update the store's value
 	 * @example
-	 *
 	 *  this.store.update({ key: value })
 	 */
 	public update(state: Partial<T>, updateName?: string): void
 	/**
-	 *
 	 * Update the store's value
-	 *
 	 * @example
-	 *
 	 * this.store.update(state => {
 	 *   return {...}
 	 * })
@@ -296,7 +292,7 @@ export class Store<T extends object> {
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
 			const clonedState = this.#clone(state)
-			let newState = objectAssign(clonedState, newPartialState)
+			let newState = mergeObjects(clonedState, newPartialState)
 			if (!this.#isSimpleCloning) newState = instanceHandler(this._initialState, newState)
 			if (this.onUpdate) {
 				const newModifiedState: T | void = this.onUpdate(newState, state)
@@ -307,6 +303,9 @@ export class Store<T extends object> {
 		isDevTools && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
 	}
 
+	/**
+	 * Overrides the state's value completely, without merging.
+	 */
 	public override(state: T): void {
 		if (this.isLoading) {
 			isDev && throwError(`Can't override ${this.#storeName} while it's in loading state.`)
@@ -320,6 +319,9 @@ export class Store<T extends object> {
 		isDev && DevToolsSubjects.overrideEvent$.next(this.devData)
 	}
 
+	/**
+	 * Resets the store's state to it's initial value.
+	 */
 	public reset(): void | never {
 		if (this.isLoading) {
 			isDev && throwError(`Can't reset ${this.#storeName} while it's in loading state.`)

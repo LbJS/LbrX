@@ -1,4 +1,4 @@
 
-export enum StoreStates {
+export const enum StoreStates {
 	loading = 'LOADING'
 }

@@ -1,8 +1,7 @@
 import { GlobalStoreConfigOptions } from './global-store-config-options'
-import { cloneObject } from 'lbrx/helpers'
+import { cloneObject, mergeObjects } from 'lbrx/helpers'
 import { Storages } from './storages.enum'
 import { ObjectCompareTypes } from './object-compare-types.enum'
-import { mergeStoreOptions } from './merge-store-options'
 
 let globalStoreOptions: Required<GlobalStoreConfigOptions> = {
 	isResettable: true,
@@ -15,7 +14,7 @@ let globalStoreOptions: Required<GlobalStoreConfigOptions> = {
 }
 
 export function setGlobalStoreConfig(options: GlobalStoreConfigOptions): void {
-	globalStoreOptions = mergeStoreOptions(globalStoreOptions, options) as Required<GlobalStoreConfigOptions>
+	globalStoreOptions = mergeObjects(globalStoreOptions, options)
 }
 
 export function getGlobalStoreOptions(): GlobalStoreConfigOptions {
