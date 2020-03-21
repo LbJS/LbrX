@@ -3,7 +3,7 @@ import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
 
@@ -286,7 +286,7 @@ export class Store<T extends object> {
 		updateName?: string
 	): void {
 		if (this.isLoading) {
-			isDev && throwError(`Can't update ${this.#storeName} while it's in loading state.`)
+			logError(`Can't update ${this.#storeName} while it's in loading state.`)
 			return
 		}
 		this._setState(state => {
@@ -308,7 +308,7 @@ export class Store<T extends object> {
 	 */
 	public override(state: T): void {
 		if (this.isLoading) {
-			isDev && throwError(`Can't override ${this.#storeName} while it's in loading state.`)
+			logError(`Can't override ${this.#storeName} while it's in loading state.`)
 			return
 		}
 		if (this.onOverride) {
@@ -324,10 +324,11 @@ export class Store<T extends object> {
 	 */
 	public reset(): void | never {
 		if (this.isLoading) {
-			isDev && throwError(`Can't reset ${this.#storeName} while it's in loading state.`)
+			logError(`Can't reset ${this.#storeName} while it's in loading state.`)
 			return
 		} else if (!this.#isResettable) {
-			isDev && throwError(`Store: ${this.#storeName} is not configured as resettable.`)
+			const errMsg = `Store: ${this.#storeName} is not configured as resettable.`
+			isDev ? throwError(errMsg) : logError(errMsg)
 		} else {
 			this._setState(state => {
 				let modifiedInitialState: T | void
