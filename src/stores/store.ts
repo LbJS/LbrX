@@ -216,8 +216,7 @@ export class Store<T extends object> {
 			this._config.customStorage ? 'Custom' : 'none'
 		][this._config.storageType]
 		this._storageDebounce = this._config.storageDebounceTime
-		this._storageKey = this._config.storageKey || this._storeName
-		this._config.storageKey = this._storageKey
+		this._storageKey = this._config.storageKey
 	}
 
 	private _initializeStore(initialState: T): void {

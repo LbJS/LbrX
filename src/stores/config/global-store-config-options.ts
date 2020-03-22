@@ -26,13 +26,6 @@ export interface GlobalStoreConfigOptions {
 	 */
 	storageDebounceTime?: number,
 	/**
-	 * Sets the key for the value.
-	 * - If not configures, stores name will be used instead.
-	 * @default
-	 * key = "{storesName}"
-	 */
-	storageKey?: string | null,
-	/**
 	 * Custom storage-api. Will be used if custom storage type was selected.
 	 */
 	customStorage?: Storage | null

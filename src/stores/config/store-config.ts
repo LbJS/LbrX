@@ -7,6 +7,7 @@ import { getGlobalStoreOptions } from './global-store-config'
 
 export function StoreConfig(options: StoreConfigOptions): <T extends Class>(constructor: T) => void {
 	options = mergeObjects(getGlobalStoreOptions(), options) as StoreConfigOptions
+	options.storageKey = !!options.storageKey ? options.storageKey : options.name
 	return <T extends Class>(constructor: T): void => {
 		if (isFunction(constructor)) {
 			constructor[STORE_CONFIG_KEY] = {}

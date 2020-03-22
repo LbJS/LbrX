@@ -1,5 +1,6 @@
 import { GlobalStoreConfigOptions } from './global-store-config-options'
 
+// tslint:disable: no-redundant-jsdoc
 /**
  * Store configuration options.
  */
@@ -9,4 +10,11 @@ export interface StoreConfigOptions extends GlobalStoreConfigOptions {
 	 * @warning Store's name must be unique!
 	 */
 	name: string,
+	/**
+	 * Sets the key for the value.
+	 * - If not configures, stores name will be used instead.
+	 * @default
+	 * key = "{storesName}"
+	 */
+	storageKey?: string,
 }
