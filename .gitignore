@@ -12,5 +12,5 @@ node_modules/
 lib
 
 # Individual files
-spec/test-results/test-report.html
+spec/test-results-output/test-report.html
 www/index.js
