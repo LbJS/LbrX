@@ -8,6 +8,7 @@ module.exports = {
 	},
 	moduleNameMapper: {
 		"lbrx/helpers": "<rootDir>/src/helpers",
+		"test-subjects": "<rootDir>/spec/test-subjects",
 	},
 	reporters: [
 		"default",
@@ -16,7 +17,7 @@ module.exports = {
 			{
 				pageTitle: "Test Report",
 				theme: "darkTheme",
-				outputPath: "./spec/test-results/test-report.html"
+				outputPath: "./spec/test-results-output/test-report.html"
 			}
 		]
 	]

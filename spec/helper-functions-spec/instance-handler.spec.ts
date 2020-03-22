@@ -1,5 +1,5 @@
 import { instanceHandler, isDate, simpleCloneObject } from 'lbrx/helpers'
-import { Person, Address } from '../test-subjects'
+import { Person, Address } from 'test-subjects'
 
 describe('Helper Function - instanceHandler():', () => {
 

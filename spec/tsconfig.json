@@ -7,6 +7,9 @@
 			"lbrx/helpers": [
 				"../src/helpers",
 			],
+			"test-subjects": [
+				"test-subjects"
+			]
 		}
 	},
 	"include": [
