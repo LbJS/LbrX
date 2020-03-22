@@ -1,16 +1,14 @@
 import { isClass } from 'lbrx/helpers'
+import { Person } from 'test-subjects'
 
 describe('Helper Function - isClass():', () => {
 
 	it('should return true for constructable object.', () => {
-		class Person { }
-		const person = new Person()
-		expect(isClass(person)).toBeTruthy()
+		expect(isClass(new Person({}))).toBeTruthy()
 	})
 
 	it('should return false for plain object.', () => {
-		const plainObject = {}
-		expect(isClass(plainObject)).toBeFalsy()
+		expect(isClass({})).toBeFalsy()
 	})
 
 	it('should return false for null.', () => {

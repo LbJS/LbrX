@@ -1,4 +1,5 @@
 import { isObject } from 'lbrx/helpers'
+import { Person } from 'test-subjects'
 
 describe('Helper Function - isObject():', () => {
 
@@ -7,8 +8,7 @@ describe('Helper Function - isObject():', () => {
 	})
 
 	it('should return true for constructable object.', () => {
-		class Person { }
-		expect(isObject(new Person())).toBeTruthy()
+		expect(isObject(new Person({}))).toBeTruthy()
 	})
 
 	it('should return false for null.', () => {
