@@ -7,18 +7,18 @@ export function cloneObject<T extends object>(obj: T): T {
 		for (let i = 0; i < copy.length; i++) {
 			if (isObject(copy[i])) copy[i] = cloneObject(copy[i])
 		}
+	} else if (isClass(obj)) {
+		copy = obj.constructor.length ?
+			new obj.constructor(obj) as T :
+			objectAssign(new obj.constructor() as T, obj)
 	} else if (isObject(obj)) {
-		if (isClass(obj)) {
-			copy = obj.constructor.length ?
-				new obj.constructor(obj) as T :
-				objectAssign(new obj.constructor() as T, obj)
-		} else {
-			copy = { ...obj }
-		}
-		for (let i = 0, keys = objectKeys(copy); i < keys.length; i++) {
-			const key = keys[i]
-			if (isObject(copy[key])) copy[key] = cloneObject(copy[key])
-		}
+		copy = { ...obj }
 	}
-	return (copy ?? obj) as T
+	if (!copy) return obj
+	for (let i = 0, keys = objectKeys(copy); i < keys.length; i++) {
+		const key = keys[i]
+		const objProp = copy[key]
+		if (isObject(objProp)) copy[key] = cloneObject(objProp)
+	}
+	return copy as T
 }

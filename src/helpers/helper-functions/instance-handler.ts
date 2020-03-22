@@ -8,8 +8,10 @@ export function instanceHandler<T extends object>(instancedObject: T, plainObjec
 			objectAssign(new instancedObject.constructor(), plainObject)
 	}
 	for (let i = 0, keys = objectKeys(instancedObject); i < keys.length; i++) {
-		if (isObject(instancedObject[keys[i]])) {
-			plainObject[keys[i]] = instanceHandler(instancedObject[keys[i]], plainObject[keys[i]])
+		const key = keys[i]
+		const instancedObjectProp = instancedObject[key]
+		if (isObject(instancedObjectProp)) {
+			plainObject[key] = instanceHandler(instancedObjectProp, plainObject[key])
 		}
 	}
 	return plainObject

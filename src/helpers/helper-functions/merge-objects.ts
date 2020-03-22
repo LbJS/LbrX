@@ -3,14 +3,17 @@ import { isArray } from './is-array'
 
 export function mergeObjects<T extends object>(target: T, source: Partial<T>): T {
 	for (let i = 0, keys = objectKeys(target); i < keys.length; i++) {
-		if (isDate(target[keys[i]]) || isDate(source[keys[i]])) {
-			target[keys[i]] = source[keys[i]]
-		} else if (isObject(target[keys[i]]) &&
-			!isArray(target[keys[i]]) &&
-			!isArray(source[keys[i]]) &&
-			!isNull(source[keys[i]])
+		const key = keys[i]
+		const targetProp = target[key]
+		const sourceProp = source[key]
+		if (isDate(targetProp) || isDate(sourceProp)) {
+			target[key] = sourceProp
+		} else if (isObject(targetProp) &&
+			isObject(sourceProp) &&
+			!isArray(targetProp) &&
+			!isArray(sourceProp)
 		) {
-			source[keys[i]] = mergeObjects(target[keys[i]], source[keys[i]])
+			source[key] = mergeObjects(targetProp, sourceProp)
 		}
 	}
 	return objectAssign(target, source)
