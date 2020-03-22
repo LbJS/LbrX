@@ -41,6 +41,9 @@ describe('Helper Function - mergeObjects():', () => {
 				d: {},
 				e: 'e',
 				g: null,
+			},
+			objB: {
+				a: 'a'
 			}
 		}
 		const objB: AbcObj = {
@@ -51,6 +54,13 @@ describe('Helper Function - mergeObjects():', () => {
 				d: null,
 				f: 0,
 				g: new Date(2020, 0),
+			},
+			objC: {
+				nestedObj: {
+					deepNestedObj: {
+						a: 'a'
+					}
+				}
 			}
 		}
 		const mergedObj = mergeObjects(objA, objB)
@@ -63,6 +73,16 @@ describe('Helper Function - mergeObjects():', () => {
 				e: 'e',
 				f: 0,
 				g: new Date(2020, 0),
+			},
+			objB: {
+				a: 'a'
+			},
+			objC: {
+				nestedObj: {
+					deepNestedObj: {
+						a: 'a'
+					}
+				}
 			}
 		})
 	})
@@ -136,7 +156,7 @@ describe('Helper Function - mergeObjects():', () => {
 		})
 	})
 
-	it('should result the expected properties after merging.', () => {
+	it('should result the expected properties array/ object values after merging.', () => {
 		const objA: AbcObj = {
 			a: {},
 			b: [],

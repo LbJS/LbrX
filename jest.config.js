@@ -18,7 +18,10 @@ module.exports = {
 			{
 				pageTitle: "Test Report",
 				theme: "darkTheme",
-				outputPath: "./spec/test-results-output/test-report.html"
+				outputPath: "./spec/test-results-output/test-report.html",
+				includeFailureMsg: true,
+				includeConsoleLog: true,
+				sort: "status"
 			}
 		]
 	]
