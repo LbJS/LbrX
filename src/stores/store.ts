@@ -108,8 +108,8 @@ export class Store<T extends object> {
 	private _storage!: Storage | null
 	private _storageDebounce!: number
 	private _storageKey!: string
-	private _clone!: (obj: T) => T
-	private _compare!: (objA: T, pbjB: T) => boolean
+	private _clone!: <R extends object>(obj: R) => R
+	private _compare!: <R extends object>(objA: R, pbjB: R) => boolean
 
 	private get devData(): DevToolsDataStruct {
 		return { name: this._storeName, state: this._clone(this._state) }
@@ -220,24 +220,31 @@ export class Store<T extends object> {
 	}
 
 	private _initializeStore(initialState: T): void {
+		let isStateCloned = false
 		if (this.onBeforeInit) {
-			const modifiedInitialState: T | void = this.onBeforeInit(initialState)
-			if (modifiedInitialState) initialState = modifiedInitialState
+			const modifiedInitialState: T | void = this.onBeforeInit(this._clone(initialState))
+			if (modifiedInitialState) {
+				initialState = this._clone(modifiedInitialState)
+				isStateCloned = true
+			}
 		}
 		this._initialState = deepFreeze(this._clone(initialState))
 		const storage = this._storage
-		let storedState: null | T = null
 		if (storage) {
+			let storedState: T | null = parse(storage.getItem(this._storageKey))
+			if (storedState) {
+				if (!this._isSimpleCloning) storedState = instanceHandler(initialState, storedState)
+				initialState = storedState
+				isStateCloned = true
+			}
 			this._state$
 				.pipe(debounce(() => timer(this._storageDebounce)))
 				.subscribe(state => storage.setItem(this._storageKey, stringify(state)))
-			storedState = parse(storage.getItem(this._storageKey))
-			if (storedState && !this._isSimpleCloning) storedState = instanceHandler(initialState, storedState)
 		}
-		this._setState(() => storedState || initialState)
+		this._setState(() => isStateCloned ? initialState : this._clone(initialState))
 		if (this.onAfterInit) {
 			const modifiedState: T | void = this.onAfterInit(this._clone(this._state))
-			if (modifiedState) this._setState(() => modifiedState)
+			if (modifiedState) this._setState(() => this._clone(modifiedState))
 		}
 		isDevTools && DevToolsSubjects.initEvent$.next(this.devData)
 	}
@@ -280,22 +287,18 @@ export class Store<T extends object> {
 	 * })
 	 */
 	public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
-	public update(
-		stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>,
-		updateName?: string
-	): void {
+	public update(stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
 		if (this.isLoading) {
 			logError(`Can't update ${this._storeName} while it's in loading state.`)
 			return
 		}
 		this._setState(state => {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-			const clonedState = this._clone(state)
-			let newState = mergeObjects(clonedState, newPartialState)
+			let newState = mergeObjects(this._clone(state), this._clone(newPartialState))
 			if (!this._isSimpleCloning) newState = instanceHandler(this._initialState, newState)
 			if (this.onUpdate) {
-				const newModifiedState: T | void = this.onUpdate(newState, state)
-				if (newModifiedState) newState = newModifiedState
+				const newModifiedState: T | void = this.onUpdate(this._clone(newState), state)
+				if (newModifiedState) newState = this._clone(newModifiedState)
 			}
 			return newState
 		})
@@ -310,11 +313,14 @@ export class Store<T extends object> {
 			logError(`Can't override ${this._storeName} while it's in loading state.`)
 			return
 		}
+		if (!this._isSimpleCloning) state = instanceHandler(this._initialState, this._clone(state))
+		let modifiedState: T | void
 		if (this.onOverride) {
-			const modifiedState: T | void = this.onOverride(state, this._state)
-			if (modifiedState) state = modifiedState
+			modifiedState = this.onOverride(this._clone(state), this._state)
+			if (modifiedState) state = this._clone(modifiedState)
 		}
-		this._setState(() => this._isSimpleCloning ? state : instanceHandler(this._initialState, state))
+		const isCloned = !this._isSimpleCloning || !!modifiedState
+		this._setState(() => isCloned ? state : this._clone(state))
 		isDev && DevToolsSubjects.overrideEvent$.next(this.devData)
 	}
 
@@ -331,7 +337,7 @@ export class Store<T extends object> {
 		} else {
 			this._setState(state => {
 				let modifiedInitialState: T | void
-				if (this.onReset) modifiedInitialState = this.onReset(this._initialState, state)
+				if (this.onReset) modifiedInitialState = this.onReset(this._clone(this._initialState), state)
 				return this._clone(modifiedInitialState || this._initialState)
 			})
 			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
