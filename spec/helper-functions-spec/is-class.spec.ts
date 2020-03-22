@@ -12,4 +12,12 @@ describe('Helper Function - isClass():', () => {
 		const plainObject = {}
 		expect(isClass(plainObject)).toBeFalsy()
 	})
+
+	it('should return false for null.', () => {
+		expect(isClass(null as unknown as {})).toBeFalsy()
+	})
+
+	it('should return false for undefined.', () => {
+		expect(isClass(undefined as unknown as {})).toBeFalsy()
+	})
 })
