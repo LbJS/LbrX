@@ -161,7 +161,7 @@ describe('Helper Function - compareObjects():', () => {
 						],
 						{
 							a: 'a',
-							b: null
+							b: null // <= not equal
 						}
 					]
 				}
@@ -193,7 +193,7 @@ describe('Helper Function - compareObjects():', () => {
 						],
 						{
 							a: 'a',
-							b: () => { }
+							b: () => { } // <= not equal
 						}
 					]
 				}

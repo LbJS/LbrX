@@ -9,7 +9,6 @@ module.exports = {
 	moduleNameMapper: {
 		"lbrx/helpers": "<rootDir>/src/helpers",
 		"test-subjects": "<rootDir>/spec/test-subjects",
-		"helpers": "<rootDir>/spec/helpers",
 	},
 	reporters: [
 		"default",

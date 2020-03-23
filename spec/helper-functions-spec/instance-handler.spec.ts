@@ -19,7 +19,7 @@ describe('Helper Function - instanceHandler():', () => {
 
 	it('should create instance for date.', () => {
 		const person = new Person({
-			someDate: new Date()
+			someDate: new Date(2020, 0)
 		})
 		const personCopy = instanceHandler(person, { someDate: new Date().toJSON() as unknown as Date } as Person)
 		expect(personCopy.someDate).toBeInstanceOf(Date)

@@ -10,9 +10,6 @@
 			"test-subjects": [
 				"test-subjects"
 			],
-			"helpers": [
-				"helpers"
-			],
 		}
 	},
 	"include": [
