@@ -6,12 +6,16 @@
 		"paths": {
 			"lbrx": [
 				"../src",
+				"../src/*",
 			],
 			"lbrx/helpers": [
 				"../src/helpers",
 			],
 			"lbrx/mode": [
 				"../src/mode",
+			],
+			"lbrx/stores/config": [
+				"../src/stores/config",
 			],
 			"test-subjects": [
 				"test-subjects"

@@ -10,6 +10,7 @@ module.exports = {
 		"^lbrx$": "<rootDir>/src",
 		"^lbrx/helpers$": "<rootDir>/src/helpers",
 		"^lbrx/mode$": "<rootDir>/src/mode",
+		"^lbrx/stores/config$": "<rootDir>/src/stores/config",
 		"^test-subjects$": "<rootDir>/spec/test-subjects",
 	},
 	testRegex: [

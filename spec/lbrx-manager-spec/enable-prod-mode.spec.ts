@@ -1,7 +1,20 @@
-import { LbrXManager } from 'lbrx'
-import { isDev } from 'lbrx/mode'
+import { LbrXManager as LbrXManager_type } from 'lbrx'
 
 describe('LbrXManager enableProdMode():', () => {
+
+	let LbrXManager: typeof LbrXManager_type
+	let isDev: () => boolean
+
+	beforeEach(async () => {
+		const lbrx = await import('lbrx')
+		LbrXManager = lbrx.LbrXManager
+		const lbrxModes = await import('lbrx/mode')
+		isDev = lbrxModes.isDev
+	})
+
+	afterEach(() => {
+		jest.resetModules()
+	})
 
 	it('should set isDev to false.', () => {
 		LbrXManager.enableProdMode()
