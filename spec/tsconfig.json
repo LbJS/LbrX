@@ -4,8 +4,14 @@
 		"baseUrl": ".",
 		"esModuleInterop": true,
 		"paths": {
+			"lbrx": [
+				"../src",
+			],
 			"lbrx/helpers": [
 				"../src/helpers",
+			],
+			"lbrx/mode": [
+				"../src/mode",
 			],
 			"test-subjects": [
 				"test-subjects"

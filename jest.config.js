@@ -7,9 +7,17 @@ module.exports = {
 		}
 	},
 	moduleNameMapper: {
-		"lbrx/helpers": "<rootDir>/src/helpers",
-		"test-subjects": "<rootDir>/spec/test-subjects",
+		"^lbrx$": "<rootDir>/src",
+		"^lbrx/helpers$": "<rootDir>/src/helpers",
+		"^lbrx/mode$": "<rootDir>/src/mode",
+		"^test-subjects$": "<rootDir>/spec/test-subjects",
 	},
+	testRegex: [
+		'/spec/.*\\.spec.ts$'
+	],
+	modulePathIgnorePatterns: [
+		'<rootDir>/lib/'
+	],
 	reporters: [
 		"default",
 		[
