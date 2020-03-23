@@ -5,6 +5,6 @@ export function isDevTools(): boolean {
 	return isDevToolsMode
 }
 
-export function enableDevToolsUpdates(): void {
+export function activateDevToolsPushes(): void {
 	isDevToolsMode = true
 }

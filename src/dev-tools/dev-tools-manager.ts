@@ -4,7 +4,7 @@ import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
 import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError } from 'lbrx/helpers'
-import { isDev, enableDevToolsUpdates } from 'lbrx/mode'
+import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
 
@@ -21,7 +21,6 @@ export class DevToolsManager {
 		(window as any).$$stores = DevToolsSubjects.stores
 		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
-		enableDevToolsUpdates()
 		this._sub.unsubscribe()
 		this._sub = new Subscription()
 		this._appState = {}
@@ -78,5 +77,6 @@ export class DevToolsManager {
 			})
 		]
 		subs.forEach(sub => this._sub.add(sub))
+		activateDevToolsPushes()
 	}
 }

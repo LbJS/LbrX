@@ -1,8 +1,7 @@
-import { DevtoolsOptions, initLbrxDevTools } from './dev-tools'
+import { DevtoolsOptions, DevToolsManager } from './dev-tools'
 import { enableProdMode } from './mode'
 import { throwError } from 'lbrx/helpers'
-import { GlobalStoreConfigOptions } from './stores/config/global-store-config-options'
-import { setGlobalStoreConfig } from './stores/config/global-store-config'
+import { GlobalStoreConfigOptions, setGlobalStoreConfig } from './stores/config'
 
 // tslint:disable: no-redundant-jsdoc
 /**
@@ -24,7 +23,7 @@ export class LbrXManager {
 	 * Initializes Redux DevTools.
 	 */
 	static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): LbrXManager {
-		initLbrxDevTools(devToolsOptions)
+		new DevToolsManager(devToolsOptions).initialize()
 		return LbrXManager
 	}
 
