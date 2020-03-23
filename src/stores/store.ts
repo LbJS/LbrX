@@ -176,10 +176,10 @@ export class Store<T extends object> {
 	private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
 		this._initializeConfig(storeConfig)
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-		if (isDevTools) DevToolsSubjects.stores[this._storeName] = this
+		if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this.isLoading$.next(true)
-			isDevTools && DevToolsSubjects.loadingEvent$.next(this._storeName)
+			isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
@@ -246,11 +246,11 @@ export class Store<T extends object> {
 			const modifiedState: T | void = this.onAfterInit(this._clone(this._state))
 			if (modifiedState) this._setState(() => this._clone(modifiedState))
 		}
-		isDevTools && DevToolsSubjects.initEvent$.next(this.devData)
+		isDevTools() && DevToolsSubjects.initEvent$.next(this.devData)
 	}
 
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
-		this.state = isDev ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
+		this.state = isDev() ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
 
 	//#endregion private-section
@@ -266,7 +266,7 @@ export class Store<T extends object> {
 	 */
 	public initialize(initialState: T): void | never {
 		if (!this.isLoading || this._initialState || this._state) {
-			isDev && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
+			isDev() && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
 			return
 		}
 		this._initializeStore(initialState)
@@ -302,7 +302,7 @@ export class Store<T extends object> {
 			}
 			return newState
 		})
-		isDevTools && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
+		isDevTools() && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
 	}
 
 	/**
@@ -321,7 +321,7 @@ export class Store<T extends object> {
 		}
 		const isCloned = !this._isSimpleCloning || !!modifiedState
 		this._setState(() => isCloned ? state : this._clone(state))
-		isDev && DevToolsSubjects.overrideEvent$.next(this.devData)
+		isDev() && DevToolsSubjects.overrideEvent$.next(this.devData)
 	}
 
 	/**
@@ -333,14 +333,14 @@ export class Store<T extends object> {
 			return
 		} else if (!this._isResettable) {
 			const errMsg = `Store: ${this._storeName} is not configured as resettable.`
-			isDev ? throwError(errMsg) : logError(errMsg)
+			isDev() ? throwError(errMsg) : logError(errMsg)
 		} else {
 			this._setState(state => {
 				let modifiedInitialState: T | void
 				if (this.onReset) modifiedInitialState = this.onReset(this._clone(this._initialState), state)
 				return this._clone(modifiedInitialState || this._initialState)
 			})
-			isDevTools && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
+			isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
 		}
 	}
 

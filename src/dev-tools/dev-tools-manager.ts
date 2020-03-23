@@ -17,7 +17,7 @@ export class DevToolsManager {
 	) { }
 
 	public initialize(): void {
-		if (!isDev || !window || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
+		if (!isDev() || !window || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
 		(window as any).$$stores = DevToolsSubjects.stores
 		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
@@ -33,7 +33,7 @@ export class DevToolsManager {
 			DevToolsSubjects.initEvent$.subscribe(store => {
 				if (this._appState[store.name] && this._appState[store.name] !== StoreStates.loading) {
 					const errorMsg = `There are multiple store with the same store name: "${store.name}"!`
-					isDev ? throwError(errorMsg) : logError(errorMsg)
+					isDev() ? throwError(errorMsg) : logError(errorMsg)
 				}
 				this._appState = objectAssign(this._appState, { [store.name]: store.state })
 				devTools.send({ type: `[${store.name}] - @@INIT` }, this._appState)

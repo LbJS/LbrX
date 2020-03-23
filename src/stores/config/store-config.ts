@@ -16,7 +16,7 @@ export function StoreConfig(options: StoreConfigOptions): <T extends Class>(cons
 			})
 		} else {
 			const errorMsg = '"@StoreConfig" decorator can decorate only a class!'
-			isDev ? throwError(errorMsg) : logError(errorMsg)
+			isDev() ? throwError(errorMsg) : logError(errorMsg)
 		}
 	}
 }

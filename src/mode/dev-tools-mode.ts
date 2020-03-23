@@ -1,6 +1,10 @@
 
-export let isDevTools = false
+let isDevToolsMode = false
+
+export function isDevTools(): boolean {
+	return isDevToolsMode
+}
 
 export function enableDevToolsUpdates(): void {
-	isDevTools = true
+	isDevToolsMode = true
 }
