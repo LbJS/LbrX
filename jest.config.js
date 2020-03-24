@@ -12,6 +12,8 @@ module.exports = {
 		"^lbrx/mode$": "<rootDir>/src/mode",
 		"^lbrx/stores/config$": "<rootDir>/src/stores/config",
 		"^test-subjects$": "<rootDir>/spec/test-subjects",
+		"^mocks$": "<rootDir>/spec/mocks",
+		"^types$": "<rootDir>/spec/types",
 	},
 	testRegex: [
 		'/spec/.*\\.spec.ts$'

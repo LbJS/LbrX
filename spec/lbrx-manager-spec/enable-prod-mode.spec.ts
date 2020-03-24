@@ -1,15 +1,13 @@
-import { LbrXManager as LbrXManager_class } from 'lbrx'
+import { LbrXManager_Type, LbrXModule, ModeModule } from 'types'
 
 describe('LbrXManager enableProdMode():', () => {
-	type LbrXManager_type = typeof LbrXManager_class
-	type lbrxModule = typeof import('lbrx')
-	type modeModule = typeof import('lbrx/mode')
 
-	let LbrXManager: LbrXManager_type
+
+	let LbrXManager: LbrXManager_Type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
-		const [lbrx, lbrxModes]: [lbrxModule, modeModule] = await Promise.all([import('lbrx'), import('lbrx/mode')])
+		const [lbrx, lbrxModes]: [LbrXModule, ModeModule] = await Promise.all([import('lbrx'), import('lbrx/mode')])
 		LbrXManager = lbrx.LbrXManager
 		isDev = lbrxModes.isDev
 	})
@@ -23,7 +21,7 @@ describe('LbrXManager enableProdMode():', () => {
 		expect(isDev()).toBeFalsy()
 	})
 
-	it('should should return LbrXManager.', () => {
+	it('should return LbrXManager.', () => {
 		const value = LbrXManager.enableProdMode()
 		expect(value).toStrictEqual(LbrXManager)
 	})
