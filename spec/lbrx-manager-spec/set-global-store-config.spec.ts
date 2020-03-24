@@ -1,15 +1,17 @@
-import { ObjectCompareTypes, Storages, LbrXManager as LbrXManager_type } from 'lbrx'
+import { ObjectCompareTypes, Storages, LbrXManager as LbrXManager_class } from 'lbrx'
 import { GlobalStoreConfigOptions } from 'lbrx/stores/config'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
+	type LbrXManager_type = typeof LbrXManager_class
+	type lbrxModule = typeof import('lbrx')
+	type configModule = typeof import('lbrx/stores/config')
 
-	let LbrXManager: typeof LbrXManager_type
+	let LbrXManager: LbrXManager_type
 	let getGlobalStoreOptions: () => GlobalStoreConfigOptions
 
 	beforeEach(async () => {
-		const lbrx = await import('lbrx')
+		const [lbrx, config]: [lbrxModule, configModule] = await Promise.all([import('lbrx'), import('lbrx/stores/config')])
 		LbrXManager = lbrx.LbrXManager
-		const config = await import('lbrx/stores/config')
 		getGlobalStoreOptions = config.getGlobalStoreOptions
 	})
 
