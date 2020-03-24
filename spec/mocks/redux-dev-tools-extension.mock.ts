@@ -1,15 +1,13 @@
-import { Window_Type } from 'types'
 
-export function mockReduxDevToolsExtension(windowMock: Window_Type): Window_Type {
+export function mockReduxDevToolsExtension(): void {
 	const devTools = {
 		send: () => { },
 		subscribe: () => { },
 	};
-	(windowMock as any).__REDUX_DEVTOOLS_EXTENSION__ = {
+	(window as any).__REDUX_DEVTOOLS_EXTENSION__ = {
 		connect: (config: object) => {
-			(windowMock as any).__REDUX_DEVTOOLS_EXTENSION__.config = config
+			(window as any).__REDUX_DEVTOOLS_EXTENSION__.config = config
 			return devTools
 		},
 	}
-	return windowMock
 }

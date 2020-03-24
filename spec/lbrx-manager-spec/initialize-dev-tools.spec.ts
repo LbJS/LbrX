@@ -1,4 +1,4 @@
-import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow } from 'mocks'
+import { MockBuilder } from 'mocks'
 import { LbrXManager_Type } from 'types'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
@@ -8,12 +8,13 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	beforeEach(async () => {
 		const lbrx = await import('lbrx')
 		LbrXManager = lbrx.LbrXManager
-		const windowMock = mockWindow()
-		mockReduxDevToolsExtension(windowMock)
+		MockBuilder.mockWindow()
+			.mockReduxDevToolsExtension()
+			.build()
 	})
 
 	afterEach(() => {
-		deleteMockedWindow()
+		MockBuilder.deleteAllMocks()
 		jest.resetModules()
 	})
 

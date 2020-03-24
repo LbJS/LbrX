@@ -1,5 +1,4 @@
 import { BehaviorSubject, Observable } from 'rxjs'
-import { throwError } from 'lbrx/helpers'
 
 /**
  * Global Error-API. Will emit errors from all stores.
@@ -20,7 +19,5 @@ export class GlobalErrorStore {
 		return !!GlobalErrorStore._globalError$.getValue()
 	}
 
-	constructor() {
-		throwError('GlobalErrorStore class is an static class, no instance is allowed.')
-	}
+	private constructor() { }
 }
