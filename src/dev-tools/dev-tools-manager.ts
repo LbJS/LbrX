@@ -3,7 +3,7 @@ import { Subscription, throwError } from 'rxjs'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError } from 'lbrx/helpers'
+import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError, isBrowser } from 'lbrx/helpers'
 import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
@@ -17,13 +17,19 @@ export class DevToolsManager {
 	) { }
 
 	public initialize(): void {
-		if (!isDev() || !window || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
+		if (!isDev() || !isBrowser() || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
 		(window as any).$$stores = DevToolsSubjects.stores
 		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
 		this._sub.unsubscribe()
 		this._sub = new Subscription()
 		this._appState = {}
+		this._setUserEventsSubscribers(devTools)
+		this._setDevToolsEventsSubscribers(devTools)
+		activateDevToolsPushes()
+	}
+
+	private _setUserEventsSubscribers(devTools: any): void {
 		const subs = [
 			DevToolsSubjects.loadingEvent$.subscribe(storeName => {
 				this._appState = objectAssign(this._appState, { [storeName]: StoreStates.loading })
@@ -53,30 +59,32 @@ export class DevToolsManager {
 				this._appState[store.name] = store.state
 				devTools.send({ type: `[${store.name}] - Reset Store` }, this._appState)
 			}),
-			devTools.subscribe((message: any) => {
-				if (message.type != 'DISPATCH' || !message.state) return
-				const devToolsState = parse<{}>(message.state)
-				objectKeys(devToolsState).forEach((storeName: string) => {
-					const store = DevToolsSubjects.stores[storeName]
-					const devToolsStoreValue = devToolsState[storeName]
-					const loadingStoresCache = this._loadingStoresCache
-					if (store) {
-						if (devToolsStoreValue === StoreStates.loading) {
-							if (!loadingStoresCache[storeName]) {
-								loadingStoresCache[storeName] = store.value
-								store.state = null
-								store.isLoading$.next(true)
-							}
-						} else {
-							store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
-							store.isLoading && store.isLoading$.next(false)
-							if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
-						}
-					}
-				})
-			})
 		]
 		subs.forEach(sub => this._sub.add(sub))
-		activateDevToolsPushes()
+	}
+
+	private _setDevToolsEventsSubscribers(devTools: any): void {
+		this._sub.add(devTools.subscribe((message: any) => {
+			if (message.type != 'DISPATCH' || !message.state) return
+			const devToolsState = parse<{}>(message.state)
+			objectKeys(devToolsState).forEach((storeName: string) => {
+				const store = DevToolsSubjects.stores[storeName]
+				const devToolsStoreValue = devToolsState[storeName]
+				const loadingStoresCache = this._loadingStoresCache
+				if (store) {
+					if (devToolsStoreValue === StoreStates.loading) {
+						if (!loadingStoresCache[storeName]) {
+							loadingStoresCache[storeName] = store.value
+							store.state = null
+							store.isLoading$.next(true)
+						}
+					} else {
+						store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
+						store.isLoading && store.isLoading$.next(false)
+						if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
+					}
+				}
+			})
+		}))
 	}
 }
