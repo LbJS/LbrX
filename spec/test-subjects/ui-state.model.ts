@@ -1,4 +1,8 @@
 
 export interface UiState {
-	isSideNavOpen: boolean
+	isSideNavOpen: boolean,
+	isSearchBarVisible: boolean,
+	isContextMenuActive: boolean,
+	lastActiveDate: Date,
+	status: string,
 }

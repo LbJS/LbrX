@@ -1,9 +1,13 @@
 import { Store, StoreConfig } from 'lbrx'
 import { UiState } from './ui-state.model'
 
-function createUiStateModel(): UiState {
+export function createInitialUiState(): UiState {
 	return {
-		isSideNavOpen: true
+		isSideNavOpen: true,
+		isSearchBarVisible: true,
+		isContextMenuActive: false,
+		lastActiveDate: new Date(2020, 0),
+		status: 'active',
 	}
 }
 
@@ -13,6 +17,6 @@ function createUiStateModel(): UiState {
 export class UiStateStore extends Store<UiState> {
 
 	constructor() {
-		super(createUiStateModel())
+		super(createInitialUiState())
 	}
 }
