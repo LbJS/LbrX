@@ -7,6 +7,8 @@ export class UiStateService {
 		return this.store.value
 	}
 
+	public state$ = this.store.select()
+
 	constructor(
 		public store: UiStateStore
 	) { }
