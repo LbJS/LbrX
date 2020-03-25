@@ -1,13 +1,13 @@
-import { MockBuilder } from 'mocks'
-import { LbrXManager_Type } from 'types'
+import MockBuilder from 'mock-builder'
+import { LbrXManager } from 'lbrx'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 
-	let LbrXManager: LbrXManager_Type
+	let lbrxManager: typeof LbrXManager
 
 	beforeEach(async () => {
-		const lbrx = await import('lbrx')
-		LbrXManager = lbrx.LbrXManager
+		const provider = (await import('provider')).default
+		lbrxManager = provider.provide(LbrXManager.name)
 		MockBuilder.mockWindow()
 			.mockReduxDevToolsExtension()
 			.build()
@@ -19,14 +19,14 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	})
 
 	it('should return LbrXManager.', () => {
-		LbrXManager.initializeDevTools({ name: 'NEW-NAME' })
+		lbrxManager.initializeDevTools({ name: 'NEW-NAME' })
 		expect((window as any).__REDUX_DEVTOOLS_EXTENSION__.config).toMatchObject({
 			name: 'NEW-NAME'
 		})
 	})
 
 	it('should return LbrXManager.', () => {
-		const value = LbrXManager.initializeDevTools()
-		expect(value).toStrictEqual(LbrXManager)
+		const value = lbrxManager.initializeDevTools()
+		expect(value).toStrictEqual(lbrxManager)
 	})
 })

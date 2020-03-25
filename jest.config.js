@@ -14,6 +14,8 @@ module.exports = {
 		"^test-subjects$": "<rootDir>/spec/test-subjects",
 		"^mocks$": "<rootDir>/spec/mocks",
 		"^types$": "<rootDir>/spec/types",
+		"^provider$": "<rootDir>/spec/provider.ts",
+		"^mock-builder$": "<rootDir>/spec/mock-builder.ts",
 	},
 	testRegex: [
 		'/spec/.*\\.spec.ts$'

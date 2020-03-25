@@ -2,11 +2,11 @@ import { UiStateService, createInitialUiState } from 'test-subjects'
 
 describe('Store initialization: ', () => {
 
-	let uiState: UiStateService
+	let uiService: UiStateService
 
 	beforeEach(async () => {
-		const testSubjects = await import('test-subjects')
-		uiState = testSubjects.Provider.uiStateService
+		const provider = (await import('provider')).default
+		uiService = provider.provide(UiStateService.name)
 	})
 
 	afterEach(() => {
@@ -14,15 +14,15 @@ describe('Store initialization: ', () => {
 	})
 
 	it('should set the initial value as the first state.', () => {
-		expect(uiState.value).toStrictEqual(createInitialUiState())
+		expect(uiService.value).toStrictEqual(createInitialUiState())
 	})
 
 	it("should set the initial value to store's initial value.", () => {
-		expect(uiState.value).toStrictEqual(uiState.store.initialValue)
+		expect(uiService.value).toStrictEqual(uiService.store.initialValue)
 	})
 
 	it('should return the initial state from observable.', done => {
-		uiState.state$.subscribe(value => {
+		uiService.state$.subscribe(value => {
 			expect(value).toStrictEqual(createInitialUiState())
 			done()
 		})

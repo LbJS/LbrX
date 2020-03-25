@@ -1,13 +1,14 @@
+import { enableProdMode as enableProdModeFunc, isDev as isDevFunc } from 'lbrx/mode'
 
-describe('lbrx-mode:', () => {
+describe('LbrX Mode:', () => {
 
 	let enableProdMode: () => void
 	let isDev: () => boolean
 
 	beforeEach(async () => {
-		const lbrxModes = await import('lbrx/mode')
-		enableProdMode = lbrxModes.enableProdMode
-		isDev = lbrxModes.isDev
+		const provider = (await import('provider')).default
+		enableProdMode = provider.provide(enableProdModeFunc.name)
+		isDev = provider.provide(isDevFunc.name)
 	})
 
 	afterEach(() => {

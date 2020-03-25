@@ -1,13 +1,15 @@
+import { activateDevToolsPushes as activateDevToolsPushesFunc, isDevTools as isDevToolsFunc } from 'lbrx/mode'
 
-describe('dev-tool-mode:', () => {
+
+describe('Dev Tools Mode:', () => {
 
 	let activateDevToolsPushes: () => void
 	let isDevTools: () => boolean
 
 	beforeEach(async () => {
-		const lbrxModes = await import('lbrx/mode')
-		activateDevToolsPushes = lbrxModes.activateDevToolsPushes
-		isDevTools = lbrxModes.isDevTools
+		const provider = (await import('provider')).default
+		activateDevToolsPushes = provider.provide(activateDevToolsPushesFunc.name)
+		isDevTools = provider.provide(isDevToolsFunc.name)
 	})
 
 	afterEach(() => {

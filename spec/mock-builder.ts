@@ -1,7 +1,6 @@
-import { mockWindow, mockReduxDevToolsExtension } from 'mocks'
-import { deleteMockedWindow } from './window.mock'
+import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow } from 'mocks'
 
-export class MockBuilder {
+export default class MockBuilder {
 
 	private static jobsList: (() => any)[] = []
 

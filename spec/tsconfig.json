@@ -20,6 +20,12 @@
 			"test-subjects": [
 				"test-subjects"
 			],
+			"provider": [
+				"provider"
+			],
+			"mock-builder": [
+				"mock-builder"
+			],
 		}
 	},
 	"include": [
