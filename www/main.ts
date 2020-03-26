@@ -1,5 +1,6 @@
 import { LbrXManager, StoreConfig, Store, Storages, ObjectCompareTypes } from 'lbrx'
 import { of } from 'rxjs'
+import { StoreBeforeInit } from 'lbrx/hooks'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
@@ -31,14 +32,14 @@ function createLeon(): User {
 	storageType: Storages.session,
 	storageDebounceTime: 500
 })
-class UserStore extends Store<User> {
-
-	protected onBeforeInit = (state: User): void => {
-		console.log('ON BEFORE INIT: ', state)
-	}
+class UserStore extends Store<User> implements StoreBeforeInit {
 
 	constructor() {
 		super(createLeon())
+	}
+
+	public onBeforeInit(initialState: User): void {
+		console.log('ON BEFORE INIT: ', initialState)
 	}
 }
 

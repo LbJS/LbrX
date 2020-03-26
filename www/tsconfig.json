@@ -8,6 +8,10 @@
 				"../src",
 				"../src/*"
 			],
+			"lbrx/hooks": [
+				"../src/hooks",
+				"../src/hooks/*"
+			],
 		}
 	},
 	"include": [

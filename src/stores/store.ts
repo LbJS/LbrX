@@ -9,6 +9,7 @@ import { GlobalErrorStore } from './global-error-store'
 
 // tslint:disable: no-redundant-jsdoc
 // tslint:disable: unified-signatures
+// tslint:disable: no-string-literal
 
 /**
  * @example
@@ -116,41 +117,6 @@ export class Store<T extends object, E = any> {
 	}
 
 	//#endregion config
-	//#region hooks
-
-	/**
-	 * Will be triggered only once, before the store would set it's initial state's value.
-	 * - Allows state's value modification before initialization.
-	 * @override
-	 */
-	protected onBeforeInit?: (() => T | void) | ((initialState: T) => T | void)
-	/**
-	 * Will be triggered only once, after the store would complete the initialization.
-	 * - Allows state's value modification after initialization.
-	 * @override
-	 */
-	protected onAfterInit?: (() => T | void) | ((state: T) => T | void)
-	/**
-	 * Will be triggered on every update just before the new state's value is set,
-	 * but after the new value is ready.
-	 * - Allows new state modification just before it becomes the new state's value.
-	 * @override
-	 */
-	protected onUpdate?: (() => T | void) | ((newState: T) => T | void) | ((newState: T, oldState: Readonly<T>) => T | void)
-	/**
-	 * Will be triggered on every state's override just before the new state's value is set.
-	 * - Allows new state modification just before it becomes the new state's value.
-	 * @override
-	 */
-	protected onOverride?: (() => T | void) | ((newState: T) => T | void) | ((newState: T, oldState: Readonly<T>) => T | void)
-	/**
-	 * Will be triggered on every state's reset just before the initial value is set.
-	 * - Allows the initial state's value modification just before it becomes the new state's value.
-	 * @override
-	 */
-	protected onReset?: (() => T | void) | ((initialState: T) => T | void) | ((initialState: T, currentState: Readonly<T>) => T | void)
-
-	//#endregion hooks
 	//#region constructor
 
 	/**
@@ -222,8 +188,8 @@ export class Store<T extends object, E = any> {
 
 	private _initializeStore(initialState: T): void {
 		let isStateCloned = false
-		if (this.onBeforeInit) {
-			const modifiedInitialState: T | void = this.onBeforeInit(this._clone(initialState))
+		if (isFunction(this['onBeforeInit'])) {
+			const modifiedInitialState: T | void = this['onBeforeInit'](this._clone(initialState))
 			if (modifiedInitialState) {
 				initialState = this._clone(modifiedInitialState)
 				isStateCloned = true
@@ -243,8 +209,8 @@ export class Store<T extends object, E = any> {
 				.subscribe(state => storage.setItem(this._storageKey, stringify(state)))
 		}
 		this._setState(() => isStateCloned ? initialState : this._clone(initialState))
-		if (this.onAfterInit) {
-			const modifiedState: T | void = this.onAfterInit(this._clone(this._state))
+		if (isFunction(this['onAfterInit'])) {
+			const modifiedState: T | void = this['onAfterInit'](this._clone(this._state))
 			if (modifiedState) this._setState(() => this._clone(modifiedState))
 		}
 		isDevTools() && DevToolsSubjects.initEvent$.next(this.devData)
@@ -343,8 +309,8 @@ export class Store<T extends object, E = any> {
 			const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
 			let newState = mergeObjects(this._clone(state), this._clone(newPartialState))
 			if (!this._isSimpleCloning) newState = instanceHandler(this._initialState, newState)
-			if (this.onUpdate) {
-				const newModifiedState: T | void = this.onUpdate(this._clone(newState), state)
+			if (isFunction(this['onUpdate'])) {
+				const newModifiedState: T | void = this['onUpdate'](this._clone(newState), state)
 				if (newModifiedState) newState = this._clone(newModifiedState)
 			}
 			return newState
@@ -362,8 +328,8 @@ export class Store<T extends object, E = any> {
 		}
 		if (!this._isSimpleCloning) state = instanceHandler(this._initialState, this._clone(state))
 		let modifiedState: T | void
-		if (this.onOverride) {
-			modifiedState = this.onOverride(this._clone(state), this._state)
+		if (isFunction(this['onOverride'])) {
+			modifiedState = this['onOverride'](this._clone(state), this._state)
 			if (modifiedState) state = this._clone(modifiedState)
 		}
 		const isCloned = !this._isSimpleCloning || !!modifiedState
@@ -384,7 +350,7 @@ export class Store<T extends object, E = any> {
 		} else {
 			this._setState(state => {
 				let modifiedInitialState: T | void
-				if (this.onReset) modifiedInitialState = this.onReset(this._clone(this._initialState), state)
+				if (isFunction(this['onReset'])) modifiedInitialState = this['onReset'](this._clone(this._initialState), state)
 				return this._clone(modifiedInitialState || this._initialState)
 			})
 			isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
