@@ -1,5 +1,5 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, throwError } from 'rxjs'
+import { BehaviorSubject, timer, Observable, throwError, isObservable } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
@@ -274,6 +274,38 @@ export class Store<T extends object, E = any> {
 	}
 
 	/**
+	 * Use this method to initialize the store with async data.
+	 * - Use only if the constructor state's value was null.
+	 * - Will throw in development mode if the store is not in loading state
+	 * or it was initialized before.
+	 * - In production mode, this method will be ignored if the store is not in loading state
+	 * or it was initialized before.
+	 * - In case of observable, only finite observable value will be used.
+	 */
+	public initializeAsync(promise: Promise<T>): Promise<void>
+	public initializeAsync(observable: Observable<T>): Promise<void>
+	public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			if (!this.isLoading || this._initialState || this._state) {
+				isDev() && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
+				resolve()
+			}
+			if (isObservable(promiseOrObservable)) {
+				promiseOrObservable = promiseOrObservable.toPromise()
+			}
+			promiseOrObservable
+				.then(r => {
+					r = this._config.onAsyncInitialization(r)
+					this._initializeStore(r)
+					this.isLoading$.next(false)
+				}).catch(e => {
+					e = this._config.onAsyncInitializationError(e)
+					e && reject(e)
+				}).finally(resolve)
+		})
+	}
+
+	/**
 	 * Update the store's value
 	 * @example
 	 *  this.store.update({ key: value })
@@ -342,6 +374,30 @@ export class Store<T extends object, E = any> {
 			})
 			isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
 		}
+	}
+
+	/**
+	 * Resets the following store parameters:
+	 * - State will be set to null.
+	 * - Initial state will be set to null.
+	 * - Activates Loading state.
+	 * - Store's error will be set to null.
+	 * - Clears cached storage if any.
+	 */
+	public hardReset(): this {
+		if (!this._isResettable) {
+			const errMsg = `Store: ${this._storeName} is not configured as resettable.`
+			isDev() ? throwError(errMsg) : logError(errMsg)
+		} else {
+			isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
+			this.state = null as unknown as T
+			this._initialState = null as unknown as T
+			this.error = null
+			this._storage && this._storage.removeItem(this._storageKey)
+			this.isLoading$.next(true)
+			isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
+		}
+		return this
 	}
 
 	/**

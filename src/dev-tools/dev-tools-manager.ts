@@ -59,6 +59,10 @@ export class DevToolsManager {
 				this._appState[store.name] = store.state
 				devTools.send({ type: `[${store.name}] - Reset Store` }, this._appState)
 			}),
+			DevToolsSubjects.hardResetEvent$.subscribe(storeName => {
+				this._appState[storeName] = { [storeName]: StoreStates.resetting }
+				devTools.send({ type: `[${storeName}] - Reset Store` }, this._appState)
+			}),
 		]
 		subs.forEach(sub => this._sub.add(sub))
 	}

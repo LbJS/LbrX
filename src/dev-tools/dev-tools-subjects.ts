@@ -8,4 +8,5 @@ export class DevToolsSubjects {
 	public static readonly overrideEvent$ = new Subject<DevToolsDataStruct>()
 	public static readonly updateEvent$ = new Subject<DevToolsDataStruct>()
 	public static readonly resetEvent$ = new Subject<DevToolsDataStruct>()
+	public static readonly hardResetEvent$ = new Subject<string>()
 }
