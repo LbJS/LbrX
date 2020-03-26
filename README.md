@@ -2,8 +2,6 @@
 
 This is an object oriented State Manager that's build for JavaScript applications that's based on RxJs. The api for querying th data is very similar to .Net EF LINQ but with observables. State updates can also be achieved with partial objects and we will merge the objects for you. Object instance preservation guaranteed if you're working with classes or dates. Unlinked object references guaranteed even with deep nested objects, no changes will apply to your state unintentionally. Two way data flow with no boilerplate code! We also support Redux DevTools for easier state debugging.
 
-_(Inspired by Akita)_
-
 ## Development progress:
 
 - [x] Single object store
