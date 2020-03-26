@@ -1,6 +1,6 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
 import { BehaviorSubject, timer, Observable, throwError, isObservable } from 'rxjs'
-import { debounce, map, distinctUntilChanged, filter } from 'rxjs/operators'
+import { debounce, map, distinctUntilChanged, filter, tap, skip } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError } from 'lbrx/helpers'
@@ -19,7 +19,7 @@ import { GlobalErrorStore } from './global-error-store'
  * `@`StoreConfig({
  * 	name: 'UI-STORE'
  * })
- * export class UiStore extends Store<UiState> {
+ * export class UiStore extends Store<UiState, AppError> {
  *
  * 	constructor() {
  * 		super(createUiState())
@@ -183,6 +183,7 @@ export class Store<T extends object, E = any> {
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
+		this._setLocalSubscribers()
 	}
 
 	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
@@ -253,6 +254,16 @@ export class Store<T extends object, E = any> {
 		this.state = isDev() ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
 	}
 
+	private _setLocalSubscribers(): void {
+		this.isLoading$
+			.pipe(
+				skip(1),
+				filter(x => !x),
+			).subscribe(() => {
+				this._state$.next(this._state)
+			})
+	}
+
 	//#endregion private-section
 	//#region public-api
 
@@ -295,9 +306,13 @@ export class Store<T extends object, E = any> {
 			}
 			promiseOrObservable
 				.then(r => {
-					r = this._config.onAsyncInitialization(r)
-					this._initializeStore(r)
-					this.isLoading$.next(false)
+					if (!this.isLoading || this._initialState || this._state) {
+						isDev() && throwError('The store was initialized multiple time while it was in loading state.')
+					} else {
+						r = this._config.onAsyncInitialization(r)
+						this._initializeStore(r)
+						this.isLoading$.next(false)
+					}
 				}).catch(e => {
 					e = this._config.onAsyncInitializationError(e)
 					e && reject(e)
@@ -390,11 +405,11 @@ export class Store<T extends object, E = any> {
 			isDev() ? throwError(errMsg) : logError(errMsg)
 		} else {
 			isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
+			this.isLoading$.next(true)
 			this.state = null as unknown as T
 			this._initialState = null as unknown as T
 			this.error = null
 			this._storage && this._storage.removeItem(this._storageKey)
-			this.isLoading$.next(true)
 			isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
 		}
 		return this
@@ -425,12 +440,20 @@ export class Store<T extends object, E = any> {
 	 */
 	public select<R>(project: (state: T) => R): Observable<R>
 	public select<R>(project?: (state: T) => R): Observable<T | R> {
+		let wasHardReseted = false
 		return this._state$.asObservable()
 			.pipe(
+				tap(x => {
+					if (!wasHardReseted) wasHardReseted = !x && this.isLoading
+				}),
 				filter<T>(x => !!x && !this.isLoading),
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? this._clone(x) : x),
 				distinctUntilChanged((prev, curr) => {
+					if (wasHardReseted) {
+						wasHardReseted = false
+						return false
+					}
 					if (isObject(prev) && isObject(curr)) return this._compare(prev, curr)
 					return prev === curr
 				}),

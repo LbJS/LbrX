@@ -1,4 +1,5 @@
 import { LbrXManager, StoreConfig, Store, Storages, ObjectCompareTypes } from 'lbrx'
+import { of } from 'rxjs'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
@@ -33,7 +34,7 @@ function createLeon(): User {
 class UserStore extends Store<User> {
 
 	protected onBeforeInit = (state: User): void => {
-		console.log(state)
+		console.log('ON BEFORE INIT: ', state)
 	}
 
 	constructor() {
@@ -55,6 +56,13 @@ userStore
 userStore
 	.select(state => state.address?.place)
 	.subscribe(x => console.log('address: ' + x))
+
+userStore
+	.isLoading$.subscribe(value => {
+		if (!value) {
+			console.log('From is loading: ', userStore.value)
+		}
+	})
 
 setTimeout(() => {
 	userStore.update({
@@ -80,3 +88,9 @@ setTimeout(() => {
 setTimeout(() => {
 	userStore.reset()
 }, 550)
+
+setTimeout(async () => {
+	await userStore.hardReset()
+		.initializeAsync(of(createLeon()))
+}, 600)
+
