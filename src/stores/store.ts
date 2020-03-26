@@ -262,27 +262,27 @@ export class Store<T extends object, E = any> {
 	public initializeAsync(promise: Promise<T>): Promise<void>
 	public initializeAsync(observable: Observable<T>): Promise<void>
 	public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
+		if (!this.isLoading || this._initialState || this._state) {
+			return isDev() ?
+				Promise.reject("Can't initialize store that's already been initialized or its not in LOADING state!") :
+				Promise.resolve()
+		}
 		return new Promise(async (resolve, reject) => {
-			if (!this.isLoading || this._initialState || this._state) {
-				isDev() && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
-				resolve()
-			}
 			if (isObservable(promiseOrObservable)) {
 				promiseOrObservable = promiseOrObservable.toPromise()
 			}
-			promiseOrObservable
-				.then(r => {
-					if (!this.isLoading || this._initialState || this._state) {
-						isDev() && throwError('The store was initialized multiple time while it was in loading state.')
-					} else {
-						r = this._config.onAsyncInitialization(r)
-						this._initializeStore(r)
-						this.isLoading$.next(false)
-					}
-				}).catch(e => {
-					e = this._config.onAsyncInitializationError(e)
-					e && reject(e)
-				}).finally(resolve)
+			promiseOrObservable.then(r => {
+				if (!this.isLoading || this._initialState || this._state) {
+					isDev() && reject('The store was initialized multiple time while it was in loading state.')
+				} else {
+					r = this._config.onAsyncInitialization(r)
+					this._initializeStore(r)
+					this.isLoading$.next(false)
+				}
+			}).catch(e => {
+				e = this._config.onAsyncInitializationError(e)
+				e && reject(e)
+			}).finally(resolve)
 		})
 	}
 

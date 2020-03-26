@@ -1,4 +1,3 @@
-import { UiStateStore } from 'test-subjects'
 import { GlobalErrorStore } from 'lbrx'
 import { filter } from 'rxjs/operators'
 

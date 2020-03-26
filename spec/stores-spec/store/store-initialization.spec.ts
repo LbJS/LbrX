@@ -1,18 +1,20 @@
 import { createInitialUiState, NullStateStore, UiStateStore, createCommonModel } from 'test-subjects'
 import { LbrXManager } from 'lbrx'
-import { filter } from 'rxjs/operators'
+import { isDev as isDevFunc } from 'lbrx/mode'
 
-describe('Store initialization: ', () => {
+describe('Store Initialization: ', () => {
 
 	let uiStore: UiStateStore
 	let nullService: NullStateStore
 	let lbrxManager: typeof LbrXManager
+	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		uiStore = provider.provide(UiStateStore.name)
 		nullService = provider.provide(NullStateStore.name)
 		lbrxManager = provider.provide(LbrXManager.name)
+		isDev = provider.provide(isDevFunc.name)
 	})
 
 	afterEach(() => {
@@ -54,7 +56,7 @@ describe('Store initialization: ', () => {
 	it('should throw on second initialization in development mode.', () => {
 		nullService.initialize(createCommonModel())
 		expect(() => {
-			nullService.initialize(createCommonModel())
+			isDev() && nullService.initialize(createCommonModel())
 		}).toThrow()
 	})
 
