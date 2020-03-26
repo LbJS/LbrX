@@ -1,16 +1,14 @@
-import { UiStateService } from 'test-subjects'
+import { UiStateStore } from 'test-subjects'
 import { GlobalErrorStore } from 'lbrx'
 import { filter } from 'rxjs/operators'
 
 describe('Global Error Store:', () => {
 
-	let uiService: UiStateService
 	let globalErrorStore: GlobalErrorStore<string>
 
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
-		uiService = provider.provide(UiStateService.name)
 		globalErrorStore = provider.provide<typeof GlobalErrorStore>(GlobalErrorStore.name).getStore()
 	})
 

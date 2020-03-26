@@ -1,9 +1,9 @@
 import { DevtoolsOptions } from './dev-tools-options'
-import { Subscription, throwError } from 'rxjs'
+import { Subscription } from 'rxjs'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError, isBrowser } from 'lbrx/helpers'
+import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError, isBrowser, throwError } from 'lbrx/helpers'
 import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {

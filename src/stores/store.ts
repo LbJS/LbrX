@@ -1,9 +1,9 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, throwError, isObservable } from 'rxjs'
+import { BehaviorSubject, timer, Observable, isObservable } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter, tap, skip } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
 
@@ -65,14 +65,14 @@ export class Store<T extends object, E = any> {
 	}
 	public set error(value: E | null) {
 		this._error$.next(value)
-		GlobalErrorStore.getStore<E>().setGlobalError(value)
+		if (!isNullish(value)) GlobalErrorStore.getStore<E>().setGlobalError(value)
 	}
 
 	//#endregion error-api
 	//#region state-properties
 
 	private readonly _state$ = new BehaviorSubject<T | null>(null)
-	private _state!: Readonly<T>
+	private _state: Readonly<T> = null as unknown as T
 	private set state(value: T) {
 		this._state = value
 		this._state$.next(value)
@@ -81,7 +81,7 @@ export class Store<T extends object, E = any> {
 	 * Returns stores current state's value.
 	 */
 	public get value(): T {
-		return this._state ? this._clone(this._state) : this._state
+		return isNull(this._state) ? this._state : this._clone(this._state)
 	}
 
 	private _initialState!: Readonly<T>
