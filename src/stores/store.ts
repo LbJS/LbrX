@@ -454,8 +454,7 @@ export class Store<T extends object, E = any> {
 						wasHardReseted = false
 						return false
 					}
-					if (isObject(prev) && isObject(curr)) return this._compare(prev, curr)
-					return prev === curr
+					return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
 				}),
 			)
 	}
