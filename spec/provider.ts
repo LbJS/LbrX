@@ -1,6 +1,6 @@
 import { UiStateService, UiStateStore } from 'test-subjects'
 import { activateDevToolsPushes, isDevTools, enableProdMode, isDev } from 'lbrx/mode'
-import { LbrXManager } from 'lbrx'
+import { LbrXManager, GlobalErrorStore } from 'lbrx'
 import { getGlobalStoreOptions } from 'lbrx/stores/config'
 
 export default class Provider {
@@ -15,6 +15,7 @@ export default class Provider {
 		isDev,
 		LbrXManager,
 		getGlobalStoreOptions,
+		GlobalErrorStore,
 	}
 
 	private constructor() { }

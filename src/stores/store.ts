@@ -26,7 +26,7 @@ import { GlobalErrorStore } from './global-error-store'
  * 	}
  * }
  */
-export class Store<T extends object> {
+export class Store<T extends object, E = any> {
 
 	//#region loading-state
 
@@ -48,23 +48,23 @@ export class Store<T extends object> {
 	//#endregion loading-state
 	//#region error-api
 
-	private readonly _error$ = new BehaviorSubject<any>(null)
+	private readonly _error$ = new BehaviorSubject<E | null>(null)
 	/**
 	 * Store's error state.
 	 */
-	public get error$(): Observable<any> {
+	public get error$(): Observable<E | null> {
 		return this._error$.asObservable()
 	}
 	/**
 	 * @get Returns the value from error$
 	 * @set Sets store's error state and also sets global error state.
 	 */
-	public get error(): any {
+	public get error(): E | null {
 		return this._error$.getValue()
 	}
-	public set error(value: any) {
+	public set error(value: E | null) {
 		this._error$.next(value)
-		GlobalErrorStore.setGlobalError(value)
+		GlobalErrorStore.getStore<E>().setGlobalError(value)
 	}
 
 	//#endregion error-api

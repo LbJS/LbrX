@@ -1,23 +1,35 @@
 import { BehaviorSubject, Observable } from 'rxjs'
+import { isNull } from 'lbrx/helpers'
 
 /**
- * Global Error-API. Will emit errors from all stores.
+ * Global Error-API. Will hold and emit the last error from all stores.
  */
-export class GlobalErrorStore {
+export class GlobalErrorStore<T = any> {
 
-	private static readonly _globalError$ = new BehaviorSubject<any>(null)
-	public static readonly globalError$ = (): Observable<any> => {
-		return GlobalErrorStore._globalError$.asObservable()
-	}
-	public static readonly getGlobalError = (): any => {
-		return GlobalErrorStore._globalError$.getValue()
-	}
-	public static readonly setGlobalError = (value: any): void => {
-		return GlobalErrorStore._globalError$.next(value)
-	}
-	public static readonly isGlobalError = (): boolean => {
-		return !!GlobalErrorStore._globalError$.getValue()
+	private static _globalErrorStore: GlobalErrorStore | null = null
+
+	private readonly _globalError$ = new BehaviorSubject<T | null>(null)
+
+	public readonly globalError$: Observable<T | null> = this._globalError$.asObservable()
+
+	protected constructor() { }
+
+	public static getStore<E>(): GlobalErrorStore<E> {
+		if (isNull(GlobalErrorStore._globalErrorStore)) {
+			GlobalErrorStore._globalErrorStore = new GlobalErrorStore<E>()
+		}
+		return GlobalErrorStore._globalErrorStore
 	}
 
-	private constructor() { }
+	public getGlobalError(): T | null {
+		return this._globalError$.getValue()
+	}
+
+	public setGlobalError(value: T | null): void {
+		return this._globalError$.next(value)
+	}
+
+	public isGlobalError(): boolean {
+		return !!this._globalError$.getValue()
+	}
 }
