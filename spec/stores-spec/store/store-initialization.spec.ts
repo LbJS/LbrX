@@ -26,5 +26,5 @@ describe('Store initialization: ', () => {
 			expect(value).toStrictEqual(createInitialUiState())
 			done()
 		})
-	})
+	}, 100)
 })
