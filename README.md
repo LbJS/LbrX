@@ -14,11 +14,11 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Redux DevTools both ways support
 - [x] Deep nested objects support
 - [x] Global default store configurations
+- [x] Async initialization support (Promise and Observable)
 - [ ] Full spec coverage of the above - wip
 - [ ] Better playground on the repository - wip
 - [ ] Partial documentation
 - [ ] Serialization and denationalization configuration for browser storage
-- [ ] Async initialization support (Promise and Observable)
 - [ ] **List Store**
 - [ ] Full spec coverage of the above
 - [ ] Full documentation
