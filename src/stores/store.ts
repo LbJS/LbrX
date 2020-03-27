@@ -1,6 +1,6 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, isObservable } from 'rxjs'
-import { debounce, map, distinctUntilChanged, filter, tap, skip } from 'rxjs/operators'
+import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
+import { debounce, map, distinctUntilChanged, filter, tap, skip, mergeMap, switchMap } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError } from 'lbrx/helpers'
@@ -149,7 +149,6 @@ export class Store<T extends object, E = any> {
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
-		this._setLocalSubscribers()
 	}
 
 	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
@@ -218,16 +217,6 @@ export class Store<T extends object, E = any> {
 
 	private _setState(newStateFn: (state: Readonly<T>) => T): void {
 		this.state = isDev() ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
-	}
-
-	private _setLocalSubscribers(): void {
-		this.isLoading$
-			.pipe(
-				skip(1),
-				filter(x => !x),
-			).subscribe(() => {
-				this._state$.next(this._state)
-			})
 	}
 
 	//#endregion private-section
@@ -411,13 +400,20 @@ export class Store<T extends object, E = any> {
 	 */
 	public select<R>(project: (state: T) => R): Observable<R>
 	public select<R>(project?: (state: T) => R): Observable<T | R> {
+		const isLoadingPiped$ = this.isLoading$
+			.pipe(
+				filter(x => !x),
+				distinctUntilChanged(),
+				switchMap(() => this._state$),
+			)
 		let wasHardReseted = false
 		return this._state$.asObservable()
 			.pipe(
 				tap(x => {
 					if (!wasHardReseted) wasHardReseted = !x && this.isLoading
 				}),
-				filter<T>(x => !!x && !this.isLoading),
+				mergeMap(x => iif(() => this.isLoading, isLoadingPiped$, of(x))),
+				filter(x => !!x),
 				map<T, R | T>(project || (x => x)),
 				map(x => isObject(x) ? this._clone(x) : x),
 				distinctUntilChanged((prev, curr) => {
