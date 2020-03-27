@@ -95,3 +95,10 @@ setTimeout(async () => {
 		.initializeAsync(of(createLeon()))
 }, 600)
 
+setTimeout(() => {
+	userStore.isLoading = false
+}, 650)
+
+setTimeout(() => {
+	userStore.isLoading = false
+}, 700)

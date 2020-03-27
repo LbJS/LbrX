@@ -1,6 +1,6 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
-import { debounce, map, distinctUntilChanged, filter, tap, skip, mergeMap, switchMap } from 'rxjs/operators'
+import { BehaviorSubject, timer, Observable, isObservable, of, iif, pipe } from 'rxjs'
+import { debounce, map, distinctUntilChanged, filter, tap, mergeMap, switchMap } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError } from 'lbrx/helpers'
@@ -31,6 +31,7 @@ export class Store<T extends object, E = any> {
 
 	//#region loading-state
 
+	private readonly _isLoading$ = new BehaviorSubject<boolean>(false)
 	/**
 	 * Weather or not the store is in it's loading state.
 	 * - If the initial value at the constructor is null,
@@ -38,12 +39,18 @@ export class Store<T extends object, E = any> {
 	 * then will set it self to none loading state after it wil be initialized.
 	 * - While the store is in loading state, no values will be emitted to state's subscribers.
 	 */
-	public readonly isLoading$ = new BehaviorSubject<boolean>(false)
+	public get isLoading$(): Observable<boolean> {
+		return this._isLoading$.asObservable().pipe(distinctUntilChanged())
+	}
 	/**
-	 * Returns the value from isLoading$.
+	 * @get Returns store's loading state.
+	 * @set Sets store's loading state.
 	 */
 	public get isLoading(): boolean {
-		return this.isLoading$.getValue()
+		return this._isLoading$.getValue()
+	}
+	public set isLoading(value: boolean) {
+		this._isLoading$.next(value)
 	}
 
 	//#endregion loading-state
@@ -144,7 +151,7 @@ export class Store<T extends object, E = any> {
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
 		if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
 		if (isNull(initialStateOrNull)) {
-			this.isLoading$.next(true)
+			this._isLoading$.next(true)
 			isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
 		} else {
 			this._initializeStore(initialStateOrNull)
@@ -236,7 +243,7 @@ export class Store<T extends object, E = any> {
 			return
 		}
 		this._initializeStore(initialState)
-		this.isLoading$.next(false)
+		this._isLoading$.next(false)
 	}
 
 	/**
@@ -269,7 +276,7 @@ export class Store<T extends object, E = any> {
 						if (modifiedResult) r = modifiedResult
 					}
 					this._initializeStore(r)
-					this.isLoading$.next(false)
+					this._isLoading$.next(false)
 				}
 			}).catch(e => {
 				if (isFunction(this['onAsyncInitError'])) {
@@ -365,7 +372,7 @@ export class Store<T extends object, E = any> {
 			isDev() ? throwError(errMsg) : logError(errMsg)
 		} else {
 			isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
-			this.isLoading$.next(true)
+			this._isLoading$.next(true)
 			this.state = null as unknown as T
 			this._initialState = null as unknown as T
 			this.error = null
@@ -400,7 +407,7 @@ export class Store<T extends object, E = any> {
 	 */
 	public select<R>(project: (state: T) => R): Observable<R>
 	public select<R>(project?: (state: T) => R): Observable<T | R> {
-		const isLoadingPiped$ = this.isLoading$
+		const tillLoaded$ = this._isLoading$.asObservable()
 			.pipe(
 				filter(x => !x),
 				distinctUntilChanged(),
@@ -412,10 +419,12 @@ export class Store<T extends object, E = any> {
 				tap(x => {
 					if (!wasHardReseted) wasHardReseted = !x && this.isLoading
 				}),
-				mergeMap(x => iif(() => this.isLoading, isLoadingPiped$, of(x))),
-				filter(x => !!x),
-				map<T, R | T>(project || (x => x)),
-				map(x => isObject(x) ? this._clone(x) : x),
+				mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
+				filter<T>(x => !!x),
+				map<T, T | R>(x => {
+					const data = project ? project(x) : x
+					return isObject(data) ? this._clone(data) : data
+				}),
 				distinctUntilChanged((prev, curr) => {
 					if (wasHardReseted) {
 						wasHardReseted = false
