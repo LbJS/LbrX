@@ -10,8 +10,6 @@ let globalStoreOptions: Required<GlobalStoreConfigOptions> = {
 	customStorage: null,
 	objectCompareType: ObjectCompareTypes.advanced,
 	isSimpleCloning: false,
-	onAsyncInitialization: data => data,
-	onAsyncInitializationError: error => error,
 }
 
 export function setGlobalStoreConfig(options: GlobalStoreConfigOptions): void {

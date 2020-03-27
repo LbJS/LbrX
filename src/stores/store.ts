@@ -275,12 +275,17 @@ export class Store<T extends object, E = any> {
 				if (!this.isLoading || this._initialState || this._state) {
 					isDev() && reject('The store was initialized multiple time while it was in loading state.')
 				} else {
-					r = this._config.onAsyncInitialization(r)
+					if (isFunction(this['onAsyncInitSuccess'])) {
+						const modifiedResult = this['onAsyncInitSuccess'](r)
+						if (modifiedResult) r = modifiedResult
+					}
 					this._initializeStore(r)
 					this.isLoading$.next(false)
 				}
 			}).catch(e => {
-				e = this._config.onAsyncInitializationError(e)
+				if (isFunction(this['onAsyncInitError'])) {
+					e = this['onAsyncInitError'](e)
+				}
 				e && reject(e)
 			}).finally(resolve)
 		})

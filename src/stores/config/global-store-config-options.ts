@@ -46,17 +46,4 @@ export interface GlobalStoreConfigOptions {
 	 * isSimpleCloning = false
 	 */
 	isSimpleCloning?: boolean
-	/**
-	 * Will be called after async initialization data was received
-	 * and before any set state functionality.
-	 * - Allows mapping or any data manipulations to the received data.
-	 */
-	onAsyncInitialization?: <T extends object>(state: T) => T
-	/**
-	 * Will be called after async initialization error is received.
-	 * - Allows error manipulation.
-	 * - If the function will return the error, it will be rejected and thrown by the store.
-	 * - If function will return void, no the error will be discontinued.
-	 */
-	onAsyncInitializationError?: (error?: Error | any) => Error | void
 }
