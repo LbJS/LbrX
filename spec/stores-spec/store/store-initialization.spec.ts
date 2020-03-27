@@ -5,14 +5,14 @@ import { isDev as isDevFunc } from 'lbrx/mode'
 describe('Store Initialization: ', () => {
 
 	let uiStore: UiStateStore
-	let nullService: NullStateStore
+	let nullStore: NullStateStore
 	let lbrxManager: typeof LbrXManager
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		uiStore = provider.provide(UiStateStore.name)
-		nullService = provider.provide(NullStateStore.name)
+		nullStore = provider.provide(NullStateStore.name)
 		lbrxManager = provider.provide(LbrXManager.name)
 		isDev = provider.provide(isDevFunc.name)
 	})
@@ -37,52 +37,52 @@ describe('Store Initialization: ', () => {
 	}, 100)
 
 	it('should have null as an initial value.', () => {
-		expect(nullService.value).toBeNull()
+		expect(nullStore.value).toBeNull()
 	})
 
 	it('should set the initial value after initialization.', () => {
-		nullService.initialize(createCommonModel())
-		expect(nullService.value).toStrictEqual(createCommonModel())
+		nullStore.initialize(createCommonModel())
+		expect(nullStore.value).toStrictEqual(createCommonModel())
 	})
 
 	it('should return the initial state from observable after initialization.', done => {
-		nullService.select().subscribe(value => {
+		nullStore.select().subscribe(value => {
 			expect(value).toStrictEqual(createCommonModel())
 			done()
 		})
-		nullService.initialize(createCommonModel())
+		nullStore.initialize(createCommonModel())
 	}, 100)
 
 	it('should throw on second initialization in development mode.', () => {
-		nullService.initialize(createCommonModel())
+		nullStore.initialize(createCommonModel())
 		expect(() => {
-			isDev() && nullService.initialize(createCommonModel())
+			isDev() && nullStore.initialize(createCommonModel())
 		}).toThrow()
 	})
 
 	it('should not throw on second initialization in production mode.', () => {
 		lbrxManager.enableProdMode()
-		nullService.initialize(createCommonModel())
+		nullStore.initialize(createCommonModel())
 		expect(() => {
-			nullService.initialize(createCommonModel())
+			nullStore.initialize(createCommonModel())
 		}).not.toThrow()
 	})
 
 	it('should not contain second initialization value in production mode.', () => {
 		lbrxManager.enableProdMode()
-		nullService.initialize(createCommonModel())
-		nullService.initialize({ data: 'test' })
-		expect(nullService.value).toStrictEqual(createCommonModel())
+		nullStore.initialize(createCommonModel())
+		nullStore.initialize({ data: 'test' })
+		expect(nullStore.value).toStrictEqual(createCommonModel())
 	})
 
 	it('should have value after loading is finished.', done => {
-		nullService.isLoading$
+		nullStore.isLoading$
 			.subscribe(value => {
 				if (!value) {
-					expect(nullService.value).toStrictEqual(createCommonModel())
+					expect(nullStore.value).toStrictEqual(createCommonModel())
 					done()
 				}
 			})
-		nullService.initialize(createCommonModel())
+		nullStore.initialize(createCommonModel())
 	}, 100)
 })
