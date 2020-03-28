@@ -14,7 +14,7 @@ export function createInitialUiState(): UiState {
 @StoreConfig({
 	name: 'UI-STATE-STORE'
 })
-export class UiStateStore extends Store<UiState, string> {
+export class UiStateStore extends Store<UiState, Error> {
 
 	constructor() {
 		super(createInitialUiState())

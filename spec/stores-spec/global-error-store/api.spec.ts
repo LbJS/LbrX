@@ -1,10 +1,10 @@
 import { GlobalErrorStore } from 'lbrx'
 import { filter } from 'rxjs/operators'
+import { timer } from 'rxjs'
 
-describe('Global Error Store:', () => {
+describe('Global Error Store API:', () => {
 
 	let globalErrorStore: GlobalErrorStore<string>
-
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
@@ -16,34 +16,34 @@ describe('Global Error Store:', () => {
 	})
 
 	it('should have null as the default error value', () => {
-		expect(globalErrorStore.getGlobalError()).toBeNull()
+		expect(globalErrorStore.getError()).toBeNull()
 	})
 
 	it('should return that no error exist by default.', () => {
-		expect(globalErrorStore.isGlobalError()).toBeFalsy()
+		expect(globalErrorStore.isError()).toBeFalsy()
 	})
 
 	it('should return that an error exist after setting a new error.', () => {
 		const errorMsg = 'Some Error.'
-		globalErrorStore.setGlobalError(errorMsg)
-		expect(globalErrorStore.isGlobalError()).toBeTruthy()
+		globalErrorStore.setError(errorMsg)
+		expect(globalErrorStore.isError()).toBeTruthy()
 	})
 
 	it('should return the error message after setting a new error.', () => {
 		const errorMsg = 'Some Error.'
-		globalErrorStore.setGlobalError(errorMsg)
-		expect(globalErrorStore.getGlobalError()).toBe(errorMsg)
+		globalErrorStore.setError(errorMsg)
+		expect(globalErrorStore.getError()).toBe(errorMsg)
 	})
 
 	it('should return the error message from observable after setting a new error.', done => {
 		const errorMsg = 'Some Error.'
-		globalErrorStore.globalError$
+		globalErrorStore.error$
 			.pipe(filter(x => !!x))
 			.subscribe(value => {
 				expect(value).toBe(errorMsg)
 				done()
 			})
-		globalErrorStore.setGlobalError(errorMsg)
+		globalErrorStore.setError(errorMsg)
 	}, 100)
 
 	it('should return the errors data flow.', done => {
@@ -55,7 +55,7 @@ describe('Global Error Store:', () => {
 		]
 		let valueIndex = 0
 		let isFirstCheck = true
-		globalErrorStore.globalError$.subscribe(value => {
+		globalErrorStore.error$.subscribe(value => {
 			if (isFirstCheck) {
 				expect(value).toBeNull()
 				isFirstCheck = false
@@ -66,8 +66,20 @@ describe('Global Error Store:', () => {
 		})
 		errorsList.forEach((value, i) => {
 			setTimeout(() => {
-				globalErrorStore.setGlobalError(value)
+				globalErrorStore.setError(value)
 			}, i * 10)
 		})
 	}, 500)
+
+	it('null value should not be emitted more then once.', async () => {
+		let nullCounter = 0
+		globalErrorStore.error$.subscribe(value => {
+			if (value === null) nullCounter++
+		})
+		globalErrorStore.setError(null)
+		globalErrorStore.setError(null)
+		globalErrorStore.setError(null)
+		await timer(100).toPromise()
+		expect(nullCounter).toBe(1)
+	}, 200)
 })

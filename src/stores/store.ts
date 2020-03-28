@@ -1,9 +1,9 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, isObservable, of, iif, pipe } from 'rxjs'
+import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter, tap, mergeMap, switchMap } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError, isError, cloneError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
 
@@ -62,17 +62,14 @@ export class Store<T extends object, E = any> {
 	 */
 	public get error$(): Observable<E | null> {
 		return this._error$.asObservable()
-	}
-	/**
-	 * @get Returns the value from error$
-	 * @set Sets store's error state and also sets global error state.
-	 */
-	public get error(): E | null {
-		return this._error$.getValue()
-	}
-	public set error(value: E | null) {
-		this._error$.next(value)
-		if (!isNullish(value)) GlobalErrorStore.getStore<E>().setGlobalError(value)
+			.pipe(
+				map(x => {
+					if (isError(x)) return cloneError(x)
+					if (isObject(x)) return cloneObject(x)
+					return x
+				}),
+				distinctUntilChanged((prev, curr) => isNull(prev) && isNull(curr)),
+			)
 	}
 
 	//#endregion error-api
@@ -375,7 +372,7 @@ export class Store<T extends object, E = any> {
 			this._isLoading$.next(true)
 			this.state = null as unknown as T
 			this._initialState = null as unknown as T
-			this.error = null
+			this.setError(null)
 			this._storage && this._storage.removeItem(this._storageKey)
 			isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
 		}
@@ -433,6 +430,29 @@ export class Store<T extends object, E = any> {
 					return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
 				}),
 			)
+	}
+
+	/**
+	 * Returns the store's error state value.
+	 */
+	public getError(): E | null {
+		const value = this._error$.getValue()
+		if (isError(value)) return cloneError(value)
+		if (isObject(value)) return cloneObject(value)
+		return value
+	}
+
+	/**
+	 * Sets store's error state and also sets global error state if the value is not null.
+	 */
+	public setError(value: E | null): void {
+		if (isError(value)) {
+			value = cloneError(value)
+		} else if (isObject(value)) {
+			value = cloneObject(value)
+		}
+		this._error$.next(value)
+		if (!isNullish(value)) GlobalErrorStore.getStore<E>().setError(value)
 	}
 
 	//#endregion public-api
