@@ -1,7 +1,7 @@
 import { GlobalErrorStore } from 'lbrx'
 import { createError, createCustomError, CustomError } from 'test-subjects'
 
-describe('Global Error Store, Error Object:', () => {
+describe('Global Error Store, Error Reference:', () => {
 
 	let globalErrorStore: GlobalErrorStore<Error>
 
@@ -30,6 +30,21 @@ describe('Global Error Store, Error Object:', () => {
 		const error = createError()
 		globalErrorStore.setError(error)
 		error.message = errMsg
+		expect(globalErrorStore.getError()?.message).toBeTruthy()
+		expect(globalErrorStore.getError()?.message).not.toBe(errMsg)
+	})
+
+	it("should not be effected by returned error object's change.", () => {
+		const errMsg = 'New Error Msg'
+		let error: Error | null = createError()
+		globalErrorStore.setError(error)
+		error = globalErrorStore.getError()
+		if (error) {
+			error.message = errMsg
+		} else {
+			fail('Invalid returned value.')
+		}
+		expect(globalErrorStore.getError()?.message).toBeTruthy()
 		expect(globalErrorStore.getError()?.message).not.toBe(errMsg)
 	})
 

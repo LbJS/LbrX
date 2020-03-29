@@ -1,5 +1,5 @@
 import { GlobalErrorStore } from 'lbrx'
-import { filter } from 'rxjs/operators'
+import { filter, skip } from 'rxjs/operators'
 import { timer } from 'rxjs'
 
 describe('Global Error Store API:', () => {
@@ -46,7 +46,7 @@ describe('Global Error Store API:', () => {
 		globalErrorStore.setError(errorMsg)
 	}, 100)
 
-	it('should return the errors data flow.', done => {
+	it('should return the errors data flow from observable.', done => {
 		const errorsList = [
 			'First Error',
 			'Second Error',
@@ -54,15 +54,11 @@ describe('Global Error Store API:', () => {
 			'Third Error',
 		]
 		let valueIndex = 0
-		let isFirstCheck = true
-		globalErrorStore.error$.subscribe(value => {
-			if (isFirstCheck) {
-				expect(value).toBeNull()
-				isFirstCheck = false
-			} else {
-				expect(value).toBe(errorsList[valueIndex++])
-				if (valueIndex == errorsList.length) done()
-			}
+		globalErrorStore.error$.pipe(
+			skip(1),
+		).subscribe(value => {
+			expect(value).toBe(errorsList[valueIndex++])
+			if (valueIndex == errorsList.length) done()
 		})
 		errorsList.forEach((value, i) => {
 			setTimeout(() => {
@@ -71,7 +67,7 @@ describe('Global Error Store API:', () => {
 		})
 	}, 500)
 
-	it('null value should not be emitted more then once.', async () => {
+	it('should not emit null value more then once.', async () => {
 		let nullCounter = 0
 		globalErrorStore.error$.subscribe(value => {
 			if (value === null) nullCounter++
