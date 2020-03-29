@@ -68,7 +68,7 @@ describe('Helper Function - compareObjects():', () => {
 			birthday: new Date(2000, 0, 1),
 			someDate: new Date(2000, 0, 2),
 			someOtherDate: new Date(2000, 0, 5),
-			betterDate: new Date(1700),
+			betterDate: new Date(1700, 0),
 			nestedObject: {
 				nestedValue: {
 					randomList: [
@@ -100,7 +100,7 @@ describe('Helper Function - compareObjects():', () => {
 			birthday: new Date(2000, 0, 1),
 			someDate: new Date(2000, 0, 2),
 			someOtherDate: new Date(2000, 0, 5),
-			betterDate: new Date(1700),
+			betterDate: new Date(1700, 0),
 			nestedObject: {
 				nestedValue: {
 					randomList: [
