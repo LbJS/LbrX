@@ -418,10 +418,7 @@ export class Store<T extends object, E = any> {
 				}),
 				mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
 				filter<T>(x => !!x),
-				map<T, T | R>(x => {
-					const data = project ? project(x) : x
-					return isObject(data) ? this._clone(data) : data
-				}),
+				map<T, T | R>(project || (x => x)),
 				distinctUntilChanged((prev, curr) => {
 					if (wasHardReseted) {
 						wasHardReseted = false
@@ -429,6 +426,7 @@ export class Store<T extends object, E = any> {
 					}
 					return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
 				}),
+				map(x => isObject(x) ? this._clone(x) : x),
 			)
 	}
 
