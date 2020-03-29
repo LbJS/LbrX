@@ -1,10 +1,11 @@
 import { GlobalErrorStore } from 'lbrx'
 import { filter, skip } from 'rxjs/operators'
 import { timer } from 'rxjs'
+import { createError, createCustomError } from 'test-subjects'
 
 describe('Global Error Store API:', () => {
 
-	let globalErrorStore: GlobalErrorStore<string>
+	let globalErrorStore: GlobalErrorStore<string | Error>
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
@@ -78,4 +79,14 @@ describe('Global Error Store API:', () => {
 		await timer(100).toPromise()
 		expect(nullCounter).toBe(1)
 	}, 200)
+
+	it('should be the exact same error object.', () => {
+		globalErrorStore.setError(createError())
+		expect(globalErrorStore.getError()).toMatchObject(createError())
+	})
+
+	it('should be the exact same nested custom error object.', () => {
+		globalErrorStore.setError(createCustomError())
+		expect(globalErrorStore.getError()).toMatchObject(createCustomError())
+	})
 })

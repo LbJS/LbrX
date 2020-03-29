@@ -1,7 +1,7 @@
 import { GlobalErrorStore } from 'lbrx'
 import { createError, createCustomError, CustomError } from 'test-subjects'
 
-describe('Global Error Store, Error Reference:', () => {
+describe('Global Error Store - Error Reference:', () => {
 
 	let globalErrorStore: GlobalErrorStore<Error>
 
@@ -12,11 +12,6 @@ describe('Global Error Store, Error Reference:', () => {
 
 	afterEach(() => {
 		jest.resetModules()
-	})
-
-	it('should be the exact same error object.', () => {
-		globalErrorStore.setError(createError())
-		expect(globalErrorStore.getError()).toMatchObject(createError())
 	})
 
 	it('should have different error object reference.', () => {
@@ -46,11 +41,6 @@ describe('Global Error Store, Error Reference:', () => {
 		}
 		expect(globalErrorStore.getError()?.message).toBeTruthy()
 		expect(globalErrorStore.getError()?.message).not.toBe(errMsg)
-	})
-
-	it('should be the exact same nested custom error object.', () => {
-		globalErrorStore.setError(createCustomError())
-		expect(globalErrorStore.getError()).toMatchObject(createCustomError())
 	})
 
 	it('should have different nested custom error object reference.', () => {
