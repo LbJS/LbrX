@@ -6,6 +6,7 @@ import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError, isError, cloneError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
+import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
 
 // tslint:disable: no-redundant-jsdoc
 // tslint:disable: unified-signatures
@@ -146,6 +147,8 @@ export class Store<T extends object, E = any> {
 	private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
 		this._initializeConfig(storeConfig)
 		if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
+		validateStoreName(this._storeName)
+		if (this._config.storageType != Storages.none) validateStorageKey(this._storageKey, this._storeName)
 		if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
 		if (isNull(initialStateOrNull)) {
 			this._isLoading$.next(true)
@@ -180,10 +183,10 @@ export class Store<T extends object, E = any> {
 			}
 		})()
 		this._config.storageTypeName = [
-			'none',
+			'None',
 			'Local-Storage',
 			'Session-Storage',
-			this._config.customStorage ? 'Custom' : 'none'
+			this._config.customStorage ? 'Custom' : 'None'
 		][this._config.storageType]
 		this._storageDebounce = this._config.storageDebounceTime
 		this._storageKey = this._config.storageKey

@@ -36,10 +36,6 @@ export class DevToolsManager {
 				devTools.send({ type: `[${storeName}] - Loading...` }, this._appState)
 			}),
 			DevToolsSubjects.initEvent$.subscribe(store => {
-				if (this._appState[store.name] && this._appState[store.name] !== StoreStates.loading) {
-					const errorMsg = `There are multiple store with the same store name: "${store.name}"!`
-					isDev() ? throwError(errorMsg) : logError(errorMsg)
-				}
 				this._appState = objectAssign(this._appState, { [store.name]: store.state })
 				devTools.send({ type: `[${store.name}] - @@INIT` }, this._appState)
 			}),

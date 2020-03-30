@@ -1,18 +1,18 @@
 import { NullStateStore, createCommonModel } from 'test-subjects'
-import { LbrXManager } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx'
 import { isDev as isDevFunc } from 'lbrx/mode'
 import { of, timer, throwError } from 'rxjs'
 
 describe('Store Async Initialization:', () => {
 
 	let nullStore: NullStateStore
-	let lbrxManager: typeof LbrXManager
+	let LbrXManager: typeof LbrXManager_type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		nullStore = provider.provide(NullStateStore.name)
-		lbrxManager = provider.provide(LbrXManager.name)
+		LbrXManager = provider.provide(LbrXManager_type.name)
 		isDev = provider.provide(isDevFunc.name)
 	})
 
@@ -56,13 +56,13 @@ describe('Store Async Initialization:', () => {
 	}, 200)
 
 	it('should not throw on second initialization in production mode.', async () => {
-		lbrxManager.enableProdMode()
+		LbrXManager.enableProdMode()
 		nullStore.initializeAsync(of(createCommonModel()))
 		await expect(nullStore.initializeAsync(of(createCommonModel()))).resolves.toBeUndefined()
 	})
 
 	it('should not throw on second initialization with delay in production mode.', async () => {
-		lbrxManager.enableProdMode()
+		LbrXManager.enableProdMode()
 		nullStore.initializeAsync(of(createCommonModel()))
 		await timer(100).toPromise()
 		await expect(nullStore.initializeAsync(of(createCommonModel()))).resolves.toBeUndefined()

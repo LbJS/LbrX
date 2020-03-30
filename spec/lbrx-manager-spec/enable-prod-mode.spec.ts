@@ -1,15 +1,15 @@
-import { LbrXManager } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx'
 import { isDev as isDevFunc } from 'lbrx/mode'
 
 describe('LbrXManager enableProdMode():', () => {
 
 
-	let lbrxManager: typeof LbrXManager
+	let LbrXManager: typeof LbrXManager_type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
-		lbrxManager = provider.provide(LbrXManager.name)
+		LbrXManager = provider.provide(LbrXManager_type.name)
 		isDev = provider.provide(isDevFunc.name)
 	})
 
@@ -18,12 +18,12 @@ describe('LbrXManager enableProdMode():', () => {
 	})
 
 	it('should set isDev to false.', () => {
-		lbrxManager.enableProdMode()
+		LbrXManager.enableProdMode()
 		expect(isDev()).toBeFalsy()
 	})
 
 	it('should return LbrXManager.', () => {
-		const value = lbrxManager.enableProdMode()
-		expect(value).toStrictEqual(lbrxManager)
+		const value = LbrXManager.enableProdMode()
+		expect(value).toStrictEqual(LbrXManager)
 	})
 })

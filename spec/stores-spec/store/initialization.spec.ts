@@ -1,19 +1,19 @@
 import { createInitialUiState, NullStateStore, UiStateStore, createCommonModel } from 'test-subjects'
-import { LbrXManager } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx'
 import { isDev as isDevFunc } from 'lbrx/mode'
 
 describe('Store Initialization: ', () => {
 
 	let uiStore: UiStateStore
 	let nullStore: NullStateStore
-	let lbrxManager: typeof LbrXManager
+	let LbrXManager: typeof LbrXManager_type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		uiStore = provider.provide(UiStateStore.name)
 		nullStore = provider.provide(NullStateStore.name)
-		lbrxManager = provider.provide(LbrXManager.name)
+		LbrXManager = provider.provide(LbrXManager_type.name)
 		isDev = provider.provide(isDevFunc.name)
 	})
 
@@ -61,7 +61,7 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should not throw on second initialization in production mode.', () => {
-		lbrxManager.enableProdMode()
+		LbrXManager.enableProdMode()
 		nullStore.initialize(createCommonModel())
 		expect(() => {
 			nullStore.initialize(createCommonModel())
@@ -69,7 +69,7 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should not contain second initialization value in production mode.', () => {
-		lbrxManager.enableProdMode()
+		LbrXManager.enableProdMode()
 		nullStore.initialize(createCommonModel())
 		nullStore.initialize({ data: 'test' })
 		expect(nullStore.value).toStrictEqual(createCommonModel())

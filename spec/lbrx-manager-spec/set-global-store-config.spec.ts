@@ -1,14 +1,14 @@
-import { ObjectCompareTypes, Storages, LbrXManager } from 'lbrx'
+import { ObjectCompareTypes, Storages, LbrXManager as LbrXManager_type } from 'lbrx'
 import { GlobalStoreConfigOptions, getGlobalStoreOptions as getGlobalStoreOptionsFunc } from 'lbrx/stores/config'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 
-	let lbrxManager: typeof LbrXManager
+	let LbrXManager: typeof LbrXManager_type
 	let getGlobalStoreOptions: () => GlobalStoreConfigOptions
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
-		lbrxManager = provider.provide(LbrXManager.name)
+		LbrXManager = provider.provide(LbrXManager_type.name)
 		getGlobalStoreOptions = provider.provide(getGlobalStoreOptionsFunc.name)
 	})
 
@@ -17,7 +17,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	})
 
 	it('should set global store configurations.', () => {
-		lbrxManager.setGlobalStoreConfig({
+		LbrXManager.setGlobalStoreConfig({
 			isResettable: false,
 			isSimpleCloning: true,
 			objectCompareType: ObjectCompareTypes.reference,
@@ -35,7 +35,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	})
 
 	it('should set global store configurations.', () => {
-		lbrxManager.setGlobalStoreConfig({
+		LbrXManager.setGlobalStoreConfig({
 			objectCompareType: ObjectCompareTypes.simple
 		})
 		expect(getGlobalStoreOptions()).toMatchObject(<GlobalStoreConfigOptions>{
@@ -49,7 +49,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	})
 
 	it('should return LbrXManager.', () => {
-		const value = lbrxManager.setGlobalStoreConfig({})
-		expect(value).toStrictEqual(lbrxManager)
+		const value = LbrXManager.setGlobalStoreConfig({})
+		expect(value).toStrictEqual(LbrXManager)
 	})
 })

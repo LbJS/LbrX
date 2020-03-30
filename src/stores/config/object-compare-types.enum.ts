@@ -5,6 +5,7 @@
 export const enum ObjectCompareTypes {
 	/**
 	 * Object's change detection will be checked by object's reference.
+	 * Using === operator.
 	 * - Very fast for big objects and heavy callbacks.
 	 */
 	reference,

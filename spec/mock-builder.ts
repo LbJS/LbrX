@@ -1,4 +1,4 @@
-import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow } from 'mocks'
+import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow, mockLocalStorage, deleteLocalStorageMock } from 'mocks'
 
 export default class MockBuilder {
 
@@ -12,19 +12,25 @@ export default class MockBuilder {
 	}
 
 	public static mockReduxDevToolsExtension(): typeof MockBuilder {
-		if (!MockBuilder.jobsList.map(f => f.name).includes(mockWindow.name)) {
-			throw new Error('Build Window object first before building Redux Dev Tools Extension.')
-		}
 		MockBuilder.jobsList.push(mockReduxDevToolsExtension)
 		return MockBuilder
 	}
 
+	public static mockLocalStorage(): typeof MockBuilder {
+		MockBuilder.jobsList.push(mockLocalStorage)
+		return MockBuilder
+	}
+
 	public static build(): void {
+		if (!MockBuilder.jobsList.map(f => f.name).includes(mockWindow.name)) {
+			mockWindow()
+		}
 		MockBuilder.jobsList.forEach(f => f())
 		MockBuilder.jobsList = []
 	}
 
 	public static deleteAllMocks(): void {
+		deleteLocalStorageMock()
 		deleteMockedWindow()
 	}
 }
