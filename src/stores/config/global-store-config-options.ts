@@ -28,7 +28,7 @@ export interface GlobalStoreConfigOptions {
 	/**
 	 * Custom storage-api. Will be used if custom storage type was selected.
 	 */
-	customStorage?: Storage | null
+	customStorageApi?: Storage | null
 	/**
 	 * Object's change detection strategy.
 	 * Performance may vary depends on object's size and the wight of the callbacks.

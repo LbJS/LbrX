@@ -30,7 +30,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 			objectCompareType: ObjectCompareTypes.reference,
 			storageDebounceTime: 500,
 			storageType: Storages.local,
-			customStorage: null,
+			customStorageApi: null,
 		})
 	})
 
@@ -44,7 +44,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 			objectCompareType: ObjectCompareTypes.simple,
 			storageDebounceTime: 2000,
 			storageType: Storages.none,
-			customStorage: null,
+			customStorageApi: null,
 		})
 	})
 

@@ -3,7 +3,7 @@ import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter, tap, mergeMap, switchMap } from 'rxjs/operators'
 import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError, isError, cloneError } from 'lbrx/helpers'
+import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError, isError, cloneError, logWarn } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { GlobalErrorStore } from './global-error-store'
 import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
@@ -174,19 +174,29 @@ export class Store<T extends object, E = any> {
 			}
 		})()
 		this._config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
+		if (this._config.storageType != Storages.custom) {
+			if (this._config.customStorageApi) {
+				logWarn(`Custom storage api is configured but storage type is not set to custom. Store name: ${this._storeName}`)
+			}
+			this._config.customStorageApi = null
+		}
+		if (this._config.storageType == Storages.custom && !this._config.customStorageApi) {
+			logWarn(`Custom storage type is configured while custom storage api is not. Store name: ${this._storeName}`)
+			this._config.storageType = Storages.none
+		}
 		this._storage = (() => {
 			switch (this._config.storageType) {
 				case Storages.none: return null
 				case Storages.local: return localStorage
 				case Storages.session: return sessionStorage
-				case Storages.custom: return this._config.customStorage ? this._config.customStorage : null
+				case Storages.custom: return this._config.customStorageApi
 			}
 		})()
 		this._config.storageTypeName = [
 			'None',
 			'Local-Storage',
 			'Session-Storage',
-			this._config.customStorage ? 'Custom' : 'None'
+			'Custom',
 		][this._config.storageType]
 		this._storageDebounce = this._config.storageDebounceTime
 		this._storageKey = this._config.storageKey

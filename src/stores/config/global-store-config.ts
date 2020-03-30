@@ -7,7 +7,7 @@ let globalStoreOptions: Required<GlobalStoreConfigOptions> = {
 	isResettable: true,
 	storageType: Storages.none,
 	storageDebounceTime: 2000,
-	customStorage: null,
+	customStorageApi: null,
 	objectCompareType: ObjectCompareTypes.advanced,
 	isSimpleCloning: false,
 }
