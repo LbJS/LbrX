@@ -1,5 +1,5 @@
 
-export class Storage {
+export class GenericStorage implements Storage {
 	private _data: { [key: string]: string } = {}
 	public get length(): number {
 		return Object.keys(this._data).length

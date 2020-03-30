@@ -3,11 +3,15 @@ export function mockReduxDevToolsExtension(): void {
 	const devTools = {
 		send: () => { },
 		subscribe: () => { },
-	};
-	(window as any).__REDUX_DEVTOOLS_EXTENSION__ = {
+	}
+	globalThis.__REDUX_DEVTOOLS_EXTENSION__ = {
 		connect: (config: object) => {
-			(window as any).__REDUX_DEVTOOLS_EXTENSION__.config = config
+			globalThis.__REDUX_DEVTOOLS_EXTENSION__.config = config
 			return devTools
 		},
 	}
+}
+
+export function deleteReduxDevToolsExtensionMock(): void {
+	delete globalThis.__REDUX_DEVTOOLS_EXTENSION__
 }

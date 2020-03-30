@@ -14,8 +14,8 @@ describe('Store Config:', () => {
 		Store = provider.provide(Store_type.name)
 		isDev = provider.provide(isDevFunc.name)
 		jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
-		MockBuilder.mockLocalStorage()
-			.build()
+		MockBuilder.addLocalStorageMock()
+			.buildMocks()
 	})
 
 	afterEach(() => {

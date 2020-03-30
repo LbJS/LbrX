@@ -8,9 +8,9 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		LbrXManager = provider.provide(LbrXManager_type.name)
-		MockBuilder.mockWindow()
-			.mockReduxDevToolsExtension()
-			.build()
+		MockBuilder.addWindowMock()
+			.addReduxDevToolsExtensionMock()
+			.buildMocks()
 	})
 
 	afterEach(() => {

@@ -1,4 +1,4 @@
-import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow, mockLocalStorage, deleteLocalStorageMock, mockSessionStorage, deleteSessionStorageMock } from 'mocks'
+import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow, mockLocalStorage, deleteLocalStorageMock, mockSessionStorage, deleteSessionStorageMock, deleteReduxDevToolsExtensionMock } from 'mocks'
 
 export default class MockBuilder {
 
@@ -6,27 +6,27 @@ export default class MockBuilder {
 
 	private constructor() { }
 
-	public static mockWindow(): typeof MockBuilder {
+	public static addWindowMock(): typeof MockBuilder {
 		MockBuilder.jobsList.push(mockWindow)
 		return MockBuilder
 	}
 
-	public static mockReduxDevToolsExtension(): typeof MockBuilder {
+	public static addReduxDevToolsExtensionMock(): typeof MockBuilder {
 		MockBuilder.jobsList.push(mockReduxDevToolsExtension)
 		return MockBuilder
 	}
 
-	public static mockLocalStorage(): typeof MockBuilder {
+	public static addLocalStorageMock(): typeof MockBuilder {
 		MockBuilder.jobsList.push(mockLocalStorage)
 		return MockBuilder
 	}
 
-	public static mockSessionStorage(): typeof MockBuilder {
+	public static addSessionStorageMock(): typeof MockBuilder {
 		MockBuilder.jobsList.push(mockSessionStorage)
 		return MockBuilder
 	}
 
-	public static build(): void {
+	public static buildMocks(): void {
 		if (!MockBuilder.jobsList.map(f => f.name).includes(mockWindow.name)) {
 			mockWindow()
 		}
@@ -35,6 +35,7 @@ export default class MockBuilder {
 	}
 
 	public static deleteAllMocks(): void {
+		deleteReduxDevToolsExtensionMock()
 		deleteLocalStorageMock()
 		deleteSessionStorageMock()
 		deleteMockedWindow()

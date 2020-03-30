@@ -1,12 +1,9 @@
-import { Storage } from './generic-storage.mock'
+import { GenericStorage } from './generic-storage.mock'
 
 export function mockSessionStorage(): void {
-	const sessionStorage = new Storage();
-	(window as any).sessionStorage = sessionStorage
-	globalThis.sessionStorage = sessionStorage as any
+	globalThis.sessionStorage = new GenericStorage()
 }
 
 export function deleteSessionStorageMock(): void {
-	delete (window as any).sessionStorage
 	delete globalThis.sessionStorage
 }

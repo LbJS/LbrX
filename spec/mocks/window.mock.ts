@@ -1,8 +1,6 @@
-import { Window_Type } from 'types'
 
-export function mockWindow(): Window_Type {
-	globalThis.window = {} as Window_Type
-	return globalThis.window
+export function mockWindow(): void {
+	globalThis.window = globalThis as any
 }
 
 export function deleteMockedWindow(): void {
