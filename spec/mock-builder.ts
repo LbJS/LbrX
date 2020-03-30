@@ -1,4 +1,4 @@
-import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow, mockLocalStorage, deleteLocalStorageMock } from 'mocks'
+import { mockWindow, mockReduxDevToolsExtension, deleteMockedWindow, mockLocalStorage, deleteLocalStorageMock, mockSessionStorage, deleteSessionStorageMock } from 'mocks'
 
 export default class MockBuilder {
 
@@ -21,6 +21,11 @@ export default class MockBuilder {
 		return MockBuilder
 	}
 
+	public static mockSessionStorage(): typeof MockBuilder {
+		MockBuilder.jobsList.push(mockSessionStorage)
+		return MockBuilder
+	}
+
 	public static build(): void {
 		if (!MockBuilder.jobsList.map(f => f.name).includes(mockWindow.name)) {
 			mockWindow()
@@ -31,6 +36,7 @@ export default class MockBuilder {
 
 	public static deleteAllMocks(): void {
 		deleteLocalStorageMock()
+		deleteSessionStorageMock()
 		deleteMockedWindow()
 	}
 }
