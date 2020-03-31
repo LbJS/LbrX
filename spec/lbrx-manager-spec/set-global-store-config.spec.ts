@@ -1,15 +1,15 @@
 import { ObjectCompareTypes, Storages, LbrXManager as LbrXManager_type } from 'lbrx'
-import { GlobalStoreConfigOptions, getGlobalStoreOptions as getGlobalStoreOptionsFunc } from 'lbrx/stores/config'
+import { GlobalStoreConfigOptions, getGlobalStoreConfig as getGlobalStoreConfigFunc } from 'lbrx/stores/config'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 
 	let LbrXManager: typeof LbrXManager_type
-	let getGlobalStoreOptions: () => GlobalStoreConfigOptions
+	let getGlobalStoreConfig: () => GlobalStoreConfigOptions
 
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		LbrXManager = provider.provide(LbrXManager_type.name)
-		getGlobalStoreOptions = provider.provide(getGlobalStoreOptionsFunc.name)
+		getGlobalStoreConfig = provider.provide(getGlobalStoreConfigFunc.name)
 	})
 
 	afterEach(() => {
@@ -24,7 +24,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 			storageDebounceTime: 500,
 			storageType: Storages.local,
 		})
-		expect(getGlobalStoreOptions()).toMatchObject(<GlobalStoreConfigOptions>{
+		expect(getGlobalStoreConfig()).toMatchObject(<GlobalStoreConfigOptions>{
 			isResettable: false,
 			isSimpleCloning: true,
 			objectCompareType: ObjectCompareTypes.reference,
@@ -38,7 +38,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 		LbrXManager.setGlobalStoreConfig({
 			objectCompareType: ObjectCompareTypes.simple
 		})
-		expect(getGlobalStoreOptions()).toMatchObject(<GlobalStoreConfigOptions>{
+		expect(getGlobalStoreConfig()).toMatchObject(<GlobalStoreConfigOptions>{
 			isResettable: true,
 			isSimpleCloning: false,
 			objectCompareType: ObjectCompareTypes.simple,
