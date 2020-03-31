@@ -46,4 +46,22 @@ export interface GlobalStoreConfigOptions {
 	 * isSimpleCloning = false
 	 */
 	isSimpleCloning?: boolean
+	/**
+	 * Define a custom serialization function if you need custom logic.
+	 * Currently it's in use for storing and retrieving data from browser's storage.
+	 * @default
+	 * stringify = JSON.stringify
+	 */
+	stringify?: (
+		value: any,
+		replacer?: (this: any, key: string, value: any) => any | (number | string)[] | null,
+		space?: string | number
+	) => string
+	/**
+	 * Define a custom desexualization function if you need custom logic.
+	 * Currently it's in use for storing and retrieving data from browser's storage.
+	 * @default
+	 * parse = JSON.parse
+	 */
+	parse?: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => any
 }

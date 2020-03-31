@@ -2,6 +2,7 @@ import { StoreConfig, StoreConfigOptionsInfo, Storages, ObjectCompareTypes, LbrX
 import { isDev as isDevFunc } from 'lbrx/mode'
 import MockBuilder from 'mock-builder'
 import { GenericStorage } from 'mocks'
+import { parse, stringify } from 'lbrx/helpers'
 
 describe('Store Config:', () => {
 
@@ -42,8 +43,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE',
 			objectCompareTypeName: 'Advanced',
 			storageTypeName: 'None',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should throw with no store config.', () => {
@@ -154,8 +157,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE-KEY',
 			objectCompareTypeName: 'Reference',
 			storageTypeName: 'Local-Storage',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should have the right configuration base on chosen options. {testId: 2}', () => {
@@ -181,8 +186,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE-KEY',
 			objectCompareTypeName: 'Simple',
 			storageTypeName: 'Session-Storage',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should have custom storage configured if api is supplied.', () => {
@@ -204,8 +211,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE',
 			objectCompareTypeName: 'Advanced',
 			storageTypeName: 'Custom',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should have custom storage set to null is storage type is not set to custom. Should also set a console warning.', () => {
@@ -228,8 +237,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE',
 			objectCompareTypeName: 'Advanced',
 			storageTypeName: 'Local-Storage',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 		expect(consoleWarnSpy).toBeCalled()
 	})
 
@@ -253,8 +264,10 @@ describe('Store Config:', () => {
 			storageKey: 'TEST-STORE',
 			objectCompareTypeName: 'Advanced',
 			storageTypeName: 'None',
+			stringify,
+			parse,
 		}
-		expect(testStore.config).toMatchObject(expectedConfig)
+		expect(testStore.config).toStrictEqual(expectedConfig)
 		expect(consoleWarnSpy).toBeCalled()
 	})
 })

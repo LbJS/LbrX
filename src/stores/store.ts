@@ -116,6 +116,12 @@ export class Store<T extends object, E = any> {
 	private _storageKey!: string
 	private _clone!: <R extends object>(obj: R) => R
 	private _compare!: <R extends object>(objA: R, pbjB: R) => boolean
+	private _stringify!: (
+		value: any,
+		replacer?: (this: any, key: string, value: any) => any | (number | string)[] | null,
+		space?: string | number
+	) => string
+	private _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
 
 	private get devData(): DevToolsDataStruct {
 		return { name: this._storeName, state: this._clone(this._state) }
@@ -200,6 +206,8 @@ export class Store<T extends object, E = any> {
 		][this._config.storageType]
 		this._storageDebounce = this._config.storageDebounceTime
 		this._storageKey = this._config.storageKey
+		this._stringify = this._config.stringify
+		this._parse = this._config.parse
 	}
 
 	private _initializeStore(initialState: T): void {
@@ -214,7 +222,7 @@ export class Store<T extends object, E = any> {
 		this._initialState = deepFreeze(this._clone(initialState))
 		const storage = this._storage
 		if (storage) {
-			let storedState: T | null = parse(storage.getItem(this._storageKey))
+			let storedState: T | null = this._parse(storage.getItem(this._storageKey))
 			if (storedState) {
 				if (!this._isSimpleCloning) storedState = instanceHandler(initialState, storedState)
 				initialState = storedState
@@ -222,7 +230,7 @@ export class Store<T extends object, E = any> {
 			}
 			this._state$
 				.pipe(debounce(() => timer(this._storageDebounce)))
-				.subscribe(state => storage.setItem(this._storageKey, stringify(state)))
+				.subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
 		}
 		this._setState(() => isStateCloned ? initialState : this._clone(initialState))
 		if (isFunction(this['onAfterInit'])) {

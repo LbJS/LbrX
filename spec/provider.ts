@@ -2,6 +2,7 @@ import { UiStateStore, NullStateStore } from 'test-subjects'
 import { activateDevToolsPushes, isDevTools, enableProdMode, isDev } from 'lbrx/mode'
 import { LbrXManager, GlobalErrorStore, Store } from 'lbrx'
 import { getGlobalStoreConfig } from 'lbrx/stores/config'
+import { parse, stringify } from 'lbrx/helpers'
 
 export default class Provider {
 
@@ -18,6 +19,8 @@ export default class Provider {
 		getGlobalStoreConfig,
 		GlobalErrorStore,
 		Store,
+		stringify,
+		parse,
 	}
 
 	private constructor() { }
