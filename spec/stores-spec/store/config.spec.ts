@@ -4,7 +4,7 @@ import MockBuilder from 'mock-builder'
 import { GenericStorage } from 'mocks'
 import { parse, stringify } from 'lbrx/helpers'
 
-describe('Store Config:', () => {
+describe('Store Config:', () => { // TODO: no decorator test
 
 	let LbrXManager: typeof LbrXManager_type
 	let Store: typeof Store_type
