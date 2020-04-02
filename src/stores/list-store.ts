@@ -1,4 +1,4 @@
-import { BaseStore } from './store-base'
+import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 
 // tslint:disable: no-redundant-jsdoc

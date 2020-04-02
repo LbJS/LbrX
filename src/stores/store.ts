@@ -6,7 +6,7 @@ import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { isNull, objectAssign, deepFreeze, isFunction, isObject, instanceHandler, mergeObjects, logError, throwError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
 import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
-import { BaseStore } from './store-base'
+import { BaseStore } from './base-store'
 
 // tslint:disable: no-redundant-jsdoc
 // tslint:disable: unified-signatures
