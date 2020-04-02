@@ -323,7 +323,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 					if (!wasHardReseted) wasHardReseted = !x && this.isLoading
 				}),
 				mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
-				filter<T>(x => !!x),
+				filter<T | null, T>((x => !!x) as (value: T | null) => value is T),
 				map<T, T | R>(project || (x => x)),
 				distinctUntilChanged((prev, curr) => {
 					if (wasHardReseted) {

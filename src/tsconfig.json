@@ -17,7 +17,9 @@
 				"./helpers",
 				"./helpers/*"
 			],
-		}
+		},
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
 	},
 	"include": [
 		"**/*.ts"

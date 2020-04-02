@@ -115,7 +115,7 @@ export abstract class BaseStore<T extends object, E = any> {
 			switch (this._objectCompareType) {
 				case ObjectCompareTypes.advanced: return compareObjects
 				case ObjectCompareTypes.simple: return simpleCompareObjects
-				case ObjectCompareTypes.reference: return (a: T, b: T) => a === b
+				case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
 			}
 		})()
 		this._config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]

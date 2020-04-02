@@ -3,13 +3,13 @@ import { Subscription } from 'rxjs'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, logError, isBrowser, throwError } from 'lbrx/helpers'
+import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, isBrowser } from 'lbrx/helpers'
 import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
 
 	private _sub = new Subscription()
-	private _appState = {}
+	private _appState: { [storeName: string]: any } = {}
 	private _loadingStoresCache = {}
 
 	constructor(
@@ -68,7 +68,7 @@ export class DevToolsManager {
 			if (message.type != 'DISPATCH' || !message.state) return
 			const devToolsState = parse<{}>(message.state)
 			objectKeys(devToolsState).forEach((storeName: string) => {
-				const store = DevToolsSubjects.stores[storeName]
+				const store: any = DevToolsSubjects.stores[storeName]
 				const devToolsStoreValue = devToolsState[storeName]
 				const loadingStoresCache = this._loadingStoresCache
 				if (store) {
