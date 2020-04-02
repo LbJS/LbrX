@@ -1,12 +1,12 @@
 import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
 import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
 import { debounce, map, distinctUntilChanged, filter, tap, mergeMap, switchMap } from 'rxjs/operators'
-import { StoreConfigOptions, Storages, STORE_CONFIG_KEY, ObjectCompareTypes, StoreConfigOptionsInfo } from './config'
+import { StoreConfigOptions, Storages } from './config'
 import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, stringify, parse, deepFreeze, isFunction, isObject, compareObjects, instanceHandler, cloneObject, simpleCompareObjects, simpleCloneObject, mergeObjects, logError, isNullish, throwError, isError, cloneError, logWarn } from 'lbrx/helpers'
+import { isNull, objectAssign, deepFreeze, isFunction, isObject, instanceHandler, mergeObjects, logError, throwError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
-import { GlobalErrorStore } from './global-error-store'
 import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
+import { BaseStore } from './store-base'
 
 // tslint:disable: no-redundant-jsdoc
 // tslint:disable: unified-signatures
@@ -28,52 +28,8 @@ import { validateStoreName, validateStorageKey } from './store-unique-name-enfor
  * 	}
  * }
  */
-export class Store<T extends object, E = any> {
+export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
-	//#region loading-state
-
-	private readonly _isLoading$ = new BehaviorSubject<boolean>(false)
-	/**
-	 * Weather or not the store is in it's loading state.
-	 * - If the initial value at the constructor is null,
-	 * the store will automatically set it self to a loading state and
-	 * then will set it self to none loading state after it wil be initialized.
-	 * - While the store is in loading state, no values will be emitted to state's subscribers.
-	 */
-	public get isLoading$(): Observable<boolean> {
-		return this._isLoading$.asObservable().pipe(distinctUntilChanged())
-	}
-	/**
-	 * @get Returns store's loading state.
-	 * @set Sets store's loading state.
-	 */
-	public get isLoading(): boolean {
-		return this._isLoading$.getValue()
-	}
-	public set isLoading(value: boolean) {
-		this._isLoading$.next(value)
-	}
-
-	//#endregion loading-state
-	//#region error-api
-
-	private readonly _error$ = new BehaviorSubject<E | null>(null)
-	/**
-	 * Store's error state.
-	 */
-	public get error$(): Observable<E | null> {
-		return this._error$.asObservable()
-			.pipe(
-				map(x => {
-					if (isError(x)) return cloneError(x)
-					if (isObject(x)) return cloneObject(x)
-					return x
-				}),
-				distinctUntilChanged((prev, curr) => isNull(prev) && isNull(curr)),
-			)
-	}
-
-	//#endregion error-api
 	//#region state-properties
 
 	private readonly _state$ = new BehaviorSubject<T | null>(null)
@@ -98,36 +54,10 @@ export class Store<T extends object, E = any> {
 	}
 
 	//#endregion state-properties
-	//#region config
-
-	private _config!: StoreConfigOptionsInfo
-	/**
-	 * Returns store's active configuration.
-	 */
-	public get config(): StoreConfigOptionsInfo {
-		return this._config
-	}
-	private _storeName!: string
-	private _isResettable!: boolean
-	private _isSimpleCloning!: boolean
-	private _objectCompareType!: ObjectCompareTypes
-	private _storage!: Storage | null
-	private _storageDebounce!: number
-	private _storageKey!: string
-	private _clone!: <R extends object>(obj: R) => R
-	private _compare!: <R extends object>(objA: R, pbjB: R) => boolean
-	private _stringify!: (
-		value: any,
-		replacer?: (this: any, key: string, value: any) => any | (number | string)[] | null,
-		space?: string | number
-	) => string
-	private _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
-
 	private get devData(): DevToolsDataStruct {
 		return { name: this._storeName, state: this._clone(this._state) }
 	}
 
-	//#endregion config
 	//#region constructor
 
 	/**
@@ -144,6 +74,7 @@ export class Store<T extends object, E = any> {
 	 */
 	constructor(initialState: T, storeConfig?: StoreConfigOptions)
 	constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
+		super()
 		this._main(initialStateOrNull, storeConfig)
 	}
 
@@ -162,52 +93,6 @@ export class Store<T extends object, E = any> {
 		} else {
 			this._initializeStore(initialStateOrNull)
 		}
-	}
-
-	private _initializeConfig(storeConfig?: StoreConfigOptions): void {
-		this._config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
-		delete this.constructor[STORE_CONFIG_KEY]
-		this._storeName = this._config.name
-		this._isResettable = this._config.isResettable
-		this._isSimpleCloning = this._config.isSimpleCloning
-		this._clone = this._isSimpleCloning ? simpleCloneObject : cloneObject
-		this._objectCompareType = this._config.objectCompareType
-		this._compare = (() => {
-			switch (this._objectCompareType) {
-				case ObjectCompareTypes.advanced: return compareObjects
-				case ObjectCompareTypes.simple: return simpleCompareObjects
-				case ObjectCompareTypes.reference: return (a: T, b: T) => a === b
-			}
-		})()
-		this._config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
-		if (this._config.storageType != Storages.custom) {
-			if (this._config.customStorageApi) {
-				logWarn(`Custom storage api is configured but storage type is not set to custom. Store name: ${this._storeName}`)
-			}
-			this._config.customStorageApi = null
-		}
-		if (this._config.storageType == Storages.custom && !this._config.customStorageApi) {
-			logWarn(`Custom storage type is configured while custom storage api is not. Store name: ${this._storeName}`)
-			this._config.storageType = Storages.none
-		}
-		this._storage = (() => {
-			switch (this._config.storageType) {
-				case Storages.none: return null
-				case Storages.local: return localStorage
-				case Storages.session: return sessionStorage
-				case Storages.custom: return this._config.customStorageApi
-			}
-		})()
-		this._config.storageTypeName = [
-			'None',
-			'Local-Storage',
-			'Session-Storage',
-			'Custom',
-		][this._config.storageType]
-		this._storageDebounce = this._config.storageDebounceTime
-		this._storageKey = this._config.storageKey
-		this._stringify = this._config.stringify
-		this._parse = this._config.parse
 	}
 
 	private _initializeStore(initialState: T): void {
@@ -449,29 +334,6 @@ export class Store<T extends object, E = any> {
 				}),
 				map(x => isObject(x) ? this._clone(x) : x),
 			)
-	}
-
-	/**
-	 * Returns the store's error state value.
-	 */
-	public getError(): E | null {
-		const value = this._error$.getValue()
-		if (isError(value)) return cloneError(value)
-		if (isObject(value)) return cloneObject(value)
-		return value
-	}
-
-	/**
-	 * Sets store's error state and also sets global error state if the value is not null.
-	 */
-	public setError(value: E | null): void {
-		if (isError(value)) {
-			value = cloneError(value)
-		} else if (isObject(value)) {
-			value = cloneObject(value)
-		}
-		this._error$.next(value)
-		if (!isNullish(value)) GlobalErrorStore.getStore<E>().setError(value)
 	}
 
 	//#endregion public-api
