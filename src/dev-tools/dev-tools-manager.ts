@@ -1,9 +1,9 @@
-import { DevtoolsOptions } from './dev-tools-options'
+import { DevtoolsOptions, ZoneFunction } from './dev-tools-options'
 import { Subscription } from 'rxjs'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, isBrowser } from 'lbrx/helpers'
+import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, isBrowser, isObject } from 'lbrx/helpers'
 import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
@@ -11,6 +11,7 @@ export class DevToolsManager {
 	private _sub = new Subscription()
 	private _appState: { [storeName: string]: any } = {}
 	private _loadingStoresCache = {}
+	private _zone = (f: any) => f()
 
 	constructor(
 		private devToolsOptions: Partial<DevtoolsOptions> = {}
@@ -19,7 +20,16 @@ export class DevToolsManager {
 	public initialize(): void {
 		if (!isDev() || !isBrowser() || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
 		(window as any).$$stores = DevToolsSubjects.stores
-		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, this.devToolsOptions)
+		const devToolsOptions = this.devToolsOptions
+		if (devToolsOptions.zone) {
+			const isAngular = (value: any): value is { run: ZoneFunction } => {
+				// tslint:disable-next-line: no-string-literal
+				return isObject(value) && value['run']
+			}
+			this._zone = isAngular(devToolsOptions.zone) ? devToolsOptions.zone.run : devToolsOptions.zone
+			delete devToolsOptions.zone
+		}
+		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
 		this._sub.unsubscribe()
 		this._sub = new Subscription()
@@ -75,12 +85,16 @@ export class DevToolsManager {
 					if (devToolsStoreValue === StoreStates.loading) {
 						if (!loadingStoresCache[storeName]) {
 							loadingStoresCache[storeName] = store.value
-							store.state = null
-							store.isLoading$.next(true)
+							this._zone(() => {
+								store.state = null
+								store.isLoading$.next(true)
+							})
 						}
 					} else {
-						store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
-						store.isLoading && store.isLoading$.next(false)
+						this._zone(() => {
+							store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
+							store.isLoading && store.isLoading$.next(false)
+						})
 						if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
 					}
 				}
