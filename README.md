@@ -16,6 +16,7 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Global default store configurations
 - [x] Async initialization support (Promise and Observable)
 - [x] Serialization and denationalization configuration for browser storage
+- [ ] NgZone Support
 - [ ] Full spec coverage of the above - wip
 - [ ] Better playground on the repository - wip
 - [ ] Partial documentation
