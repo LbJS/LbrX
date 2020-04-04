@@ -30,6 +30,14 @@ export class LbrXManager {
 	}
 
 	/**
+	 * Sets global store configuration for all stores.
+	 */
+	static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
+		setGlobalStoreConfig(options)
+		return this
+	}
+
+	/**
 	 * Set a zone function that will run callbacks from Redux DevTools events.
 	 * @example
 	 * `Angular:`
@@ -43,14 +51,6 @@ export class LbrXManager {
 	 */
 	static setDevToolsZone(zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T }): typeof LbrXManager {
 		this._devToolsManager?.setDevToolsZone(zone)
-		return this
-	}
-
-	/**
-	 * Sets global store configuration for all stores.
-	 */
-	static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
-		setGlobalStoreConfig(options)
 		return this
 	}
 
