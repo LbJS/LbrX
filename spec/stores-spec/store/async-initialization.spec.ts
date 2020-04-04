@@ -82,4 +82,6 @@ describe('Store Async Initialization:', () => {
 			})
 		nullStore.initializeAsync(Promise.resolve(createCommonModel()))
 	}, 100)
+
+	// TODO: hooks test
 })

@@ -85,4 +85,6 @@ describe('Store Initialization: ', () => {
 			})
 		nullStore.initialize(createCommonModel())
 	}, 100)
+
+	// TODO: hooks test
 })

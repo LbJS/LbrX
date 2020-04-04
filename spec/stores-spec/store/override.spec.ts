@@ -92,4 +92,6 @@ describe('Store override:', () => {
 		expect(testStore.value.innerTestObjectGetSet).toBeInstanceOf(InnerTestSubjectA)
 		expect(testStore.value.innerTestObjectGetSet?.deepNestedObj).toBeInstanceOf(DeepNestedTestSubjectA)
 	})
+
+	// TODO: hooks test
 })
