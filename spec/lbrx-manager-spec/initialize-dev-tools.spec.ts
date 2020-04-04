@@ -8,8 +8,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	beforeEach(async () => {
 		const provider = (await import('provider')).default
 		LbrXManager = provider.provide(LbrXManager_type.name)
-		MockBuilder.addWindowMock()
-			.addReduxDevToolsExtensionMock()
+		MockBuilder.addReduxDevToolsExtensionMock()
 			.buildMocks()
 	})
 
@@ -18,7 +17,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 		jest.resetModules()
 	})
 
-	it('should return LbrXManager.', () => {
+	it('should initialize set Redux DevTools configurations.', () => {
 		LbrXManager.initializeDevTools({ name: 'NEW-NAME' })
 		expect((window as any).__REDUX_DEVTOOLS_EXTENSION__.config).toMatchObject({
 			name: 'NEW-NAME'

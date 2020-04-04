@@ -8,6 +8,9 @@
 				"../src",
 				"../src/*",
 			],
+			"lbrx/dev-tools": [
+				"../src/dev-tools",
+			],
 			"lbrx/helpers": [
 				"../src/helpers",
 			],
