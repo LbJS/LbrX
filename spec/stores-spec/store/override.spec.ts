@@ -1,7 +1,7 @@
 import { Store as Store_type, StoreConfig } from 'lbrx'
 import { TestSubjectConfigurations, TestSubjectA, TestSubjectsFactory, InnerTestSubjectA, DeepNestedTestSubjectA } from 'test-subjects'
 
-describe('Store override:', () => {
+describe('Store override():', () => {
 
 	let Store: typeof Store_type
 	let testStore: Store_type<TestSubjectA>
@@ -92,6 +92,4 @@ describe('Store override:', () => {
 		expect(testStore.value.innerTestObjectGetSet).toBeInstanceOf(InnerTestSubjectA)
 		expect(testStore.value.innerTestObjectGetSet?.deepNestedObj).toBeInstanceOf(DeepNestedTestSubjectA)
 	})
-
-	// TODO: hooks test
 })
