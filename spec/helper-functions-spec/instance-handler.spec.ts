@@ -24,4 +24,18 @@ describe('Helper Function - instanceHandler():', () => {
 		const personCopy = instanceHandler(person, { someDate: new Date().toJSON() as unknown as Date } as Person)
 		expect(personCopy.someDate).toBeInstanceOf(Date)
 	})
+
+	it('should create instances for all objects in array.', () => {
+		const person = new Person({
+			someDate: new Date(2020, 0)
+		})
+		const persons = [person]
+		const persons2 = [person, person]
+		const plainPersons = JSON.parse(JSON.stringify(persons2))
+		const personsCopy = instanceHandler(persons, plainPersons)
+		expect(personsCopy[0]).toBeInstanceOf(Person)
+		expect(personsCopy[0].someDate).toBeInstanceOf(Date)
+		expect(personsCopy[1]).toBeInstanceOf(Person)
+		expect(personsCopy[1].someDate).toBeInstanceOf(Date)
+	})
 })

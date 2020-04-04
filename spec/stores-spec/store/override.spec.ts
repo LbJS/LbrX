@@ -1,5 +1,5 @@
 import { Store as Store_type, StoreConfig } from 'lbrx'
-import { TestSubjectConfigurations, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { TestSubjectConfigurations, TestSubjectA, TestSubjectsFactory, InnerTestSubjectA, DeepNestedTestSubjectA } from 'test-subjects'
 
 describe('Store override:', () => {
 
@@ -65,5 +65,31 @@ describe('Store override:', () => {
 		expect(newState.dateValue?.getFullYear()).toBe(1900)
 		const expectedState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
 		expect(testStore.value).toStrictEqual(expectedState)
+	})
+
+	it('should handle instances for plain object.', () => {
+		const newState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		testStore.override(newState)
+		expect(testStore.value).not.toBe(newState)
+		expect(testStore.value).toStrictEqual(newState)
+		expect(newState.dateValue).toBeTruthy()
+		newState.dateValue?.setFullYear(1900)
+		expect(newState.dateValue?.getFullYear()).toBe(1900)
+		const expectedState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		expect(testStore.value).toStrictEqual(expectedState)
+	})
+
+	it('should set object instances for plain object.', () => {
+		const newState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		testStore.override(newState)
+		expect(testStore.value).toStrictEqual(newState)
+		const plainNewState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA_plain)
+		testStore.override(plainNewState)
+		expect(testStore.value).toStrictEqual(newState)
+		expect(testStore.value).toBeInstanceOf(TestSubjectA)
+		expect(testStore.value.innerTestObject).toBeInstanceOf(InnerTestSubjectA)
+		expect(testStore.value.innerTestObject?.deepNestedObj).toBeInstanceOf(DeepNestedTestSubjectA)
+		expect(testStore.value.innerTestObjectGetSet).toBeInstanceOf(InnerTestSubjectA)
+		expect(testStore.value.innerTestObjectGetSet?.deepNestedObj).toBeInstanceOf(DeepNestedTestSubjectA)
 	})
 })
