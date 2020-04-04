@@ -27,10 +27,20 @@ export class TestSubjectsFactory {
 					innerTestObject: TestSubjectsFactory.createInnerTestSubjectA(configuration),
 					innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubjectA(configuration),
 				})
+			case TestSubjectConfigurations.configurationB:
+				return new TestSubjectA({
+					stringValue: 'abcdefg',
+					numberValue: 5,
+					booleanValue: false,
+					dateValue: new Date(2020, 2),
+					getterSetterDate: new Date(2020, 6),
+					innerTestObject: null,
+					innerTestObjectGetSet: null,
+				})
 		}
 	}
 
-	public static createInnerTestSubjectA(configuration: TestSubjectConfigurations): InnerTestSubjectA {
+	public static createInnerTestSubjectA(configuration: TestSubjectConfigurations): InnerTestSubjectA | null {
 		switch (configuration) {
 			case TestSubjectConfigurations.initial:
 				return new InnerTestSubjectA({
@@ -58,10 +68,12 @@ export class TestSubjectsFactory {
 						date: new Date(2017, 5)
 					},
 				})
+			case TestSubjectConfigurations.configurationB:
+				return null
 		}
 	}
 
-	public static createDeepNestedTestSubjectA(configuration: TestSubjectConfigurations): DeepNestedTestSubjectA {
+	public static createDeepNestedTestSubjectA(configuration: TestSubjectConfigurations): DeepNestedTestSubjectA | null {
 		switch (configuration) {
 			case TestSubjectConfigurations.initial: {
 				const partialDeepNestedObject: Partial<DeepNestedTestSubjectA> = {
@@ -128,6 +140,8 @@ export class TestSubjectsFactory {
 				}
 				return Object.assign(new DeepNestedTestSubjectA(), partialDeepNestedObject)
 			}
+			case TestSubjectConfigurations.configurationB:
+				return null
 		}
 	}
 }

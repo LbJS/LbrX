@@ -32,4 +32,38 @@ describe('Store override:', () => {
 		expectedValue = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
 		expect(testStore.value).toStrictEqual(expectedValue)
 	})
+
+	it('should get the expected steam of states.', done => {
+		const initialState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.initial)
+		const stateA = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		const stateB = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationB)
+		const expectedStates = [
+			initialState,
+			stateB,
+			stateA,
+			stateB,
+			initialState,
+		]
+		let index = 0
+		testStore.select().subscribe(value => {
+			expect(value).toStrictEqual(expectedStates[index++])
+			if (index == expectedStates.length) done()
+		})
+		testStore.override(stateB)
+		testStore.override(stateA)
+		testStore.override(stateB)
+		testStore.override(initialState)
+	}, 100)
+
+	it('should disconnect object reference.', () => {
+		const newState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		testStore.override(newState)
+		expect(testStore.value).not.toBe(newState)
+		expect(testStore.value).toStrictEqual(newState)
+		expect(newState.dateValue).toBeTruthy()
+		newState.dateValue?.setFullYear(1900)
+		expect(newState.dateValue?.getFullYear()).toBe(1900)
+		const expectedState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+		expect(testStore.value).toStrictEqual(expectedState)
+	})
 })
