@@ -1,6 +1,7 @@
 import { Store } from 'lbrx'
 import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 import { StoreOnOverride } from 'lbrx/hooks'
+import { assertNotNullable } from 'helpers'
 
 describe('Store onOverride():', () => {
 
@@ -44,20 +45,22 @@ describe('Store onOverride():', () => {
 	it('should allow changing the next state.', () => {
 		const localStateA = createStateA()
 		onOverrideSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
-			nextState.dateValue?.setFullYear(1900)
+			assertNotNullable(nextState.dateValue)
+			nextState.dateValue.setFullYear(1900)
 			return nextState
 		})
 		store.override(localStateA)
 		expect(store.value).not.toStrictEqual(localStateA)
-		expect(localStateA.dateValue).toBeTruthy()
-		localStateA.dateValue?.setFullYear(1900)
+		assertNotNullable(localStateA.dateValue)
+		localStateA.dateValue.setFullYear(1900)
 		expect(store.value).toStrictEqual(localStateA)
 	})
 
 	it('should supply a readonly current state.', done => {
 		onOverrideSpy.mockImplementation((nextState: TestSubjectA, currState: Readonly<TestSubjectA>): void => {
 			expect(() => {
-				currState.dateValue?.setFullYear(1900)
+				assertNotNullable(currState.dateValue)
+				currState.dateValue.setFullYear(1900)
 			}).toThrow()
 			done()
 		})
@@ -66,7 +69,8 @@ describe('Store onOverride():', () => {
 
 	it("should disconnect nextState object's references.", () => {
 		onOverrideSpy.mockImplementation((nextState: TestSubjectA): void => {
-			nextState.dateValue?.setFullYear(1900)
+			assertNotNullable(nextState.dateValue)
+			nextState.dateValue.setFullYear(1900)
 			nextState.stringValue = 'some new value'
 		})
 		store.override(stateA)
@@ -78,12 +82,10 @@ describe('Store onOverride():', () => {
 			return nextState
 		})
 		store.override(stateA)
-		if (tmpState) {
-			(tmpState as TestSubjectA).dateValue?.setFullYear(1900);
-			(tmpState as TestSubjectA).stringValue = 'some new value'
-		} else {
-			fail('Variable: tmpState must exist to pass the test.')
-		}
+		assertNotNullable(tmpState!)
+		assertNotNullable(tmpState!.dateValue)
+		tmpState!.dateValue.setFullYear(1900)
+		tmpState!.stringValue = 'some new value'
 		expect(store.value).toStrictEqual(stateA)
 	})
 })
