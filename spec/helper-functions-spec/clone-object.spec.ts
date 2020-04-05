@@ -9,7 +9,7 @@ describe('Helper Function - cloneObject():', () => {
 
 	it('should copy all properties', () => {
 		const clonedStateA = cloneObject(stateA)
-		expect(clonedStateA).toEqual(pureStateA)
+		expect(clonedStateA).toStrictEqual(pureStateA)
 	})
 
 	it('should set different references.', () => {
