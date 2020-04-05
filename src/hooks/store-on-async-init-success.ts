@@ -2,7 +2,7 @@
 /**
  * Implement to use onAsyncInitSuccess hook.
  */
-export interface StoreAsyncInitSuccess<T = object> {
+export interface StoreOnAsyncInitSuccess<T = object> {
 
 	/**
 	 * Will be called after async initialization data was received

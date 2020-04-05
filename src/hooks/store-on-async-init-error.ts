@@ -2,7 +2,7 @@
 /**
  * Implement to use onAsyncInitError hook.
  */
-export interface StoreAsyncInitError<T = object> {
+export interface StoreOnAsyncInitError<E = Error> {
 
 	/**
 	 * Will be called after async initialization error is received.
@@ -10,5 +10,5 @@ export interface StoreAsyncInitError<T = object> {
 	 * - If the function will return the error, it will be rejected and thrown by the store.
 	 * - If function will return void, no the error will be discontinued.
 	 */
-	onAsyncInitError(result: T): T | void
+	onAsyncInitError(error: E): E | void
 }
