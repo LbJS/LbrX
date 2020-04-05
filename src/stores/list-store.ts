@@ -1,10 +1,6 @@
 import { BaseStore } from './base-store'
 // import { StoreConfigOptions } from './config'
 
-// tslint:disable: no-redundant-jsdoc
-// tslint:disable: unified-signatures
-// tslint:disable: no-string-literal
-
 // TODO: Work in progress...
 
 export class ListStore<T extends object, E = any> extends BaseStore<T, E> {

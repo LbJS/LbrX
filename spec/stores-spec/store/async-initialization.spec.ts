@@ -35,7 +35,7 @@ describe('Store Async Initialization:', () => {
 	})
 
 	it('should return the initial state from observable after async initialization.', done => {
-		nullStore.select().subscribe(value => {
+		nullStore.select$().subscribe(value => {
 			if (value) {
 				expect(value).toStrictEqual(createCommonModel())
 				done()

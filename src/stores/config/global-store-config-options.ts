@@ -1,7 +1,6 @@
 import { Storages } from './storages.enum'
 import { ObjectCompareTypes } from './object-compare-types.enum'
 
-// tslint:disable: no-redundant-jsdoc
 /**
  * Global store configuration options.
  */

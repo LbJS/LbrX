@@ -8,10 +8,6 @@ import { isDev, isDevTools } from 'lbrx/mode'
 import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
 import { BaseStore } from './base-store'
 
-// tslint:disable: no-redundant-jsdoc
-// tslint:disable: unified-signatures
-// tslint:disable: no-string-literal
-
 /**
  * @example
  * const createUiState: UiState = () => {
@@ -286,6 +282,18 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	}
 
 	/**
+	 * @deprecated Use select$ instead.
+	 */
+	public select(): Observable<T>
+	/**
+	 * @deprecated Use select$ instead.
+	 */
+	public select<R>(project: (state: T) => R): Observable<R>
+	public select<R>(project?: (state: T) => R): Observable<T | R> {
+		return this.select$(project)
+	}
+
+	/**
 	 * Returns whole state as an Observable.
 	 * @example
 	 * state$ = this.store.select()
@@ -296,7 +304,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 * 	})
 	 * }
 	 */
-	public select(): Observable<T>
+	public select$(): Observable<T>
 	/**
 	 * Returns partial state as an Observable.
 	 * @example
@@ -308,8 +316,16 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 * 	})
 	 * }
 	 */
-	public select<R>(project: (state: T) => R): Observable<R>
-	public select<R>(project?: (state: T) => R): Observable<T | R> {
+	public select$<R>(project: (state: T) => R): Observable<R>
+	/**
+	 * Returns partial or whole state as an Observable based on the given project function.
+	 * @example
+	 * mySelect(projectionFunction = undefined) {
+	 * 	this.store.select(projectionFunction)
+	 * }
+	 */
+	public select$<R>(project: ((state: T) => R) | undefined): Observable<R>
+	public select$<R>(project?: (state: T) => R): Observable<T | R> {
 		const tillLoaded$ = this._isLoading$.asObservable()
 			.pipe(
 				filter(x => !x),

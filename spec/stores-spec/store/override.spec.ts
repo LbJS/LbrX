@@ -45,7 +45,7 @@ describe('Store override():', () => {
 			initialState,
 		]
 		let index = 0
-		testStore.select().subscribe(value => {
+		testStore.select$().subscribe(value => {
 			expect(value).toStrictEqual(expectedStates[index++])
 			if (index == expectedStates.length) done()
 		})

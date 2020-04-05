@@ -28,6 +28,10 @@ This is an object oriented State Manager that's build for JavaScript application
 
     npm i lbrx
 
+## Important Notice:
+
+    select() is deprecated in favor of select$()
+
 ## Example:
 
 **Step 1: Initialization**
@@ -78,16 +82,16 @@ This is an object oriented State Manager that's build for JavaScript application
 **Step 3: Subscribe to changes**
 
     userStore
-    	.select()
+    	.select$()
     	.subscribe(x => console.log(x))
     userStore
-    	.select(state => state.firstName)
+    	.select$(state => state.firstName)
     	.subscribe(x => console.log('firstName: ' + x))
     userStore
-    	.select(state => state.lastName)
+    	.select$(state => state.lastName)
     	.subscribe(x => console.log('lastName: ' + x))
     userStore
-    	.select(state => state.address?.place)
+    	.select$(state => state.address?.place)
     	.subscribe(x => console.log('address: ' + x))
 
     // User {firstName: "Leon", lastName: null, address: Address}

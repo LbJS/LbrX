@@ -15,7 +15,6 @@ export default class Provider {
 
 	private constructor() { }
 
-	// tslint:disable-next-line: ban-types
 	public static provide<T>(constructable: new () => T): T | never {
 		const data = this._content[constructable.name]
 		if (data) return data

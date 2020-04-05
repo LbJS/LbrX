@@ -1,6 +1,5 @@
 import { GlobalStoreConfigOptions } from './global-store-config-options'
 
-// tslint:disable: no-redundant-jsdoc
 /**
  * Store configuration options.
  */

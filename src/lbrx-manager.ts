@@ -2,7 +2,6 @@ import { DevtoolsOptions, DevToolsManager } from './dev-tools'
 import { enableProdMode } from './mode'
 import { GlobalStoreConfigOptions, setGlobalStoreConfig } from './stores/config'
 
-// tslint:disable: no-redundant-jsdoc
 /**
  * LbrX static class.
  * @static

@@ -46,16 +46,16 @@ class UserStore extends Store<User> implements StoreBeforeInit {
 const userStore = new UserStore()
 
 userStore
-	.select()
+	.select$()
 	.subscribe(x => console.log(x))
 userStore
-	.select(state => state.firstName)
+	.select$(state => state.firstName)
 	.subscribe(x => console.log('firstName: ' + x))
 userStore
-	.select(state => state.lastName)
+	.select$(state => state.lastName)
 	.subscribe(x => console.log('lastName: ' + x))
 userStore
-	.select(state => state.address?.place)
+	.select$(state => state.address?.place)
 	.subscribe(x => console.log('address: ' + x))
 
 userStore

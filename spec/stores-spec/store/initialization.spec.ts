@@ -30,7 +30,7 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should return the initial state from observable.', done => {
-		uiStore.select().subscribe(value => {
+		uiStore.select$().subscribe(value => {
 			expect(value).toStrictEqual(createInitialUiState())
 			done()
 		})
@@ -46,7 +46,7 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should return the initial state from observable after initialization.', done => {
-		nullStore.select().subscribe(value => {
+		nullStore.select$().subscribe(value => {
 			expect(value).toStrictEqual(createCommonModel())
 			done()
 		})

@@ -1,4 +1,3 @@
-// tslint:disable: no-redundant-jsdoc
 
 /**
  * Redux DevTolls options.

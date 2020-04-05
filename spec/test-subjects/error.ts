@@ -1,7 +1,5 @@
 import { isString, isError } from 'lbrx/helpers'
 
-// tslint:disable: unified-signatures
-
 export function createError(): Error {
 	return new Error('Some error text')
 }

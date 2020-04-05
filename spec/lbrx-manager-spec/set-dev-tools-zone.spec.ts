@@ -2,8 +2,6 @@ import MockBuilder from 'mock-builder'
 import { LbrXManager as LbrXManager_type } from 'lbrx'
 import { DevToolsManager } from 'lbrx/dev-tools'
 
-// tslint:disable: no-string-literal
-
 describe('LbrXManager setDevToolsZone():', () => {
 
 	let LbrXManager: typeof LbrXManager_type
