@@ -1,4 +1,4 @@
 
-export function logWarn(message?: any, ...optionalParams: any[]): void {
-	console.warn(message, optionalParams)
+export function logWarn(message: any, ...optionalParams: any[]): void {
+	optionalParams ? console.warn(message, optionalParams) : console.warn(message)
 }

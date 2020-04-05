@@ -205,7 +205,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 */
 	public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
 	public update(stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
-		if (this.isLoading) {
+		if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
 			logError(`Can't update ${this._storeName} while it's in loading state.`)
 			return
 		}
@@ -226,7 +226,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 * Overrides the state's value completely, without merging.
 	 */
 	public override(state: T): void {
-		if (this.isLoading) {
+		if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
 			logError(`Can't override ${this._storeName} while it's in loading state.`)
 			return
 		}
@@ -245,7 +245,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 * Resets the store's state to it's initial value.
 	 */
 	public reset(): void | never {
-		if (this.isLoading) {
+		if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
 			logError(`Can't reset ${this._storeName} while it's in loading state.`)
 			return
 		} else if (!this._isResettable) {

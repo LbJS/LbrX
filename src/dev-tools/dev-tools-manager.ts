@@ -8,12 +8,15 @@ import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
 
-	private _sub = new Subscription()
+	private _userEventsSub = new Subscription()
+	private _reduxEventsSub = new Subscription()
 	private _appState: { [storeName: string]: any } = {}
 	private _loadingStoresCache = {}
 	private _zone = {
 		run: (f: any) => f()
 	}
+	private _userEventsDisablerIndex: number | null = null
+	private _devTools: any
 
 	constructor(
 		private devToolsOptions: Partial<DevtoolsOptions> = {}
@@ -25,8 +28,11 @@ export class DevToolsManager {
 		const devToolsOptions = this.devToolsOptions
 		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, devToolsOptions)
 		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
-		this._sub.unsubscribe()
-		this._sub = new Subscription()
+		this._devTools = devTools
+		this._userEventsSub.unsubscribe()
+		this._reduxEventsSub.unsubscribe()
+		this._userEventsSub = new Subscription()
+		this._reduxEventsSub = new Subscription()
 		this._appState = {}
 		this._setUserEventsSubscribers(devTools)
 		this._setDevToolsEventsSubscribers(devTools)
@@ -64,39 +70,49 @@ export class DevToolsManager {
 				devTools.send({ type: `[${storeName}] - Hard Resetting...` }, this._appState)
 			}),
 		]
-		subs.forEach(sub => this._sub.add(sub))
+		subs.forEach(sub => this._userEventsSub.add(sub))
 	}
 
-	// BUG: when forwarding in redux devtools, it creates new records.
 	private _setDevToolsEventsSubscribers(devTools: any): void {
-		this._sub.add(devTools.subscribe((message: any) => {
+		this._reduxEventsSub.add(devTools.subscribe((message: any) => {
 			if (message.type != 'DISPATCH' || !message.state) return
 			const reduxDevToolsState = parse<{}>(message.state)
 			objectKeys(reduxDevToolsState).forEach((storeName: string) => {
 				const store: any = DevToolsSubjects.stores[storeName]
-				if (store) {
-					const reduxDevToolsStoreValue = reduxDevToolsState[storeName]
-					const loadingStoresCache = this._loadingStoresCache
-					if (reduxDevToolsStoreValue === StoreStates.loading ||
-						reduxDevToolsStoreValue === StoreStates.hardResetting
-					) {
-						if (!loadingStoresCache[storeName]) {
-							loadingStoresCache[storeName] = store.value
-							this._zone.run(() => {
-								store.state = null
-								store._isLoading$.next(true)
-							})
-						}
-					} else {
-						this._zone.run(() => {
-							store._setState(() => instanceHandler(store._initialState || loadingStoresCache[storeName], reduxDevToolsStoreValue))
-							store.isLoading && store._isLoading$.next(false)
-						})
-						if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
-					}
+				if (!store) return
+				const reduxDevToolsStoreValue = reduxDevToolsState[storeName]
+				const loadingStoresCache = this._loadingStoresCache
+				if (reduxDevToolsStoreValue === StoreStates.loading ||
+					reduxDevToolsStoreValue === StoreStates.hardResetting
+				) {
+					if (loadingStoresCache[storeName]) return
+					loadingStoresCache[storeName] = store.value
+					this._zone.run(() => {
+						this._disableNextUpdate()
+						store._isLoading$.next(true)
+						store.state = null
+					})
+				} else {
+					this._zone.run(() => {
+						this._disableNextUpdate()
+						store._setState(() => instanceHandler(store._initialState || loadingStoresCache[storeName], reduxDevToolsStoreValue))
+						store.isLoading && store._isLoading$.next(false)
+					})
+					if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
 				}
 			})
 		}))
+	}
+
+	private _disableNextUpdate(): void {
+		DevToolsSubjects.isLoadingErrorsDisabled = true
+		this._userEventsSub.unsubscribe()
+		this._userEventsSub = new Subscription()
+		clearTimeout(this._userEventsDisablerIndex as number)
+		this._userEventsDisablerIndex = setTimeout(() => {
+			DevToolsSubjects.isLoadingErrorsDisabled = false
+			this._setUserEventsSubscribers(this._devTools)
+		})
 	}
 
 	public setDevToolsZone(zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T }): void {
