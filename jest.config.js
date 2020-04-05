@@ -17,6 +17,7 @@ module.exports = {
 		"^test-subjects$": "<rootDir>/spec/test-subjects",
 		"^mocks$": "<rootDir>/spec/mocks",
 		"^types$": "<rootDir>/spec/types",
+		"^helpers$": "<rootDir>/spec/helpers",
 		"^provider.module$": "<rootDir>/spec/provider.module.ts",
 		"^mock-builder$": "<rootDir>/spec/mock-builder.ts",
 	},

@@ -54,7 +54,7 @@ describe('Store onOverride():', () => {
 		expect(store.value).toStrictEqual(localStateA)
 	})
 
-	it('should supply a readonly currState.', done => {
+	it('should supply a readonly current state.', done => {
 		onOverrideSpy.mockImplementation((nextState: TestSubjectA, currState: Readonly<TestSubjectA>): void => {
 			expect(() => {
 				currState.dateValue?.setFullYear(1900)
@@ -65,9 +65,9 @@ describe('Store onOverride():', () => {
 	})
 
 	it("should disconnect nextState object's references.", () => {
-		onOverrideSpy.mockImplementation((newState: TestSubjectA): void => {
-			newState.dateValue?.setFullYear(1900)
-			newState.stringValue = 'some new value'
+		onOverrideSpy.mockImplementation((nextState: TestSubjectA): void => {
+			nextState.dateValue?.setFullYear(1900)
+			nextState.stringValue = 'some new value'
 		})
 		store.override(stateA)
 		expect(store.value).toStrictEqual(stateA)

@@ -29,6 +29,7 @@ export class TestSubjectA {
 		dateValue = null,
 		getterSetterDate = null,
 		innerTestObject = null,
+		innerTestObjectGetSet = null,
 	}: Partial<TestSubjectA>) {
 		this.stringValue = stringValue
 		this.numberValue = numberValue
@@ -36,6 +37,6 @@ export class TestSubjectA {
 		this.dateValue = dateValue
 		this._getterSetterDate = getterSetterDate
 		this.innerTestObject = innerTestObject
-		this._innerTestObjectGetSet = innerTestObject
+		this._innerTestObjectGetSet = innerTestObjectGetSet
 	}
 }
