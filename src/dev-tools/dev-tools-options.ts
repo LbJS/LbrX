@@ -9,4 +9,10 @@ export interface DevtoolsOptions {
 	 * name = 'LBRX-STORE'
 	 */
 	name: string,
+	/**
+	 * Either log or not to Redux DevTools if states are equal.
+	 * @default
+	 * logEqualStates = false
+	 */
+	logEqualStates: boolean,
 }

@@ -83,8 +83,18 @@ setTimeout(() => {
 }, 500)
 
 setTimeout(() => {
+	userStore.override({
+		firstName: 'Some other name1',
+		lastName: 'My second lastName1',
+		address: {
+			place: 'Some other place1'
+		}
+	})
+}, 510)
+
+setTimeout(() => {
 	userStore.reset()
-}, 500)
+}, 530)
 
 setTimeout(() => {
 	userStore.reset()

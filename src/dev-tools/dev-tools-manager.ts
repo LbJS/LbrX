@@ -27,7 +27,11 @@ export class DevToolsManager {
 		(window as any).$$stores = DevToolsSubjects.stores
 		const devToolsOptions = this.devToolsOptions
 		const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, devToolsOptions)
-		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(mergedOptions)
+		this.devToolsOptions = mergedOptions
+		const reduxDevToolsOptions = {
+			name: mergedOptions.name
+		}
+		const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
 		this._devTools = devTools
 		this._userEventsSub.unsubscribe()
 		this._reduxEventsSub.unsubscribe()
@@ -40,34 +44,40 @@ export class DevToolsManager {
 	}
 
 	private _setUserEventsSubscribers(devTools: any): void {
+		const devToolsOptions = this.devToolsOptions
 		const subs = [
 			DevToolsSubjects.loadingEvent$.subscribe(storeName => {
-				this._appState = objectAssign(this._appState, { [storeName]: StoreStates.loading })
+				this._appState[storeName] = StoreStates.loading
 				devTools.send({ type: `[${storeName}] - Loading...` }, this._appState)
 			}),
 			DevToolsSubjects.initEvent$.subscribe(store => {
-				this._appState = objectAssign(this._appState, { [store.name]: store.state })
-				devTools.send({ type: `[${store.name}] - @@INIT` }, this._appState)
-			}),
-			DevToolsSubjects.overrideEvent$.subscribe(store => {
+				const isLoading = this._appState[store.name] === StoreStates.loading
+				const suffixText = isLoading ? ' (state is loaded)' : ''
 				this._appState[store.name] = store.state
-				devTools.send({ type: `[${store.name}] - Override Store` }, this._appState)
+				devTools.send({ type: `[${store.name}] - @@INIT${suffixText}` }, this._appState)
 			}),
 			DevToolsSubjects.updateEvent$.subscribe(store => {
 				const changes = countObjectChanges(this._appState[store.name], store.state)
-				if (!changes) return
-				this._appState = objectAssign(this._appState, { [store.name]: store.state })
-				devTools.send(
-					{ type: `[${store.name}] - ${store.updateName ? store.updateName : 'Update Store'} (${changes} changes)` },
-					this._appState)
+				if (!devToolsOptions.logEqualStates && !changes) return
+				this._appState[store.name] = store.state
+				const updateName = store.updateName ? store.updateName : 'Update Store'
+				devTools.send({ type: `[${store.name}] - ${updateName} (${changes} changes)` }, this._appState)
+			}),
+			DevToolsSubjects.overrideEvent$.subscribe(store => {
+				const changes = countObjectChanges(this._appState[store.name], store.state)
+				if (!devToolsOptions.logEqualStates && !changes) return
+				this._appState[store.name] = store.state
+				devTools.send({ type: `[${store.name}] - Override Store (${changes} changes)` }, this._appState)
 			}),
 			DevToolsSubjects.resetEvent$.subscribe(store => {
+				const changes = countObjectChanges(this._appState[store.name], store.state)
+				if (!devToolsOptions.logEqualStates && !changes) return
 				this._appState[store.name] = store.state
-				devTools.send({ type: `[${store.name}] - Reset Store` }, this._appState)
+				devTools.send({ type: `[${store.name}] - Reset (${changes} changes)` }, this._appState)
 			}),
 			DevToolsSubjects.hardResetEvent$.subscribe(storeName => {
 				this._appState[storeName] = StoreStates.hardResetting
-				devTools.send({ type: `[${storeName}] - Hard Resetting...` }, this._appState)
+				devTools.send({ type: `[${storeName}] - Hard-Rest` }, this._appState)
 			}),
 		]
 		subs.forEach(sub => this._userEventsSub.add(sub))
