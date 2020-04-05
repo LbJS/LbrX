@@ -8,5 +8,5 @@ export interface StoreAfterInit<T = object> {
 	 * Will be triggered only once, after the store would complete the initialization.
 	 * - Allows state's value modification after initialization.
 	 */
-	onAfterInit(currState: T): T | void
+	onAfterInit(currState: T): void | T
 }

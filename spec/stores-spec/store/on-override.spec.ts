@@ -1,28 +1,18 @@
-import { Store as Store_type, StoreConfig } from 'lbrx'
-import { TestSubjectConfigurations, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { Store } from 'lbrx'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 import { StoreOnOverride } from 'lbrx/hooks'
 
 describe('Store onOverride():', () => {
 
-	const initialState = TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.initial)
-	const createStateA = () => TestSubjectsFactory.createTestSubjectA(TestSubjectConfigurations.configurationA)
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	const createStateA = () => TestSubjectsFactory.createTestSubjectA_configA()
 	const stateA = createStateA()
-	let Store: typeof Store_type
-	let store: Store_type<TestSubjectA> & StoreOnOverride<TestSubjectA>
+	let store: Store<TestSubjectA> & StoreOnOverride<TestSubjectA>
 	let onOverrideSpy: jest.SpyInstance<void | TestSubjectA, [TestSubjectA, Readonly<TestSubjectA>]>
 
 	beforeEach(async () => {
-		Store = (await import('provider.module')).Store
-		@StoreConfig({
-			name: 'ON-OVERRIDE-TEST-STORE'
-		})
-		class OnOverrideTestStore extends Store<TestSubjectA> implements StoreOnOverride {
-			constructor() {
-				super(initialState)
-			}
-			onOverride(nextState: TestSubjectA, currState: Readonly<TestSubjectA>): TestSubjectA | void { }
-		}
-		store = new OnOverrideTestStore()
+		const providerModule = await import('provider.module')
+		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState)
 		onOverrideSpy = jest.spyOn(store, 'onOverride')
 	})
 
@@ -92,7 +82,7 @@ describe('Store onOverride():', () => {
 			(tmpState as TestSubjectA).dateValue?.setFullYear(1900);
 			(tmpState as TestSubjectA).stringValue = 'some new value'
 		} else {
-			fail('tmpState must exist to pass the test.')
+			fail('Variable: tmpState must exist to pass the test.')
 		}
 		expect(store.value).toStrictEqual(stateA)
 	})

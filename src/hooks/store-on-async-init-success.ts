@@ -9,5 +9,5 @@ export interface StoreOnAsyncInitSuccess<T = object> {
 	 * and before any set state functionality.
 	 * - Allows mapping or any data manipulations to the received data.
 	 */
-	onAsyncInitSuccess(result: T): T | void
+	onAsyncInitSuccess(result: T): void | T
 }

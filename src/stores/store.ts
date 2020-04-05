@@ -69,6 +69,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 	 * store's instance without extending it.
 	 */
 	constructor(initialState: T, storeConfig?: StoreConfigOptions)
+	constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
 	constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
 		super()
 		this._main(initialStateOrNull, storeConfig)

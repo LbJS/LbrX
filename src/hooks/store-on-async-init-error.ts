@@ -10,5 +10,5 @@ export interface StoreOnAsyncInitError<E = Error> {
 	 * - If the function will return the error, it will be rejected and thrown by the store.
 	 * - If function will return void, no the error will be discontinued.
 	 */
-	onAsyncInitError(error: E): E | void
+	onAsyncInitError(error: E): void | E
 }

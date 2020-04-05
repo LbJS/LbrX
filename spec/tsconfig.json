@@ -6,7 +6,6 @@
 		"paths": {
 			"lbrx": [
 				"../src",
-				"../src/*",
 			],
 			"lbrx/dev-tools": [
 				"../src/dev-tools",
@@ -31,6 +30,9 @@
 			],
 			"mock-builder": [
 				"mock-builder"
+			],
+			"types": [
+				"types"
 			],
 		}
 	},
