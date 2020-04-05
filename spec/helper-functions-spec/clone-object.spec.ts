@@ -1,71 +1,33 @@
 import { cloneObject } from 'lbrx/helpers'
+import { TestSubjectsFactory } from 'test-subjects'
+import { assertNotNullable } from 'helpers'
 
 describe('Helper Function - cloneObject():', () => {
 
-	it('should set different references. {testId: 1}', () => {
-		const objA = {}
-		const objB = cloneObject(objA)
-		expect(objA).not.toBe(objB)
-	})
-
-	it('should set different references. {testId: 2}', () => {
-		const objA = {
-			date: new Date(2020, 0)
-		}
-		const objB = cloneObject(objA)
-		expect(objA.date).not.toBe(objB.date)
-	})
-
-	it('should set different references. {testId: 3}', () => {
-		const objA = {
-			list: [1, 2, 3]
-		}
-		const objB = cloneObject(objA)
-		expect(objA.list).not.toBe(objB.list)
-	})
-
-	it('should set different references. {testId: 4}', () => {
-		const objA = {
-			list: [
-				{
-					nestedList: []
-				}
-			]
-		}
-		const objB = cloneObject(objA)
-		expect(objA.list[0].nestedList).not.toBe(objB.list[0].nestedList)
-	})
-
-	it('should set different references. {testId: 5}', () => {
-		const objA = {
-			list: [
-				{
-					nestedObj: {
-						dates: [
-							new Date(2020, 0)
-						]
-					}
-				}
-			]
-		}
-		const objB = cloneObject(objA)
-		expect(objA.list[0].nestedObj.dates[0]).not.toBe(objB.list[0].nestedObj.dates[0])
-	})
+	const stateA = TestSubjectsFactory.createTestSubjectA_configA()
+	const pureStateA = TestSubjectsFactory.createTestSubjectA_configA()
 
 	it('should copy all properties', () => {
-		class Person { }
-		const objA = {
-			a: 'a',
-			b: 2,
-			c: null,
-			arr: [1, 2, 3],
-			date: new Date(2020, 0),
-			nested: {
-				nested: 'x',
-				person: new Person()
-			}
-		}
-		const objB = cloneObject(objA)
-		expect(objA).toEqual(objB)
+		const clonedStateA = cloneObject(stateA)
+		expect(clonedStateA).toEqual(pureStateA)
+	})
+
+	it('should set different references.', () => {
+		const clonedStateA = cloneObject(stateA)
+		expect(clonedStateA).not.toBe(stateA)
+		expect(clonedStateA.dateValue).not.toBe(stateA.dateValue)
+		expect(clonedStateA.innerTestObject).not.toBe(stateA.innerTestObject)
+		expect(clonedStateA.innerTestObjectGetSet).not.toBe(stateA.innerTestObjectGetSet)
+		assertNotNullable(clonedStateA.innerTestObjectGetSet?.deepNestedObj?.objectList)
+		assertNotNullable(stateA.innerTestObjectGetSet?.deepNestedObj?.objectList)
+		expect(clonedStateA.innerTestObjectGetSet.getterSetterDate).not.toBe(stateA.innerTestObjectGetSet.getterSetterDate)
+		expect(clonedStateA.innerTestObjectGetSet.deepNestedObj).not.toBe(stateA.innerTestObjectGetSet.deepNestedObj)
+		assertNotNullable(clonedStateA.innerTestObjectGetSet.obj)
+		assertNotNullable(stateA.innerTestObjectGetSet.obj)
+		expect(clonedStateA.innerTestObjectGetSet.obj.date).not.toBe(stateA.innerTestObjectGetSet.obj.date)
+		assertNotNullable(clonedStateA.innerTestObjectGetSet.deepNestedObj.objectList[0])
+		assertNotNullable(stateA.innerTestObjectGetSet.deepNestedObj.objectList[0])
+		expect(clonedStateA.innerTestObjectGetSet.deepNestedObj.objectList[0].date).not
+			.toBe(stateA.innerTestObjectGetSet.deepNestedObj.objectList[0].date)
 	})
 })
