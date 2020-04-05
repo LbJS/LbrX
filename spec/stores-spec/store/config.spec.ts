@@ -11,10 +11,10 @@ describe('Store Config:', () => {
 	let isDev: () => boolean
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		LbrXManager = provider.provide(LbrXManager_type.name)
-		Store = provider.provide(Store_type.name)
-		isDev = provider.provide(isDevFunc.name)
+		const providerModule = await import('provider.module')
+		LbrXManager = providerModule.LbrXManager
+		Store = providerModule.Store
+		isDev = providerModule.isDev
 		MockBuilder.addLocalStorageMock()
 			.addSessionStorageMock()
 			.buildMocks()

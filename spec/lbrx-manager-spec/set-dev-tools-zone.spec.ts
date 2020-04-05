@@ -1,6 +1,6 @@
 import MockBuilder from 'mock-builder'
 import { LbrXManager as LbrXManager_type } from 'lbrx'
-import { DevToolsManager as DevToolsManager_type } from 'lbrx/dev-tools'
+import { DevToolsManager } from 'lbrx/dev-tools'
 
 // tslint:disable: no-string-literal
 
@@ -9,8 +9,8 @@ describe('LbrXManager setDevToolsZone():', () => {
 	let LbrXManager: typeof LbrXManager_type
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		LbrXManager = provider.provide(LbrXManager_type.name)
+		const providerModule = await import('provider.module')
+		LbrXManager = providerModule.LbrXManager
 		MockBuilder.addReduxDevToolsExtensionMock()
 			.buildMocks()
 	})
@@ -29,10 +29,10 @@ describe('LbrXManager setDevToolsZone():', () => {
 		const zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T } = { run: f => f() }
 		LbrXManager.initializeDevTools()
 		LbrXManager.setDevToolsZone(zone)
-		const DevToolsManager = LbrXManager['_devToolsManager'] as DevToolsManager_type
-		expect(DevToolsManager['_zone']).toBe(zone)
+		const devToolsManager = LbrXManager['_devToolsManager'] as DevToolsManager
+		expect(devToolsManager['_zone']).toBe(zone)
 		const runSpy = jest.spyOn(zone, 'run')
-		DevToolsManager['_zone'].run(() => { })
+		devToolsManager['_zone'].run(() => { })
 		expect(runSpy).toBeCalled()
 	})
 })

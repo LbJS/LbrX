@@ -7,9 +7,10 @@ describe('Store Error - Global Error Update', () => {
 	let nullStore: NullStateStore
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		globalErrorStore = provider.provide<typeof GlobalErrorStore>(GlobalErrorStore.name).getStore()
-		nullStore = provider.provide(NullStateStore.name)
+		const providerModule = await import('provider.module')
+		const provider = providerModule.default
+		globalErrorStore = providerModule.GlobalErrorStore.getStore()
+		nullStore = provider.provide(NullStateStore)
 	})
 
 	afterEach(() => {
@@ -21,7 +22,7 @@ describe('Store Error - Global Error Update', () => {
 		expect(globalErrorStore.getError()).toMatchObject(createCustomError())
 	})
 
-	it('should not update global error store will null.', () => {
+	it('should not update global error store with null.', () => {
 		nullStore.setError(createCustomError())
 		nullStore.setError(null)
 		expect(globalErrorStore.getError()).toMatchObject(createCustomError())

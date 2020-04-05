@@ -1,6 +1,5 @@
 import { ObjectCompareTypes, Storages, LbrXManager as LbrXManager_type } from 'lbrx'
-import { GlobalStoreConfigOptions, getGlobalStoreConfig as getGlobalStoreConfigFunc } from 'lbrx/stores/config'
-import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
+import { GlobalStoreConfigOptions } from 'lbrx/stores/config'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 
@@ -14,11 +13,11 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
 	let parse: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => any
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		LbrXManager = provider.provide(LbrXManager_type.name)
-		getGlobalStoreConfig = provider.provide(getGlobalStoreConfigFunc.name)
-		stringify = provider.provide(stringifyFunc.name)
-		parse = provider.provide(parseFunc.name)
+		const providerModule = await import('provider.module')
+		LbrXManager = providerModule.LbrXManager
+		getGlobalStoreConfig = providerModule.getGlobalStoreConfig
+		stringify = providerModule.stringify
+		parse = providerModule.parse
 	})
 
 	afterEach(() => {

@@ -10,8 +10,8 @@ describe('Store onOverride():', () => {
 	let store: Store_type<TestSubjectA> & StoreOnOverride<TestSubjectA>
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		Store = provider.provide(Store_type.name)
+		const providerModule = await import('provider.module')
+		Store = providerModule.Store
 		@StoreConfig({
 			name: 'ON-OVERRIDE-TEST-STORE'
 		})

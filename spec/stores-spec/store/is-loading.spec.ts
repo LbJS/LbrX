@@ -5,8 +5,8 @@ describe('Store Is Loading State', () => {
 	let uiStore: UiStateStore
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		uiStore = provider.provide(UiStateStore.name)
+		const provider = (await import('provider.module')).default
+		uiStore = provider.provide(UiStateStore)
 	})
 
 	afterEach(() => {

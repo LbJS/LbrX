@@ -1,6 +1,5 @@
 import { NullStateStore, createCommonModel } from 'test-subjects'
 import { LbrXManager as LbrXManager_type } from 'lbrx'
-import { isDev as isDevFunc } from 'lbrx/mode'
 import { of, timer, throwError } from 'rxjs'
 
 describe('Store Async Initialization:', () => {
@@ -10,10 +9,11 @@ describe('Store Async Initialization:', () => {
 	let isDev: () => boolean
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		nullStore = provider.provide(NullStateStore.name)
-		LbrXManager = provider.provide(LbrXManager_type.name)
-		isDev = provider.provide(isDevFunc.name)
+		const providerModule = await import('provider.module')
+		const provider = providerModule.default
+		nullStore = provider.provide(NullStateStore)
+		LbrXManager = providerModule.LbrXManager
+		isDev = providerModule.isDev
 	})
 
 	afterEach(() => {

@@ -1,5 +1,4 @@
 import { LbrXManager as LbrXManager_type } from 'lbrx'
-import { isDev as isDevFunc } from 'lbrx/mode'
 
 describe('LbrXManager enableProdMode():', () => {
 
@@ -8,9 +7,9 @@ describe('LbrXManager enableProdMode():', () => {
 	let isDev: () => boolean
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		LbrXManager = provider.provide(LbrXManager_type.name)
-		isDev = provider.provide(isDevFunc.name)
+		const providerModule = await import('provider.module')
+		LbrXManager = providerModule.LbrXManager
+		isDev = providerModule.isDev
 	})
 
 	afterEach(() => {

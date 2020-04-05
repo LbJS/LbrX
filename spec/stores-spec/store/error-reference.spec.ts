@@ -6,9 +6,9 @@ describe('Store Error Reference:', () => {
 	let nullStore: NullStateStore
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		uiStore = provider.provide(UiStateStore.name)
-		nullStore = provider.provide(NullStateStore.name)
+		const provider = (await import('provider.module')).default
+		uiStore = provider.provide(UiStateStore)
+		nullStore = provider.provide(NullStateStore)
 	})
 
 	afterEach(() => {

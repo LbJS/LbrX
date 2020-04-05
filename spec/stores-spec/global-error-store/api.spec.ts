@@ -8,8 +8,8 @@ describe('Global Error Store API:', () => {
 	let globalErrorStore: GlobalErrorStore<string | Error>
 
 	beforeEach(async () => {
-		const provider = (await import('provider')).default
-		globalErrorStore = provider.provide<typeof GlobalErrorStore>(GlobalErrorStore.name).getStore()
+		const providerModule = await import('provider.module')
+		globalErrorStore = providerModule.GlobalErrorStore.getStore()
 	})
 
 	afterEach(() => {
