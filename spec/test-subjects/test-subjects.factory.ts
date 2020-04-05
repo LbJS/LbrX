@@ -5,6 +5,20 @@ import { TestSubjectConfigurations } from './test-subject-configurations.enum'
 
 export class TestSubjectsFactory {
 
+	public static createTestSubjectA_initial(): TestSubjectA {
+		return this.createTestSubjectA(TestSubjectConfigurations.initial)
+	}
+
+	public static createTestSubjectA_configA(): TestSubjectA {
+		return this.createTestSubjectA(TestSubjectConfigurations.configurationA)
+	}
+	public static createTestSubjectA_configA_plain(): TestSubjectA {
+		return this.createTestSubjectA(TestSubjectConfigurations.configurationA_plain)
+	}
+	public static createTestSubjectA_configB(): TestSubjectA {
+		return this.createTestSubjectA(TestSubjectConfigurations.configurationB)
+	}
+
 	public static createTestSubjectA(configuration: TestSubjectConfigurations): TestSubjectA {
 		switch (configuration) {
 			case TestSubjectConfigurations.initial:
@@ -28,15 +42,7 @@ export class TestSubjectsFactory {
 					innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubjectA(configuration),
 				})
 			case TestSubjectConfigurations.configurationA_plain:
-				return {
-					stringValue: 'abcdefg',
-					numberValue: 5,
-					booleanValue: false,
-					dateValue: '2020-02-29T22:00:00.000Z' as unknown as Date,
-					getterSetterDate: '2020-06-30T21:00:00.000Z' as unknown as Date,
-					innerTestObject: TestSubjectsFactory.createInnerTestSubjectA(configuration),
-					innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubjectA(configuration),
-				} as TestSubjectA
+				return JSON.parse(JSON.stringify(this.createTestSubjectA(TestSubjectConfigurations.configurationA)))
 			case TestSubjectConfigurations.configurationB:
 				return new TestSubjectA({
 					stringValue: 'abcdefg',
@@ -79,18 +85,7 @@ export class TestSubjectsFactory {
 					},
 				})
 			case TestSubjectConfigurations.configurationA_plain:
-				return {
-					stringValue: 'a b c',
-					numberValue: 112346579.1236549,
-					booleanValue: true,
-					dateValue: '2018-09-30T21:00:00.000Z' as unknown as Date,
-					getterSetterDate: '2018-08-31T21:00:00.000Z' as unknown as Date,
-					deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubjectA(configuration),
-					obj: {
-						value: 'aaaaaaaa bbbbbbbbb',
-						date: '2017-05-31T21:00:00.000Z' as unknown as Date
-					},
-				} as InnerTestSubjectA
+				return JSON.parse(JSON.stringify(this.createInnerTestSubjectA(TestSubjectConfigurations.configurationA)))
 			case TestSubjectConfigurations.configurationB:
 				return null
 		}
@@ -164,37 +159,7 @@ export class TestSubjectsFactory {
 				return Object.assign(new DeepNestedTestSubjectA(), partialDeepNestedObject)
 			}
 			case TestSubjectConfigurations.configurationA_plain:
-				return {
-					stringValue: 'some string here',
-					numberValue: 5.55,
-					booleanValue: false,
-					dateValue: '2018-12-31T22:00:00.000Z' as unknown as Date,
-					objectList: [
-						{
-							value: 'some value',
-							date: '2019-05-31T21:00:00.000Z' as unknown as Date
-						},
-						{
-							value: 'some other value',
-							date: '2019-05-31T21:00:00.000Z' as unknown as Date
-						},
-						{
-							value: 'some value',
-							date: '2019-09-30T21:00:00.000Z' as unknown as Date
-						},
-						{
-							value: 'some value',
-							date: '2019-06-30T21:00:00.000Z' as unknown as Date
-						},
-					],
-					stringList: [
-						'a',
-						'b b b',
-						'c',
-						null,
-						'e e'
-					]
-				}
+				return JSON.parse(JSON.stringify(this.createDeepNestedTestSubjectA(TestSubjectConfigurations.configurationA)))
 			case TestSubjectConfigurations.configurationB:
 				return null
 		}
