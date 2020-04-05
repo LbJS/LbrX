@@ -9,5 +9,5 @@ export interface StoreOnUpdate<T = object> {
 	 * but after the new value is ready.
 	 * - Allows new state modification just before it becomes the new state's value.
 	 */
-	onUpdate(newState: T, oldState: Readonly<T>): object | void
+	onUpdate(newState: T, oldState: Readonly<T>): T | void
 }
