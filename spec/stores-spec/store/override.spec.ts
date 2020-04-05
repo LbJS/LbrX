@@ -1,5 +1,6 @@
 import { Store } from 'lbrx'
 import { TestSubjectA, TestSubjectsFactory, InnerTestSubjectA, DeepNestedTestSubjectA } from 'test-subjects'
+import { assertNotNullable, assertEqual } from 'helpers'
 
 describe('Store override():', () => {
 
@@ -50,9 +51,9 @@ describe('Store override():', () => {
 		store.override(localStateA)
 		expect(store.value).not.toBe(localStateA)
 		expect(store.value).toStrictEqual(localStateA)
-		expect(localStateA.dateValue).toBeTruthy()
-		localStateA.dateValue?.setFullYear(1900)
-		expect(localStateA.dateValue?.getFullYear()).toBe(1900)
+		assertNotNullable(localStateA.dateValue)
+		localStateA.dateValue.setFullYear(1900)
+		assertEqual(localStateA.dateValue.getFullYear(), 1900)
 		const expectedState = createStateA()
 		expect(store.value).toStrictEqual(expectedState)
 	})
