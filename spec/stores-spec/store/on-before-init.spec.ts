@@ -1,5 +1,5 @@
 import { Store } from 'lbrx'
-import { TestSubjectA, TestSubjectsFactory, StoresFactory } from 'test-subjects'
+import { TestSubjectA, TestSubjectsFactory, StoresFactory as StoresFactory_type } from 'test-subjects'
 import { StoreBeforeInit } from 'lbrx/hooks'
 import { assertNotNullable } from 'helpers'
 import { timer } from 'rxjs'
@@ -8,14 +8,14 @@ describe('Store onBeforeInit():', () => {
 
 	const createInitialState = () => TestSubjectsFactory.createTestSubjectA_initial()
 	const initialState = createInitialState()
-	let StoreFactory: typeof StoresFactory
+	let StoresFactory: typeof StoresFactory_type
 	let store: Store<TestSubjectA> & StoreBeforeInit<TestSubjectA>
 	let onBeforeInitSpy: jest.SpyInstance<void | TestSubjectA, [TestSubjectA]>
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		StoreFactory = providerModule.StoresFactory
-		store = StoreFactory.createTestStore<TestSubjectA>(null)
+		StoresFactory = providerModule.StoresFactory
+		store = StoresFactory.createTestStore<TestSubjectA>(null)
 		onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
 	})
 
@@ -83,7 +83,7 @@ describe('Store onBeforeInit():', () => {
 		await Promise.resolve()
 		expect(store.value).toStrictEqual(initialState)
 		jest.resetAllMocks()
-		store = StoreFactory.createTestStore<TestSubjectA>(null, 'ANOTHER-TEST-STORE')
+		store = StoresFactory.createTestStore<TestSubjectA>(null, 'ANOTHER-TEST-STORE')
 		onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
 		let tmpState: TestSubjectA | null = null
 		onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
