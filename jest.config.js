@@ -11,6 +11,7 @@ module.exports = {
 		"^lbrx/helpers$": "<rootDir>/src/helpers",
 		"^lbrx/mode$": "<rootDir>/src/mode",
 		"^lbrx/hooks$": "<rootDir>/src/hooks",
+		"^lbrx/types$": "<rootDir>/src/types",
 		"^lbrx/dev-tools$": "<rootDir>/src/dev-tools",
 		"^lbrx/stores/config$": "<rootDir>/src/stores/config",
 		"^test-subjects$": "<rootDir>/spec/test-subjects",

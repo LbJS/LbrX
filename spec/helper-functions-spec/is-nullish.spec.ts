@@ -1,20 +1,20 @@
-import { isNullish } from 'lbrx/helpers'
+import { isNullable } from 'lbrx/helpers'
 
 describe('Helper Function - isNullish():', () => {
 
 	it('should return true for null.', () => {
-		expect(isNullish(null)).toBeTruthy()
+		expect(isNullable(null)).toBeTruthy()
 	})
 
 	it('should return true for undefined.', () => {
-		expect(isNullish(undefined)).toBeTruthy()
+		expect(isNullable(undefined)).toBeTruthy()
 	})
 
 	it('should return false for 0.', () => {
-		expect(isNullish(0)).toBeFalsy()
+		expect(isNullable(0)).toBeFalsy()
 	})
 
 	it('should return false for empty string.', () => {
-		expect(isNullish('')).toBeFalsy()
+		expect(isNullable('')).toBeFalsy()
 	})
 })

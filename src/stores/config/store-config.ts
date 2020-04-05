@@ -1,8 +1,9 @@
 import { StoreConfigOptions } from './store-config-options'
 import { STORE_CONFIG_KEY } from './store-config-key'
-import { isFunction, objectKeys, logError, Class, mergeObjects, throwError } from 'lbrx/helpers'
+import { isFunction, objectKeys, logError, mergeObjects, throwError } from 'lbrx/helpers'
 import { isDev } from 'lbrx/mode'
 import { getGlobalStoreConfig } from './global-store-config'
+import { Class } from 'lbrx/types'
 
 export function StoreConfig(options: StoreConfigOptions): <T extends Class>(constructor: T) => void {
 	options = mergeObjects(getGlobalStoreConfig(), options) as StoreConfigOptions

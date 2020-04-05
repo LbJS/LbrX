@@ -41,7 +41,7 @@ describe('Store onOverride():', () => {
 		store.override(stateA)
 	})
 
-	it('should change the new state.', () => {
+	it('should allow changing the next state.', () => {
 		const localStateA = createStateA()
 		onOverrideSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
 			nextState.dateValue?.setFullYear(1900)

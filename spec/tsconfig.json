@@ -19,6 +19,9 @@
 			"lbrx/mode": [
 				"../src/mode",
 			],
+			"lbrx/types": [
+				"../src/types",
+			],
 			"lbrx/stores/config": [
 				"../src/stores/config",
 			],

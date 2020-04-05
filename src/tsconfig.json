@@ -17,6 +17,9 @@
 				"./helpers",
 				"./helpers/*"
 			],
+			"lbrx/types": [
+				"./types",
+			],
 		},
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,

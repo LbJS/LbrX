@@ -4,7 +4,8 @@ import { StoreBeforeInit } from 'lbrx/hooks'
 
 describe('Store onBeforeInit():', () => {
 
-	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	const createInitialState = () => TestSubjectsFactory.createTestSubjectA_initial()
+	const initialState = createInitialState()
 	let store: Store<TestSubjectA> & StoreBeforeInit<TestSubjectA>
 	let onBeforeInitSpy: jest.SpyInstance<void | TestSubjectA, [TestSubjectA]>
 
@@ -52,4 +53,24 @@ describe('Store onBeforeInit():', () => {
 		})
 		store.initialize(initialState)
 	})
+
+	// it('should allow changing the next state.', done => {
+	// 	const localInitialState = createInitialState()
+	// 	onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
+	// 		if (nextState.innerTestObjectGetSet) {
+	// 			nextState.innerTestObjectGetSet.booleanValue = !nextState.innerTestObjectGetSet.booleanValue
+	// 		} else {
+	// 			fail('The next state argument is invalid, innerTestObjectGetSet is missing.')
+	// 		}
+	// 		return nextState
+	// 	})
+	// 	store.initialize(localInitialState)
+	// 	assert()
+	// 	if (localInitialState.innerTestObjectGetSet) {
+	// 		localInitialState.innerTestObjectGetSet.booleanValue = !localInitialState.innerTestObjectGetSet.booleanValue
+	// 	} else {
+	// 		fail('The initial state variable is invalid, innerTestObjectGetSet is missing.')
+	// 	}
+	// 	expect
+	// })
 })
