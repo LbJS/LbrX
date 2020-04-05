@@ -114,7 +114,7 @@ export class TestSubjectsFactory {
 							date: new Date(2019, 6)
 						},
 					],
-					stringList: [
+					stringsList: [
 						'a',
 						'b b b',
 						'c',
@@ -148,7 +148,7 @@ export class TestSubjectsFactory {
 							date: new Date(2019, 6)
 						},
 					],
-					stringList: [
+					stringsList: [
 						'a',
 						'b b b',
 						'c',
