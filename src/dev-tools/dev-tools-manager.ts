@@ -60,7 +60,7 @@ export class DevToolsManager {
 				devTools.send({ type: `[${store.name}] - Reset Store` }, this._appState)
 			}),
 			DevToolsSubjects.hardResetEvent$.subscribe(storeName => {
-				this._appState[storeName] = StoreStates.resetting
+				this._appState[storeName] = StoreStates.hardResetting
 				devTools.send({ type: `[${storeName}] - Hard Resetting...` }, this._appState)
 			}),
 		]
@@ -71,24 +71,26 @@ export class DevToolsManager {
 	private _setDevToolsEventsSubscribers(devTools: any): void {
 		this._sub.add(devTools.subscribe((message: any) => {
 			if (message.type != 'DISPATCH' || !message.state) return
-			const devToolsState = parse<{}>(message.state)
-			objectKeys(devToolsState).forEach((storeName: string) => {
+			const reduxDevToolsState = parse<{}>(message.state)
+			objectKeys(reduxDevToolsState).forEach((storeName: string) => {
 				const store: any = DevToolsSubjects.stores[storeName]
-				const devToolsStoreValue = devToolsState[storeName]
-				const loadingStoresCache = this._loadingStoresCache
 				if (store) {
-					if (devToolsStoreValue === StoreStates.loading) {
+					const reduxDevToolsStoreValue = reduxDevToolsState[storeName]
+					const loadingStoresCache = this._loadingStoresCache
+					if (reduxDevToolsStoreValue === StoreStates.loading ||
+						reduxDevToolsStoreValue === StoreStates.hardResetting
+					) {
 						if (!loadingStoresCache[storeName]) {
 							loadingStoresCache[storeName] = store.value
 							this._zone.run(() => {
 								store.state = null
-								store.isLoading$.next(true)
+								store._isLoading$.next(true)
 							})
 						}
 					} else {
 						this._zone.run(() => {
-							store._setState(() => instanceHandler(store.value || loadingStoresCache[storeName], devToolsStoreValue))
-							store.isLoading && store.isLoading$.next(false)
+							store._setState(() => instanceHandler(store._initialState || loadingStoresCache[storeName], reduxDevToolsStoreValue))
+							store.isLoading && store._isLoading$.next(false)
 						})
 						if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
 					}
