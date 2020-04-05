@@ -1,18 +1,20 @@
-import { createInitialUiState, NullStateStore, UiStateStore, createCommonModel } from 'test-subjects'
-import { LbrXManager as LbrXManager_type } from 'lbrx'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
 
 describe('Store Initialization: ', () => {
 
-	let uiStore: UiStateStore
-	let nullStore: NullStateStore
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	const pureInitialState = TestSubjectsFactory.createTestSubjectA_initial()
+	const stateA = TestSubjectsFactory.createTestSubjectA_configA()
+	let store: Store<TestSubjectA>
+	let loadingStore: Store<TestSubjectA>
 	let LbrXManager: typeof LbrXManager_type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		const provider = providerModule.default
-		uiStore = provider.provide(UiStateStore)
-		nullStore = provider.provide(NullStateStore)
+		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState)
+		loadingStore = providerModule.StoresFactory.createTestStore<TestSubjectA>(null, 'LOADING-STORE')
 		LbrXManager = providerModule.LbrXManager
 		isDev = providerModule.isDev
 	})
@@ -22,69 +24,67 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should set the initial value as the first state.', () => {
-		expect(uiStore.value).toStrictEqual(createInitialUiState())
+		expect(store.value).toStrictEqual(pureInitialState)
 	})
 
-	it("should set the initial value to store's initial value.", () => {
-		expect(uiStore.value).toStrictEqual(uiStore.initialValue)
+	it("should set the initial value to store's initial value property.", () => {
+		expect(store.value).toStrictEqual(store.initialValue)
 	})
 
 	it('should return the initial state from observable.', done => {
-		uiStore.select$().subscribe(value => {
-			expect(value).toStrictEqual(createInitialUiState())
+		store.select$().subscribe(value => {
+			expect(value).toStrictEqual(pureInitialState)
 			done()
 		})
 	}, 100)
 
 	it('should have null as an initial value.', () => {
-		expect(nullStore.value).toBeNull()
+		expect(loadingStore.value).toBeNull()
 	})
 
 	it('should set the initial value after initialization.', () => {
-		nullStore.initialize(createCommonModel())
-		expect(nullStore.value).toStrictEqual(createCommonModel())
+		loadingStore.initialize(initialState)
+		expect(loadingStore.value).toStrictEqual(pureInitialState)
 	})
 
 	it('should return the initial state from observable after initialization.', done => {
-		nullStore.select$().subscribe(value => {
-			expect(value).toStrictEqual(createCommonModel())
+		loadingStore.select$().subscribe(value => {
+			expect(value).toStrictEqual(pureInitialState)
 			done()
 		})
-		nullStore.initialize(createCommonModel())
+		loadingStore.initialize(initialState)
 	}, 100)
 
 	it('should throw on second initialization in development mode.', () => {
-		nullStore.initialize(createCommonModel())
+		loadingStore.initialize(initialState)
 		expect(() => {
-			isDev() && nullStore.initialize(createCommonModel())
+			isDev() && loadingStore.initialize(initialState)
 		}).toThrow()
 	})
 
 	it('should not throw on second initialization in production mode.', () => {
 		LbrXManager.enableProdMode()
-		nullStore.initialize(createCommonModel())
+		loadingStore.initialize(initialState)
 		expect(() => {
-			nullStore.initialize(createCommonModel())
+			loadingStore.initialize(initialState)
 		}).not.toThrow()
 	})
 
 	it('should not contain second initialization value in production mode.', () => {
 		LbrXManager.enableProdMode()
-		nullStore.initialize(createCommonModel())
-		nullStore.initialize({ data: 'test' })
-		expect(nullStore.value).toStrictEqual(createCommonModel())
+		loadingStore.initialize(initialState)
+		loadingStore.initialize(stateA)
+		expect(loadingStore.value).toStrictEqual(pureInitialState)
 	})
 
 	it('should have value after loading is finished.', done => {
-		nullStore.isLoading$
+		loadingStore.isLoading$
 			.subscribe(value => {
 				if (!value) {
-					expect(nullStore.value).toStrictEqual(createCommonModel())
+					expect(loadingStore.value).toStrictEqual(pureInitialState)
 					done()
 				}
 			})
-		nullStore.initialize(createCommonModel())
+		loadingStore.initialize(initialState)
 	}, 100)
-
-	// TODO: hooks test
 })
