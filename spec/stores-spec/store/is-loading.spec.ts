@@ -1,12 +1,14 @@
-import { UiStateStore } from 'test-subjects'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { Store } from 'lbrx'
 
 describe('Store Is Loading State', () => {
 
-	let uiStore: UiStateStore
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	let store: Store<TestSubjectA>
 
 	beforeEach(async () => {
-		const provider = (await import('provider.module')).default
-		uiStore = provider.provide(UiStateStore)
+		const providerModule = await import('provider.module')
+		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState)
 	})
 
 	afterEach(() => {
@@ -14,29 +16,23 @@ describe('Store Is Loading State', () => {
 	})
 
 	it("should have false as the default store's loading state.", () => {
-		expect(uiStore.isLoading).toBeFalsy()
+		expect(store.isLoading).toBeFalsy()
 	})
 
 	it("should have false as the default store's loading state from observable.", done => {
-		uiStore.isLoading$.subscribe(value => {
+		store.isLoading$.subscribe(value => {
 			expect(value).toBeFalsy()
 			done()
 		})
 	})
 
-	it('should have distinct observable values.', done => {
+	it('should have distinct observable values.', async () => {
 		const expectedValues = [false, true, false]
 		const nextValues = [false, true, true, false, false]
 		const actualValues: boolean[] = []
-		uiStore.isLoading$.subscribe(value => actualValues.push(value))
-		nextValues.forEach((value, i) => {
-			setTimeout(() => {
-				uiStore.isLoading = value
-				if (i + 1 == nextValues.length) {
-					expect(expectedValues).toMatchObject(actualValues)
-					done()
-				}
-			}, i * 10)
-		})
-	}, 500)
+		store.isLoading$.subscribe(value => actualValues.push(value))
+		nextValues.forEach(value => store.isLoading = value)
+		await Promise.resolve()
+		expect(actualValues).toStrictEqual(expectedValues)
+	})
 })

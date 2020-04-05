@@ -2,7 +2,6 @@ import { Store } from 'lbrx'
 import { TestSubjectA, TestSubjectsFactory, StoresFactory as StoresFactory_type } from 'test-subjects'
 import { StoreBeforeInit } from 'lbrx/hooks'
 import { assertNotNullable } from 'helpers'
-import { timer } from 'rxjs'
 
 describe('Store onBeforeInit():', () => {
 
