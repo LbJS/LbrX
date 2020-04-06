@@ -25,7 +25,7 @@ main()
 
 async function main() {
 	registerBabel(BABEL_CONFIG)
-	const jsModules = getJsFilesFromDir(LIBRARY_FOLDER)
+	const jsModules = getFilesFromDir(LIBRARY_FOLDER, /^(?!.*\.map\.js).*\.js$/)
 	try {
 		await validateAllModules(jsModules)
 		logSuccess()
@@ -36,16 +36,17 @@ async function main() {
 
 /**
  * @param {string} dir
+ * @param {RegExp} regex
  * @returns {string[]}
  */
-function getJsFilesFromDir(dir) {
+function getFilesFromDir(dir, regExp) {
 	let jsFiles = []
 	fs.readdirSync(dir).forEach(fileOrDir => {
 		const fullPath = `${dir}/${fileOrDir}`
 		if (fs.statSync(fullPath).isFile()) {
-			if (/^(?!.*\.map\.js).*\.js$/.test(fullPath)) jsFiles.push(fullPath)
+			if (!regExp || regExp.test(fullPath)) jsFiles.push(fullPath)
 		} else {
-			jsFiles = jsFiles.concat(getJsFilesFromDir(fullPath))
+			jsFiles = jsFiles.concat(getFilesFromDir(fullPath, regExp))
 		}
 	})
 	return jsFiles
