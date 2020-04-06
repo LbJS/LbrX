@@ -28,7 +28,7 @@
 		"test:watchAll": "jest --watchAll"
 	},
 	"dependencies": {
-		"rxjs": "^6.5.4"
+		"rxjs": "^6.5.5"
 	},
 	"devDependencies": {
 		"@types/jest": "^25.1.3",
