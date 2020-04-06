@@ -1,16 +1,17 @@
-import { GlobalErrorStore } from 'lbrx'
-import { NullStateStore, createCustomError } from 'test-subjects'
+import { GlobalErrorStore, Store } from 'lbrx'
+import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
 
 describe('Store Error - Global Error Update', () => {
 
+	const nestedError = TestSubjectsFactory.createNestedError()
+	const pureNestedError = TestSubjectsFactory.createNestedError()
+	let store: Store<TestSubjectA, Error>
 	let globalErrorStore: GlobalErrorStore<Error>
-	let nullStore: NullStateStore
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		const provider = providerModule.default
+		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(null, true/*no hooks*/)
 		globalErrorStore = providerModule.GlobalErrorStore.getStore()
-		nullStore = provider.provide(NullStateStore)
 	})
 
 	afterEach(() => {
@@ -18,13 +19,13 @@ describe('Store Error - Global Error Update', () => {
 	})
 
 	it('should update global error store.', () => {
-		nullStore.setError(createCustomError())
-		expect(globalErrorStore.getError()).toMatchObject(createCustomError())
+		store.setError(nestedError)
+		expect(globalErrorStore.getError()).toMatchObject(pureNestedError)
 	})
 
 	it('should not update global error store with null.', () => {
-		nullStore.setError(createCustomError())
-		nullStore.setError(null)
-		expect(globalErrorStore.getError()).toMatchObject(createCustomError())
+		store.setError(nestedError)
+		store.setError(null)
+		expect(globalErrorStore.getError()).toMatchObject(pureNestedError)
 	})
 })

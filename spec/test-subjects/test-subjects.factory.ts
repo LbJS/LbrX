@@ -2,6 +2,7 @@ import { TestSubjectA } from './test-subject-a.model'
 import { InnerTestSubjectA } from './inner-test-subject-a.model'
 import { DeepNestedTestSubjectA } from './deep-nested-test-subject-a.model'
 import { TestSubjectConfigurations } from './test-subject-configurations.enum'
+import { ErrorTestSubject } from './error-test-subject'
 
 export class TestSubjectsFactory {
 
@@ -163,5 +164,19 @@ export class TestSubjectsFactory {
 			case TestSubjectConfigurations.configurationB:
 				return null
 		}
+	}
+
+	public static createError(text: string = 'Some new error data.'): Error {
+		return new Error(text)
+	}
+
+	public static createErrorTestSubject(text: string = 'Some error data.'): ErrorTestSubject {
+		return new ErrorTestSubject(text)
+	}
+
+	public static createNestedError(): ErrorTestSubject {
+		let err = new ErrorTestSubject('Layer3 error')
+		err = new ErrorTestSubject(err, 'Layer2 error')
+		return new ErrorTestSubject(err, 'Layer1 error')
 	}
 }
