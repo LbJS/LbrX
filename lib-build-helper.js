@@ -9,6 +9,8 @@ const FILES_TO_COPY = [
 	'LICENSE',
 ]
 
+main()
+
 async function main() {
 	// copy files
 	FILES_TO_COPY.forEach(fileName => copyFile(resolveSourcePath(fileName), resolveTargetPath(fileName)))
@@ -99,5 +101,3 @@ function runAsync(callback) {
 		callback()
 	})
 }
-
-main()

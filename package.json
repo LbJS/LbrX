@@ -1,6 +1,6 @@
 {
 	"name": "lbrx",
-	"version": "0.2.8-alpha",
+	"version": "0.2.9-alpha",
 	"description": "State Manager for JS Apps",
 	"author": "Leon Bernstein",
 	"license": "ISC",
@@ -19,7 +19,7 @@
 	"scripts": {
 		"start": "webpack --watch -d --progress",
 		"build": "webpack -p --progress",
-		"build:lib": "rimraf lib/* && tsc -p ./src/tsconfig.json && node build.lib.js",
+		"build:lib": "rimraf lib/* && tsc -p ./src/tsconfig.json && node lib-build-helper.js",
 		"build:lib:test": "rimraf lib/* && tsc -p ./src/tsconfig.json",
 		"publish": "cd lib && npm publish",
 		"lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts --fix",
