@@ -14,7 +14,7 @@ describe('Store onBeforeInit():', () => {
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
 		StoresFactory = providerModule.StoresFactory
-		store = StoresFactory.createTestStore<TestSubjectA>(null)
+		store = StoresFactory.createTestStore<TestSubjectA>(null, true/*with hooks*/)
 		onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
 	})
 
@@ -82,7 +82,7 @@ describe('Store onBeforeInit():', () => {
 		await Promise.resolve()
 		expect(store.value).toStrictEqual(initialState)
 		jest.resetAllMocks()
-		store = StoresFactory.createTestStore<TestSubjectA>(null, 'ANOTHER-TEST-STORE')
+		store = StoresFactory.createTestStore<TestSubjectA>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
 		onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
 		let tmpState: TestSubjectA | null = null
 		onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {

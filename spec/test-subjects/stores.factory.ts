@@ -12,31 +12,30 @@ export class StoresFactory {
 	): Store<T, E> & AllStoreHooks<T, E>
 	public static createTestStore<T extends object, E = any>(
 		initialState: T | null,
-		noHooks: boolean
-	): Store<T, E> & AllStoreHooks<T, E> | Store<T, E>
+		withHooks: true
+	): Store<T, E> & AllStoreHooks<T, E>
+	public static createTestStore<T extends object, E = any>(
+		initialState: T | null,
+		withHooks: false
+	): Store<T, E>
 	public static createTestStore<T extends object, E = any>(
 		initialState: T | null,
 		storeName: string,
-		noHooks: boolean
-	): Store<T, E> & AllStoreHooks<T, E> | Store<T, E>
+		withHooks: true
+	): Store<T, E> & AllStoreHooks<T, E>
 	public static createTestStore<T extends object, E = any>(
 		initialState: T | null,
-		storeNameOrNoHooks?: string | boolean,
-		noHooks?: boolean,
+		storeName: string,
+		withHooks: false
+	): Store<T, E>
+	public static createTestStore<T extends object, E = any>(
+		initialState: T | null,
+		storeNameOrWithHooks?: string | boolean,
+		withHooks?: boolean,
 	): Store<T, E> & AllStoreHooks<T, E> | Store<T, E> {
-		const storeName = typeof storeNameOrNoHooks == 'string' ? storeNameOrNoHooks : 'TEST-STORE'
-		noHooks = typeof noHooks == 'boolean' ? noHooks : typeof storeNameOrNoHooks == 'boolean' ? storeNameOrNoHooks : false
-		if (noHooks) {
-			@StoreConfig({
-				name: storeName
-			})
-			class TestStore extends Store<T, E> {
-				constructor() {
-					super(initialState)
-				}
-			}
-			return new TestStore()
-		} else {
+		const storeName = typeof storeNameOrWithHooks == 'string' ? storeNameOrWithHooks : 'TEST-STORE'
+		withHooks = typeof withHooks == 'boolean' ? withHooks : typeof storeNameOrWithHooks == 'boolean' ? storeNameOrWithHooks : false
+		if (withHooks) {
 			@StoreConfig({
 				name: storeName
 			})
@@ -51,6 +50,16 @@ export class StoresFactory {
 				onOverride(nextState: T, currState: Readonly<T>): void | T { }
 				onReset(nextState: T, currState: Readonly<T>): void | T { }
 				onUpdate(nextState: T, currState: Readonly<T>): void | T { }
+			}
+			return new TestStore()
+		} else {
+			@StoreConfig({
+				name: storeName
+			})
+			class TestStore extends Store<T, E> {
+				constructor() {
+					super(initialState)
+				}
 			}
 			return new TestStore()
 		}
