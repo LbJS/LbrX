@@ -1,5 +1,4 @@
 import { StoreConfig, StoreConfigOptionsInfo, Storages, ObjectCompareTypes, LbrXManager as LbrXManager_type, Store as Store_type } from 'lbrx'
-import { isDev as isDevFunc } from 'lbrx/mode'
 import MockBuilder from 'mock-builder'
 import { GenericStorage } from 'mocks'
 import { parse, stringify } from 'lbrx/helpers'

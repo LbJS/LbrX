@@ -1,6 +1,5 @@
-import { UiStateStore, createError, TestSubjectsFactory, TestSubjectA } from 'test-subjects'
+import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
 import { timer, from } from 'rxjs'
-import { skip } from 'rxjs/operators'
 import { Store } from 'lbrx'
 
 describe('Store Error API:', () => {
