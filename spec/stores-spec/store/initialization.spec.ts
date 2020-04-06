@@ -13,7 +13,7 @@ describe('Store Initialization: ', () => {
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState)
+		store = providerModule.StoresFactory.createTestStore(initialState)
 		loadingStore = providerModule.StoresFactory.createTestStore<TestSubjectA>(null, 'LOADING-STORE')
 		LbrXManager = providerModule.LbrXManager
 		isDev = providerModule.isDev

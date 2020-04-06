@@ -12,7 +12,7 @@ describe('Store override():', () => {
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState)
+		store = providerModule.StoresFactory.createTestStore(initialState)
 	})
 
 	afterEach(() => {

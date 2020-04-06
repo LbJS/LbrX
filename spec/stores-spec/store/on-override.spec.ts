@@ -13,7 +13,7 @@ describe('Store onOverride():', () => {
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(initialState, true/*with hooks*/)
+		store = providerModule.StoresFactory.createTestStore(initialState, true/*with hooks*/)
 		onOverrideSpy = jest.spyOn(store, 'onOverride')
 	})
 

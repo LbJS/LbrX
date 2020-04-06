@@ -1,76 +1,85 @@
-import { UiStateStore, createError, NullStateStore, createCustomError } from 'test-subjects'
+import { TestSubjectsFactory, TestSubjectA, ErrorTestSubject } from 'test-subjects'
+import { Store } from 'lbrx'
+import { assertNotNullable } from 'helpers'
 
 describe('Store Error Reference:', () => {
 
-	let uiStore: UiStateStore
-	let nullStore: NullStateStore
+	const error = TestSubjectsFactory.createError()
+	const nestedError = TestSubjectsFactory.createNestedError()
+	const pureNestedError = TestSubjectsFactory.createNestedError()
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	let store: Store<TestSubjectA, Error>
+	let loadingStore: Store<TestSubjectA, ErrorTestSubject>
 
 	beforeEach(async () => {
-		const provider = (await import('provider.module')).default
-		uiStore = provider.provide(UiStateStore)
-		nullStore = provider.provide(NullStateStore)
+		const providerModule = await import('provider.module')
+		store = providerModule.StoresFactory.createTestStore(initialState)
+		loadingStore = providerModule.StoresFactory.createTestStore<TestSubjectA>(null, 'LOADING-STORE')
 	})
 
 	afterEach(() => {
 		jest.resetModules()
 	})
 
+	it('should return the exact same error.', () => {
+		loadingStore.setError(nestedError)
+		expect(loadingStore.getError()).toStrictEqual(pureNestedError)
+	})
+
 	it('should return the error with different reference after setting it.', () => {
-		const error = createError()
-		uiStore.setError(error)
-		expect(uiStore.getError()).toBeTruthy()
-		expect(uiStore.getError()).not.toBe(error)
+		store.setError(error)
+		expect(store.getError()).toBeTruthy()
+		expect(store.getError()).not.toBe(error)
 	})
 
 	it('should return the error with different reference for the inner error after setting it.', () => {
-		const error = createCustomError()
-		nullStore.setError(error)
-		if (!error.innerError?.innerError) fail('Invalid test subject.')
-		expect(nullStore.getError()?.innerError?.innerError).toBeTruthy()
-		expect(nullStore.getError()?.innerError?.innerError).not.toBe(error.innerError?.innerError)
+		assertNotNullable(nestedError?.innerError?.innerError)
+		loadingStore.setError(nestedError)
+		const storesError = loadingStore.getError()
+		assertNotNullable(storesError?.innerError?.innerError)
+		expect(storesError.innerError.innerError).not.toBe(nestedError.innerError.innerError)
 	})
 
-	it("should not be effected by error object's change after set.", () => {
-		const errMsg = 'New Error Msg'
-		const error = createError()
-		uiStore.setError(error)
-		error.message = errMsg
-		expect(uiStore.getError()?.message).toBeTruthy()
-		expect(uiStore.getError()?.message).not.toBe(errMsg)
+	it('should not be effected by error object change after set.', () => {
+		const newErrorMsg = 'New error message'
+		const localError = TestSubjectsFactory.createError()
+		store.setError(localError)
+		localError.message = newErrorMsg
+		const storesError = store.getError()
+		assertNotNullable(storesError)
+		expect(storesError.message).toBeTruthy()
+		expect(storesError.message).not.toBe(newErrorMsg)
 	})
 
-	it("should not be effected by returned error object's change.", () => {
-		const errMsg = 'New Error Msg'
-		let error: Error | null = createError()
-		uiStore.setError(error)
-		error = uiStore.getError()
-		if (error) {
-			error.message = errMsg
-		} else {
-			fail('Invalid returned value.')
-		}
-		expect(uiStore.getError()?.message).toBeTruthy()
-		expect(uiStore.getError()?.message).not.toBe(errMsg)
+	it('should not be effected by returned error object change.', () => {
+		const newErrorMsg = 'New error message'
+		let localError: Error | null = TestSubjectsFactory.createError()
+		store.setError(localError)
+		localError = store.getError()
+		assertNotNullable(localError)
+		localError.message = newErrorMsg
+		const storesError = store.getError()
+		assertNotNullable(storesError)
+		expect(storesError.message).toBeTruthy()
+		expect(storesError.message).not.toBe(newErrorMsg)
 	})
 
 	it('should have different nested custom error object reference.', () => {
-		const error = createCustomError()
-		nullStore.setError(error)
-		expect(error.innerError?.innerError).toBeTruthy()
-		expect(nullStore.getError()?.innerError?.innerError).toBeTruthy()
-		expect(nullStore.getError()?.innerError?.innerError).not.toBe(error.innerError?.innerError)
+		loadingStore.setError(nestedError)
+		assertNotNullable(nestedError.innerError?.innerError)
+		const storesError = loadingStore.getError()
+		assertNotNullable(storesError?.innerError?.innerError)
+		expect(storesError.innerError.innerError).not.toBe(nestedError.innerError.innerError)
 	})
 
 	it("should not be effected by custom error object's change after set.", () => {
-		const errMsg = 'New Error Msg'
-		const error = createCustomError()
-		nullStore.setError(error)
-		if (error.innerError?.innerError) {
-			error.innerError.innerError.message = errMsg
-		} else {
-			fail('Invalid test subject')
-		}
-		expect(nullStore.getError()?.innerError?.innerError).toBeTruthy()
-		expect(nullStore.getError()?.innerError?.innerError).not.toBe(errMsg)
+		const newErrorMsg = 'New error message'
+		const localError = TestSubjectsFactory.createNestedError()
+		loadingStore.setError(localError)
+		assertNotNullable(localError.innerError?.innerError)
+		localError.innerError.innerError.message = newErrorMsg
+		const storesError = loadingStore.getError()
+		assertNotNullable(storesError?.innerError?.innerError)
+		expect(storesError.innerError.innerError).not.toBe(newErrorMsg)
 	})
 })
