@@ -1,14 +1,18 @@
-import { UiStateStore, createError } from 'test-subjects'
-import { timer } from 'rxjs'
+import { UiStateStore, createError, TestSubjectsFactory, TestSubjectA } from 'test-subjects'
+import { timer, from } from 'rxjs'
 import { skip } from 'rxjs/operators'
+import { Store } from 'lbrx'
 
 describe('Store Error API:', () => {
 
-	let uiStore: UiStateStore
+	const error = TestSubjectsFactory.createError()
+	const pureError = TestSubjectsFactory.createError()
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	let store: Store<TestSubjectA, Error>
 
 	beforeEach(async () => {
-		const provider = (await import('provider.module')).default
-		uiStore = provider.provide(UiStateStore)
+		const providerModule = await import('provider.module')
+		store = providerModule.StoresFactory.createTestStore(initialState)
 	})
 
 	afterEach(() => {
@@ -16,63 +20,48 @@ describe('Store Error API:', () => {
 	})
 
 	it('should have null as the default error value.', () => {
-		expect(uiStore.getError()).toBeNull()
+		expect(store.getError()).toBeNull()
 	})
 
 	it('should return null as the default error value from observable.', done => {
-		uiStore.error$.subscribe(value => {
+		store.error$.subscribe(value => {
 			expect(value).toBeNull()
 			done()
 		})
 	})
 
 	it('should return the exact same error after setting it.', () => {
-		uiStore.setError(createError())
-		expect(uiStore.getError()).toMatchObject(createError())
+		store.setError(error)
+		expect(store.getError()).toStrictEqual(pureError)
 	})
 
 	it('should return the exact same error from observable after setting it.', done => {
-		uiStore.setError(createError())
-		uiStore.error$.subscribe(value => {
-			expect(value).toMatchObject(createError())
+		store.setError(error)
+		store.error$.subscribe(value => {
+			expect(value).toStrictEqual(pureError)
 			done()
 		})
 	})
 
 	it('should not emit null value more then once.', async () => {
 		let nullCounter = 0
-		uiStore.error$.subscribe(value => {
+		store.error$.subscribe(value => {
 			if (value === null) nullCounter++
 		})
-		uiStore.setError(null)
-		uiStore.setError(null)
-		uiStore.setError(null)
+		store.setError(null)
+		store.setError(null)
+		store.setError(null)
 		await timer(100).toPromise()
 		expect(nullCounter).toBe(1)
 	}, 200)
 
-	it('should return the errors data flow from observable.', done => {
-		const errorsList = [
-			createError(),
-			null,
-			createError(),
-		]
-		let valueIndex = 0
-		uiStore.error$.pipe(
-			skip(1),
-		).subscribe(value => {
-			const errorItem = errorsList[valueIndex++]
-			if (errorItem) {
-				expect(value).toMatchObject(errorItem)
-			} else {
-				expect(value).toBe(errorItem)
-			}
-			if (valueIndex == errorsList.length) done()
-		})
-		errorsList.forEach((value, i) => {
-			setTimeout(() => {
-				uiStore.setError(value)
-			}, i * 10)
-		})
-	}, 500)
+	it('should return the errors data flow from observable.', async () => {
+		const errorsStream = [error, null, null, error]
+		const expectedErrors = [null, error, null, error]
+		const actualErrors: any[] = []
+		store.error$.subscribe(value => actualErrors.push(value))
+		from(errorsStream).subscribe(value => store.setError(value))
+		await Promise.resolve()
+		expect(actualErrors).toStrictEqual(expectedErrors)
+	})
 })
