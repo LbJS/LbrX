@@ -1,19 +1,26 @@
-import { StoreConfig, StoreConfigOptionsInfo, Storages, ObjectCompareTypes, LbrXManager as LbrXManager_type, Store as Store_type } from 'lbrx'
+import { StoreConfigOptionsInfo, Storages, ObjectCompareTypes, LbrXManager as LbrXManager_type, Store, StoreConfigOptions } from 'lbrx'
 import MockBuilder from 'mock-builder'
+import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
+import { TestSubjectA, StoresFactory as StoresFactory_type } from 'test-subjects'
 import { GenericStorage } from 'mocks'
-import { parse, stringify } from 'lbrx/helpers'
 
 describe('Store Config:', () => {
 
 	let LbrXManager: typeof LbrXManager_type
-	let Store: typeof Store_type
+	let StoresFactory: typeof StoresFactory_type
+	let store: Store<TestSubjectA>
 	let isDev: () => boolean
+	let stringify: typeof stringifyFunc
+	let parse: typeof parseFunc
+	const createStore = (options: StoreConfigOptions) => StoresFactory.createStore<TestSubjectA>(null, options)
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
 		LbrXManager = providerModule.LbrXManager
-		Store = providerModule.Store
+		StoresFactory = providerModule.StoresFactory
 		isDev = providerModule.isDev
+		stringify = providerModule.stringify
+		parse = providerModule.parse
 		MockBuilder.addLocalStorageMock()
 			.addSessionStorageMock()
 			.buildMocks()
@@ -26,11 +33,9 @@ describe('Store Config:', () => {
 	})
 
 	it('should have the right default configuration.', () => {
-		@StoreConfig({
+		store = createStore({
 			name: 'TEST-STORE'
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: true,
@@ -45,96 +50,80 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 	})
 
-	it('should throw with no store config.', () => {
+	it('should throw an error if no store config.', () => {
 		expect(() => {
-			class TestStore extends Store<any> { }
-			const testStore = new TestStore(null)
+			StoresFactory.createStoreWithNoConfig(null)
 		}).toThrow()
 	})
 
-	it('should throw with two stores with the same name in development mode.', () => {
+	it('should throw an error if there are two stores with the same name in development mode.', () => {
 		expect(isDev()).toBeTruthy()
 		expect(() => {
-			@StoreConfig({
+			createStore({
 				name: 'TEST-STORE'
 			})
-			class TestStoreA extends Store<any> { }
-			const testStoreA = new TestStoreA(null)
-			@StoreConfig({
+			createStore({
 				name: 'TEST-STORE'
 			})
-			class TestStoreB extends Store<any> { }
-			const testStoreB = new TestStoreB(null)
 		}).toThrow()
 	})
 
-	it('should not throw with two stores with the same name in production mode, but should console error instead.', () => {
+	it('should not throw an error if there are two stores with the same name in production mode, but should console error instead.', () => {
 		const consoleErrorSpy = jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
 		LbrXManager.enableProdMode()
 		expect(isDev()).toBeFalsy()
 		expect(() => {
-			@StoreConfig({
+			createStore({
 				name: 'TEST-STORE'
 			})
-			class TestStoreA extends Store<any> { }
-			const testStoreA = new TestStoreA(null)
-			@StoreConfig({
+			createStore({
 				name: 'TEST-STORE'
 			})
-			class TestStoreB extends Store<any> { }
-			const testStoreB = new TestStoreB(null)
 		}).not.toThrow()
 		expect(consoleErrorSpy).toBeCalled()
 	})
 
-	it('should throw with two stores with the same storage key in development mode.', () => {
+	it('should throw an error if there are two stores with the same storage key in development mode.', () => {
 		expect(isDev()).toBeTruthy()
 		expect(() => {
-			@StoreConfig({
-				name: 'TEST-STORE',
+			createStore({
+				name: 'TEST-STORE1',
 				storageType: Storages.local,
 				storageKey: 'TEST-KEY',
 			})
-			class TestStoreA extends Store<any> { }
-			const testStoreA = new TestStoreA(null)
-			@StoreConfig({
-				name: 'TEST-STORE',
+			createStore({
+				name: 'TEST-STORE2',
 				storageType: Storages.local,
 				storageKey: 'TEST-KEY',
 			})
-			class TestStoreB extends Store<any> { }
-			const testStoreB = new TestStoreB(null)
 		}).toThrow()
 	})
 
-	it('should not throw with two stores with the same storage key in development mode, but should console error instead.', () => {
+	// tslint:disable-next-line: max-line-length
+	it('should not throw an error if there are two stores with the same storage key in development mode, but should console error instead.', () => {
 		const consoleErrorSpy = jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
 		LbrXManager.enableProdMode()
 		expect(isDev()).toBeFalsy()
 		expect(() => {
-			@StoreConfig({
-				name: 'TEST-STORE',
+			createStore({
+				name: 'TEST-STORE1',
 				storageType: Storages.local,
 				storageKey: 'TEST-KEY',
 			})
-			class TestStoreA extends Store<any> { }
-			const testStoreA = new TestStoreA(null)
-			@StoreConfig({
-				name: 'TEST-STORE',
+			createStore({
+				name: 'TEST-STORE2',
 				storageType: Storages.local,
 				storageKey: 'TEST-KEY',
 			})
-			class TestStoreB extends Store<any> { }
-			const testStoreB = new TestStoreB(null)
 		}).not.toThrow()
 		expect(consoleErrorSpy).toBeCalled()
 	})
 
-	it('should have the right configuration base on chosen options. {testId: 1}', () => {
-		@StoreConfig({
+	it('should have the right configuration base on chosen options. (1st option configuration)', () => {
+		store = createStore({
 			name: 'TEST-STORE',
 			isResettable: false,
 			storageType: Storages.local,
@@ -143,8 +132,6 @@ describe('Store Config:', () => {
 			isSimpleCloning: true,
 			storageKey: 'TEST-STORE-KEY',
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: false,
@@ -159,11 +146,11 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 	})
 
-	it('should have the right configuration base on chosen options. {testId: 2}', () => {
-		@StoreConfig({
+	it('should have the right configuration base on chosen options. (2nd option configuration)', () => {
+		store = createStore({
 			name: 'TEST-STORE',
 			isResettable: false,
 			storageType: Storages.session,
@@ -172,8 +159,6 @@ describe('Store Config:', () => {
 			isSimpleCloning: true,
 			storageKey: 'TEST-STORE-KEY',
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: false,
@@ -188,17 +173,15 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should have custom storage configured if api is supplied.', () => {
-		@StoreConfig({
+		store = createStore({
 			name: 'TEST-STORE',
 			storageType: Storages.custom,
 			customStorageApi: new GenericStorage(),
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: true,
@@ -213,18 +196,16 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 	})
 
 	it('should have custom storage set to null is storage type is not set to custom. Should also set a console warning.', () => {
 		const consoleWarnSpy = jest.spyOn(globalThis.console, 'warn').mockImplementation(() => jest.fn())
-		@StoreConfig({
+		store = createStore({
 			name: 'TEST-STORE',
 			storageType: Storages.local,
 			customStorageApi: new GenericStorage(),
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: true,
@@ -239,19 +220,17 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 		expect(consoleWarnSpy).toBeCalled()
 	})
 
 	it('should have storage type set to none is custom storage api is not set. Should also set a console warning.', () => {
 		const consoleWarnSpy = jest.spyOn(globalThis.console, 'warn').mockImplementation(() => jest.fn())
-		@StoreConfig({
+		store = createStore({
 			name: 'TEST-STORE',
 			storageType: Storages.custom,
 			customStorageApi: null,
 		})
-		class TestStore extends Store<any> { }
-		const testStore = new TestStore(null)
 		const expectedConfig: Required<StoreConfigOptionsInfo> = {
 			name: 'TEST-STORE',
 			isResettable: true,
@@ -266,7 +245,7 @@ describe('Store Config:', () => {
 			stringify,
 			parse,
 		}
-		expect(testStore.config).toStrictEqual(expectedConfig)
+		expect(store.config).toStrictEqual(expectedConfig)
 		expect(consoleWarnSpy).toBeCalled()
 	})
 })

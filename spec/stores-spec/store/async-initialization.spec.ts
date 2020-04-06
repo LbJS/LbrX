@@ -12,7 +12,7 @@ describe('Store Async Initialization:', () => {
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(null)
+		store = providerModule.StoresFactory.createStore<TestSubjectA>(null)
 		LbrXManager = providerModule.LbrXManager
 		isDev = providerModule.isDev
 	})
