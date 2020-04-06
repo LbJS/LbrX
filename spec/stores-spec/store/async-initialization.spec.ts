@@ -1,17 +1,19 @@
-import { NullStateStore, createCommonModel } from 'test-subjects'
-import { LbrXManager as LbrXManager_type } from 'lbrx'
+import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
+import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
 import { of, timer, throwError } from 'rxjs'
 
 describe('Store Async Initialization:', () => {
 
-	let nullStore: NullStateStore
+	const initialState = TestSubjectsFactory.createTestSubjectA_initial()
+	const pureInitialState = TestSubjectsFactory.createTestSubjectA_initial()
+	let store: Store<TestSubjectA>
 	let LbrXManager: typeof LbrXManager_type
 	let isDev: () => boolean
 
 	beforeEach(async () => {
 		const providerModule = await import('provider.module')
-		const provider = providerModule.default
-		nullStore = provider.provide(NullStateStore)
+		const noHooks = true
+		store = providerModule.StoresFactory.createTestStore<TestSubjectA>(null, noHooks)
 		LbrXManager = providerModule.LbrXManager
 		isDev = providerModule.isDev
 	})
@@ -21,67 +23,65 @@ describe('Store Async Initialization:', () => {
 	})
 
 	it('should have null as an initial value.', () => {
-		expect(nullStore.value).toBeNull()
+		expect(store.value).toBeNull()
 	})
 
 	it('should set the initial value after async initialization with observable.', async () => {
-		await nullStore.initializeAsync(of(createCommonModel()))
-		expect(nullStore.value).toStrictEqual(createCommonModel())
+		await store.initializeAsync(of(initialState))
+		expect(store.value).toStrictEqual(pureInitialState)
 	})
 
 	it('should set the initial value after async initialization with promise.', async () => {
-		await nullStore.initializeAsync(Promise.resolve(createCommonModel()))
-		expect(nullStore.value).toStrictEqual(createCommonModel())
+		await store.initializeAsync(Promise.resolve(initialState))
+		expect(store.value).toStrictEqual(pureInitialState)
 	})
 
 	it('should return the initial state from observable after async initialization.', done => {
-		nullStore.select$().subscribe(value => {
-			if (value) {
-				expect(value).toStrictEqual(createCommonModel())
-				done()
-			}
+		store.select$().subscribe(value => {
+			expect(value).toStrictEqual(pureInitialState)
+			done()
 		})
-		nullStore.initializeAsync(of(createCommonModel()))
-	}, 100)
-
-	it('should throw on second initialization in development mode.', async () => {
-		nullStore.initializeAsync(of(createCommonModel()))
-		await expect(isDev() && nullStore.initializeAsync(of(createCommonModel()))).rejects.toBeDefined()
+		store.initializeAsync(of(initialState))
 	})
 
-	it('should throw on second initialization with delay in development mode .', async () => {
-		nullStore.initializeAsync(of(createCommonModel()))
+	it('should throw an error on second initialization in development mode.', async () => {
+		store.initializeAsync(of(initialState))
+		expect(isDev()).toBeTruthy()
+		await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
+	})
+
+	it('should throw an error on second initialization with delay in development mode .', async () => {
+		store.initializeAsync(of(initialState))
 		await timer(100).toPromise()
-		await expect(isDev() && nullStore.initializeAsync(of(createCommonModel()))).rejects.toBeDefined()
+		expect(isDev()).toBeTruthy()
+		await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
 	}, 200)
 
-	it('should not throw on second initialization in production mode.', async () => {
+	it('should not throw an error on second initialization in production mode.', async () => {
 		LbrXManager.enableProdMode()
-		nullStore.initializeAsync(of(createCommonModel()))
-		await expect(nullStore.initializeAsync(of(createCommonModel()))).resolves.toBeUndefined()
+		store.initializeAsync(of(initialState))
+		await expect(store.initializeAsync(of(initialState))).resolves.toBeUndefined()
 	})
 
-	it('should not throw on second initialization with delay in production mode.', async () => {
+	it('should not throw an error on second initialization with delay in production mode.', async () => {
 		LbrXManager.enableProdMode()
-		nullStore.initializeAsync(of(createCommonModel()))
+		store.initializeAsync(of(initialState))
 		await timer(100).toPromise()
-		await expect(nullStore.initializeAsync(of(createCommonModel()))).resolves.toBeUndefined()
+		await expect(store.initializeAsync(of(initialState))).resolves.toBeUndefined()
 	}, 200)
 
 	it('should reject if an observable throws an error.', async () => {
-		await expect(nullStore.initializeAsync(throwError('Error'))).rejects.toBeDefined()
+		expect(isDev()).toBeTruthy()
+		await expect(store.initializeAsync(throwError('Error'))).rejects.toBeDefined()
 	})
 
 	it('should have value after loading is finished.', done => {
-		nullStore.isLoading$
-			.subscribe(value => {
-				if (!value) {
-					expect(nullStore.value).toStrictEqual(createCommonModel())
-					done()
-				}
-			})
-		nullStore.initializeAsync(Promise.resolve(createCommonModel()))
+		store.isLoading$.subscribe(value => {
+			if (!value) {
+				expect(store.value).toStrictEqual(pureInitialState)
+				done()
+			}
+		})
+		store.initializeAsync(Promise.resolve(initialState))
 	}, 100)
-
-	// TODO: hooks test
 })

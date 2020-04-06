@@ -55,14 +55,15 @@ describe('Store Initialization: ', () => {
 		loadingStore.initialize(initialState)
 	}, 100)
 
-	it('should throw on second initialization in development mode.', () => {
+	it('should throw an error on second initialization in development mode.', () => {
 		loadingStore.initialize(initialState)
+		expect(isDev()).toBeTruthy()
 		expect(() => {
-			isDev() && loadingStore.initialize(initialState)
+			loadingStore.initialize(initialState)
 		}).toThrow()
 	})
 
-	it('should not throw on second initialization in production mode.', () => {
+	it('should not throw an error on second initialization in production mode.', () => {
 		LbrXManager.enableProdMode()
 		loadingStore.initialize(initialState)
 		expect(() => {
@@ -78,13 +79,12 @@ describe('Store Initialization: ', () => {
 	})
 
 	it('should have value after loading is finished.', done => {
-		loadingStore.isLoading$
-			.subscribe(value => {
-				if (!value) {
-					expect(loadingStore.value).toStrictEqual(pureInitialState)
-					done()
-				}
-			})
+		loadingStore.isLoading$.subscribe(value => {
+			if (!value) {
+				expect(loadingStore.value).toStrictEqual(pureInitialState)
+				done()
+			}
+		})
 		loadingStore.initialize(initialState)
 	}, 100)
 })
