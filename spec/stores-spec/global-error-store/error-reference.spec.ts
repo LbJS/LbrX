@@ -1,8 +1,12 @@
 import { GlobalErrorStore } from 'lbrx'
-import { createError, createCustomError, CustomError } from 'test-subjects'
+import { createError, createCustomError, CustomError, TestSubjectsFactory } from 'test-subjects'
+import { assertNotNullable, assert } from 'helpers'
 
 describe('Global Error Store - Error Reference:', () => {
 
+	const errMsg = 'New Error Msg'
+	const error = TestSubjectsFactory.createError()
+	const nestedError = TestSubjectsFactory.createNestedError()
 	let globalErrorStore: GlobalErrorStore<Error>
 
 	beforeEach(async () => {
@@ -15,52 +19,48 @@ describe('Global Error Store - Error Reference:', () => {
 	})
 
 	it('should have different error object reference.', () => {
-		const error = createError()
 		globalErrorStore.setError(error)
 		expect(globalErrorStore.getError()).not.toBe(error)
 	})
 
 	it("should not be effected by error object's change after set.", () => {
-		const errMsg = 'New Error Msg'
-		const error = createError()
-		globalErrorStore.setError(error)
-		error.message = errMsg
-		expect(globalErrorStore.getError()?.message).toBeTruthy()
-		expect(globalErrorStore.getError()?.message).not.toBe(errMsg)
+		const localError = TestSubjectsFactory.createError()
+		globalErrorStore.setError(localError)
+		localError.message = errMsg
+		const storeError = globalErrorStore.getError()
+		assertNotNullable(storeError)
+		expect(storeError.message).toBeTruthy()
+		expect(storeError.message).not.toBe(errMsg)
 	})
 
 	it("should not be effected by returned error object's change.", () => {
-		const errMsg = 'New Error Msg'
-		let error: Error | null = createError()
-		globalErrorStore.setError(error)
-		error = globalErrorStore.getError()
-		if (error) {
-			error.message = errMsg
-		} else {
-			fail('Invalid returned value.')
-		}
-		expect(globalErrorStore.getError()?.message).toBeTruthy()
-		expect(globalErrorStore.getError()?.message).not.toBe(errMsg)
+		let localError: Error | null = TestSubjectsFactory.createError()
+		globalErrorStore.setError(localError)
+		localError = globalErrorStore.getError()
+		assertNotNullable(localError)
+		localError.message = errMsg
+		const storeError = globalErrorStore.getError()
+		assertNotNullable(storeError)
+		expect(storeError.message).toBeTruthy()
+		expect(storeError.message).not.toBe(errMsg)
 	})
 
 	it('should have different nested custom error object reference.', () => {
-		const error = createCustomError()
-		globalErrorStore.setError(error)
-		expect(error.innerError?.innerError).toBeTruthy()
-		expect((globalErrorStore.getError() as CustomError).innerError?.innerError).toBeTruthy()
-		expect((globalErrorStore.getError() as CustomError).innerError?.innerError).not.toBe(error.innerError?.innerError)
+		globalErrorStore.setError(nestedError)
+		assertNotNullable(nestedError.innerError?.innerError)
+		const storeError = globalErrorStore.getError() as CustomError
+		assertNotNullable(storeError?.innerError?.innerError)
+		expect(storeError.innerError.innerError).not.toBe(nestedError.innerError.innerError)
 	})
 
 	it("should not be effected by custom error object's change after set.", () => {
-		const errMsg = 'New Error Msg'
-		const error = createCustomError()
-		globalErrorStore.setError(error)
-		if (error.innerError?.innerError) {
-			error.innerError.innerError.message = errMsg
-		} else {
-			fail('Invalid test subject')
-		}
-		expect((globalErrorStore.getError() as CustomError).innerError?.innerError).toBeTruthy()
-		expect((globalErrorStore.getError() as CustomError).innerError?.innerError).not.toBe(errMsg)
+		const localNestedError = TestSubjectsFactory.createNestedError()
+		globalErrorStore.setError(localNestedError)
+		assertNotNullable(localNestedError.innerError?.innerError)
+		localNestedError.innerError.innerError.message = errMsg
+		const storeError = globalErrorStore.getError() as CustomError
+		assertNotNullable(storeError?.innerError?.innerError)
+		expect(storeError.innerError.innerError.message).toBeTruthy()
+		expect(storeError.innerError.innerError.message).not.toBe(errMsg)
 	})
 })
