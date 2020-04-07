@@ -12,37 +12,133 @@ const FILES_TO_COPY = [
 main()
 
 async function main() {
-	// copy files
+	// copy missing files
 	FILES_TO_COPY.forEach(fileName => copyFile(resolveSourcePath(fileName), resolveTargetPath(fileName)))
-	// get package.json file
-	const packageJsonObj = readJsonFromFile(resolveSourcePath('package.json'))
-	// update package.json version if needed
-	// version format: {major}.{minor}.{patch}-{release type}
+	// get package.json obj from file
+	let packageJsonObj = readJsonFromFile(resolveSourcePath('package.json'))
+	// get last published version from npm
 	const lastPublishedVer = await getLastPublishedVerAsync().catch(e => { throw new Error(e) })
-	if (lastPublishedVer == packageJsonObj.version) {
-		// increment version
-		let [versionNumber, versionType] = lastPublishedVer.split('-')
-		let [majorVersion, minorVersion, patchVersion] = versionNumber.split('.').map(x => +x)
-		if (patchVersion < 9) {
-			patchVersion++
-		} else {
-			patchVersion = 0
-			if (minorVersion < 9) {
-				minorVersion++
+	// update App version if needed
+	if (lastPublishedVer == packageJsonObj.version) updateAppVersion(packageJsonObj, lastPublishedVer)
+	// handle properties for prod version
+	packageJsonObj = handlePackageJsonProps(packageJsonObj)
+	// write package.json to target
+	writeJsonToFile(resolveTargetPath('package.json'), packageJsonObj)
+	// log success
+	logSuccess()
+}
+
+/**
+ * @param {string} fileName
+ * @returns {string}
+ */
+function resolveSourcePath(fileName) {
+	return SOURCE_FOLDER + fileName
+}
+
+/**
+ * @param {string} fileName
+ * @returns {string}
+ */
+function resolveTargetPath(fileName) {
+	return TARGET_FOLDER + fileName
+}
+
+/**
+ * @param {string} sourceFilePath
+ * @param {string} targetFilePath
+ */
+function copyFile(sourceFilePath, targetFilePath) {
+	fs.createReadStream(sourceFilePath).pipe(fs.createWriteStream(targetFilePath))
+}
+
+/**
+ * @param {string} filePath
+ * @returns {{}}
+ */
+function readJsonFromFile(filePath) {
+	return JSON.parse(fs.readFileSync(filePath))
+}
+
+/**
+ * @param {string} filePath
+ * @param {{}} jsonObj
+ */
+function writeJsonToFile(filePath, jsonObj) {
+	fs.writeFileSync(filePath, JSON.stringify(jsonObj, null, '\t') + '\n', 'utf-8')
+}
+
+/**
+ * @returns {string}
+ */
+function getLastPublishedVerAsync() {
+	return new Promise((resolve, reject) => {
+		exec('npm show lbrx version', (error, stdout, stderr) => {
+			if (error || stderr || !stdout) {
+				reject(error || stderr || null)
 			} else {
-				throw new Error(`Max package.json version exceeded.`)
+				resolve(stdout.trim())
 			}
-		}
-		const newVersion = `${majorVersion}.${minorVersion}.${patchVersion}${versionType ? '-' + versionType : ''}`
-		packageJsonObj.version = newVersion
-		const packageJsonObjCloned = cloneJsonObject(packageJsonObj)
-		runAsync(() => {
-			writeJsonToFile(resolveSourcePath('package.json'), packageJsonObjCloned)
-			const packageLockJsonObj = readJsonFromFile(resolveSourcePath('package-lock.json'))
-			packageLockJsonObj.version = newVersion
-			writeJsonToFile(resolveSourcePath('package-lock.json'), packageLockJsonObj)
 		})
+	})
+}
+
+/**
+ * @param {{}} obj
+ * @returns {{}}
+ */
+function cloneJsonObject(obj) {
+	return JSON.parse(JSON.stringify(obj))
+}
+
+/**
+ * @param {() => {}} callback
+ */
+function runAsync(callback) {
+	setTimeout(() => {
+		callback()
+	})
+}
+
+/**
+ * @param {{}} packageJsonObj
+ * @param {string} lastPublishedVer
+ */
+function updateAppVersion(packageJsonObj, lastPublishedVer) {
+	// version format: {major}.{minor}.{patch}-{release type?}
+	// increment version
+	let [versionNumber, versionType] = lastPublishedVer.split('-')
+	let [majorVersion, minorVersion, patchVersion] = versionNumber.split('.').map(x => +x)
+	if (patchVersion < 9) {
+		patchVersion++
+	} else {
+		patchVersion = 0
+		if (minorVersion < 9) {
+			minorVersion++
+		} else {
+			throw new Error(`Max package.json version number exceeded.`)
+		}
 	}
+	// construct new version string
+	const newVersion = `${majorVersion}.${minorVersion}.${patchVersion}${versionType ? '-' + versionType : ''}`
+	packageJsonObj.version = newVersion
+	// clone packageJsonObj to disconnect reference
+	const packageJsonObjCloned = cloneJsonObject(packageJsonObj)
+	runAsync(() => {
+		// write the new version to package.json
+		writeJsonToFile(resolveSourcePath('package.json'), packageJsonObjCloned)
+		// update package-lock.json
+		const packageLockJsonObj = readJsonFromFile(resolveSourcePath('package-lock.json'))
+		packageLockJsonObj.version = newVersion
+		writeJsonToFile(resolveSourcePath('package-lock.json'), packageLockJsonObj)
+	})
+}
+
+/**
+ * @param {{}} packageJsonObj
+ * @returns {{}}
+ */
+function handlePackageJsonProps(packageJsonObj) {
 	// delete unnecessary properties from package.json
 	const unnecessaryPropertiesList = [
 		'scripts',
@@ -56,48 +152,11 @@ async function main() {
 	// add and replace properties in package.json
 	packageJsonObj.main = './index.js'
 	packageJsonObj.typings = './index.d.ts'
-	// write package.json to target
-	writeJsonToFile(resolveTargetPath('package.json'), packageJsonObj)
+	return packageJsonObj
 }
 
-function resolveSourcePath(fileName) {
-	return SOURCE_FOLDER + fileName
-}
-
-function resolveTargetPath(fileName) {
-	return TARGET_FOLDER + fileName
-}
-
-function copyFile(sourceFilePath, targetFilePath) {
-	fs.createReadStream(sourceFilePath).pipe(fs.createWriteStream(targetFilePath))
-}
-
-function readJsonFromFile(filePath) {
-	return JSON.parse(fs.readFileSync(filePath))
-}
-
-function writeJsonToFile(filePath, jsonObj) {
-	fs.writeFileSync(filePath, JSON.stringify(jsonObj, null, '\t') + '\n', 'utf-8')
-}
-
-function getLastPublishedVerAsync() {
-	return new Promise((resolve, reject) => {
-		exec('npm show lbrx version', (error, stdout, stderr) => {
-			if (error || stderr || !stdout) {
-				reject(error || stderr || null)
-			} else {
-				resolve(stdout.trim())
-			}
-		})
-	})
-}
-
-function cloneJsonObject(obj) {
-	return JSON.parse(JSON.stringify(obj))
-}
-
-function runAsync(callback) {
-	setTimeout(() => {
-		callback()
-	})
+function logSuccess() {
+	console.log()
+	console.log("\x1b[32m", 'LbrX post build procedure was finished successfully.', "\x1b[0m")
+	console.log()
 }
