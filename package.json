@@ -6,7 +6,7 @@
 	"license": "ISC",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/staffoffrost/lbrx"
+		"url": "git+https://github.com/staffoffrost/lbrx.git"
 	},
 	"bugs": {
 		"url": "https://github.com/staffoffrost/lbrx/issues"
@@ -14,16 +14,15 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"types": "lib",
-	"main": "lib/index.js",
+	"main": "src/index.ts",
 	"scripts": {
 		"start": "webpack --watch -d --progress",
 		"build": "webpack -p --progress",
-		"build:lib:base": "rimraf lib/* && tsc -p ./src/tsconfig.json && node build-success-log.js && node post-build-imports-test.js",
+		"lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts --fix && node npm-lint-success.js",
+		"build:lib:base": "rimraf lib/* && tsc -p ./src/tsconfig.json && node npm-build-success.js && node post-build-imports-test.js",
 		"build:lib:test": "npm run build:lib:base",
 		"build:lib": "npm run build:lib:base && node lib-build-helper.js",
 		"publish": "cd lib && npm publish",
-		"lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts --fix",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:watchAll": "jest --watchAll"

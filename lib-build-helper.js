@@ -19,7 +19,7 @@ async function main() {
 	// get last published version from npm
 	const lastPublishedVer = await getLastPublishedVerAsync().catch(e => { throw new Error(e) })
 	// update App version if needed
-	if (lastPublishedVer == packageJsonObj.version) updateAppVersion(packageJsonObj, lastPublishedVer)
+	if (lastPublishedVer == packageJsonObj.version) packageJsonObj = updateAppVersion(packageJsonObj, lastPublishedVer)
 	// handle properties for prod version
 	packageJsonObj = handlePackageJsonProps(packageJsonObj)
 	// write package.json to target
@@ -121,7 +121,9 @@ function updateAppVersion(packageJsonObj, lastPublishedVer) {
 	}
 	// construct new version string
 	const newVersion = `${majorVersion}.${minorVersion}.${patchVersion}${versionType ? '-' + versionType : ''}`
+	// set new version to package json
 	packageJsonObj.version = newVersion
+	packageJsonObj.scripts['git:post:publish'] = packageJsonObj.scripts['git:post:publish'].replace(lastPublishedVer, newVersion)
 	// clone packageJsonObj to disconnect reference
 	const packageJsonObjCloned = cloneJsonObject(packageJsonObj)
 	runAsync(() => {
@@ -132,6 +134,7 @@ function updateAppVersion(packageJsonObj, lastPublishedVer) {
 		packageLockJsonObj.version = newVersion
 		writeJsonToFile(resolveSourcePath('package-lock.json'), packageLockJsonObj)
 	})
+	return packageJsonObj
 }
 
 /**
