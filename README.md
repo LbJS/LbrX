@@ -31,7 +31,7 @@ This is an object oriented State Manager that's build for JavaScript application
 
 ## Dependencies:
 
-- RxJs 6.x
+- RxJs 6.5.5
 
 ## Important Notice:
 
