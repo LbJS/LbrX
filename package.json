@@ -1,6 +1,6 @@
 {
 	"name": "lbrx",
-	"version": "0.2.9-alpha",
+	"version": "0.3.0-alpha",
 	"description": "State Manager for JS Apps",
 	"author": "Leon Bernstein",
 	"license": "ISC",
@@ -23,7 +23,7 @@
 		"build:lib:test": "npm run build:lib:base",
 		"build:lib": "npm run build:lib:base && node lib-build-helper.js",
 		"publish": "cd lib && npm publish",
-		"git:post:publish": "git tag 0.2.9-alpha && git push && git push --tags",
+		"git:post:publish": "git tag 0.3.0-alpha && git push && git push --tags",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:watchAll": "jest --watchAll"
