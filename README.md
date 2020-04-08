@@ -144,3 +144,11 @@ Pay attention to the values that haven't been changed. They won't trigger their 
 **Step 5: Debug using Redux DevTools**
 
 ![ReduxDevTools](https://lh3.googleusercontent.com/8OTs0-DeqWlIGDU67xmLJCFm3gB2QVilTpUzpt3R_p-5BwS3Utam1VB18kIodxBxckO_CVUt-Ydpl41fJ4pAVspGvC0qWt8Xh3qRKUZweKTEFjQlhPvoep3xHcLSWFUj-RYJ7EeiyQ=w2400)
+
+## Dependencies:
+
+- RxJs 6.x
+
+## Browser Support
+
+The code is compiled to es9 (EcmaScript 2018) to reduce the chance of unnecessary performance hit while still providing support for all versions of all major browsers from the last 2 years. If you need older browser support, you may need to recompile the code with TypeScript or Babel compiler to an older version.
