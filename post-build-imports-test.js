@@ -110,7 +110,7 @@ function logError(e) {
 	console.error("\x1b[31m", e.message, "\x1b[0m")
 	console.log()
 	if (e.innerError) {
-		console.error(e.innerError)
+		console.error("\x1b[31m", e.innerError, "\x1b[0m")
 		console.log()
 	}
 }
