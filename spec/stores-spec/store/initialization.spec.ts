@@ -1,5 +1,5 @@
-import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Initialization: ', () => {
 

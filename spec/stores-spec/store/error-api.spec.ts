@@ -1,6 +1,6 @@
-import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
-import { timer, from } from 'rxjs'
 import { Store } from 'lbrx'
+import { from, timer } from 'rxjs'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error API:', () => {
 

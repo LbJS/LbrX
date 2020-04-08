@@ -1,6 +1,6 @@
-import { TestSubjectsFactory, TestSubjectA, ErrorTestSubject } from 'test-subjects'
-import { Store } from 'lbrx'
 import { assertNotNullable } from 'helpers'
+import { Store } from 'lbrx'
+import { ErrorTestSubject, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error Reference:', () => {
 

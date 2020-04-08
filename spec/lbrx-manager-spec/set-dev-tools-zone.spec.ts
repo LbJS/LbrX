@@ -1,6 +1,6 @@
-import MockBuilder from 'mock-builder'
 import { LbrXManager as LbrXManager_type } from 'lbrx'
 import { DevToolsManager } from 'lbrx/dev-tools'
+import MockBuilder from 'mock-builder'
 
 describe('LbrXManager setDevToolsZone():', () => {
 

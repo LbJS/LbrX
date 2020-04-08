@@ -1,8 +1,8 @@
-import { TestSubjectA } from './test-subject-a.model'
-import { InnerTestSubjectA } from './inner-test-subject-a.model'
 import { DeepNestedTestSubjectA } from './deep-nested-test-subject-a.model'
-import { TestSubjectConfigurations } from './test-subject-configurations.enum'
 import { ErrorTestSubject } from './error-test-subject'
+import { InnerTestSubjectA } from './inner-test-subject-a.model'
+import { TestSubjectA } from './test-subject-a.model'
+import { TestSubjectConfigurations } from './test-subject-configurations.enum'
 
 export class TestSubjectsFactory {
 

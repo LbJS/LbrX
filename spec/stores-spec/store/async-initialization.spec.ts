@@ -1,6 +1,6 @@
-import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
-import { of, timer, throwError } from 'rxjs'
+import { of, throwError, timer } from 'rxjs'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Async Initialization:', () => {
 

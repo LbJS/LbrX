@@ -1,5 +1,5 @@
-import MockBuilder from 'mock-builder'
 import { LbrXManager as LbrXManager_type } from 'lbrx'
+import MockBuilder from 'mock-builder'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 

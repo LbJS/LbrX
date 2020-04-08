@@ -1,5 +1,5 @@
-import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 import { Store } from 'lbrx'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Is Loading State', () => {
 

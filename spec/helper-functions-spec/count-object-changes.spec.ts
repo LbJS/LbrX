@@ -1,5 +1,5 @@
-import { Person, BetterPerson } from '../test-subjects'
 import { countObjectChanges } from 'lbrx/helpers'
+import { BetterPerson, Person } from '../test-subjects'
 
 describe('Helper Function - countObjectChanges():', () => {
 

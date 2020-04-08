@@ -1,7 +1,7 @@
+import { parse, stringify } from 'lbrx/helpers'
 import { GlobalStoreConfigOptions } from './global-store-config-options'
-import { Storages } from './storages.enum'
 import { ObjectCompareTypes } from './object-compare-types.enum'
-import { stringify, parse } from 'lbrx/helpers'
+import { Storages } from './storages.enum'
 
 const defaultStoreOptions: Required<GlobalStoreConfigOptions> = {
   isResettable: true,

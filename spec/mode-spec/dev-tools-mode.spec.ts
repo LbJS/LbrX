@@ -1,5 +1,3 @@
-import { activateDevToolsPushes as activateDevToolsPushesFunc, isDevTools as isDevToolsFunc } from 'lbrx/mode'
-
 
 describe('Dev Tools Mode:', () => {
 

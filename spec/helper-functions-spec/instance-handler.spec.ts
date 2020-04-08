@@ -1,5 +1,5 @@
 import { instanceHandler } from 'lbrx/helpers'
-import { Person, Address } from 'test-subjects'
+import { Address, Person } from 'test-subjects'
 
 describe('Helper Function - instanceHandler():', () => {
 

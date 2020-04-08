@@ -1,4 +1,4 @@
-import { DevtoolsOptions, DevToolsManager } from './dev-tools'
+import { DevToolsManager, DevtoolsOptions } from './dev-tools'
 import { enableProdMode } from './mode'
 import { GlobalStoreConfigOptions, setGlobalStoreConfig } from './stores/config'
 

@@ -1,4 +1,4 @@
-import { isString, isError } from 'lbrx/helpers'
+import { isError, isString } from 'lbrx/helpers'
 
 export class ErrorTestSubject extends Error {
 

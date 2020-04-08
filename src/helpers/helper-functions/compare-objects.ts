@@ -1,4 +1,4 @@
-import { isDate, isObject, isFunction, isArray, objectKeys } from 'lbrx/helpers'
+import { isArray, isDate, isFunction, isObject, objectKeys } from 'lbrx/helpers'
 
 export function compareObjects(objA: object | unknown[], objB: object | unknown[]): boolean {
   if (!objA || !objB) return objA === objB

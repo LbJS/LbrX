@@ -1,6 +1,6 @@
+import { assertNotNullable } from 'helpers'
 import { cloneObject } from 'lbrx/helpers'
 import { TestSubjectsFactory } from 'test-subjects'
-import { assertNotNullable } from 'helpers'
 
 describe('Helper Function - cloneObject():', () => {
 

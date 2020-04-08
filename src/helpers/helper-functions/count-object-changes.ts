@@ -1,4 +1,4 @@
-import { objectKeys, isNull, isDate, isObject, isFunction, isArray, isUndefined } from 'lbrx/helpers'
+import { isArray, isDate, isFunction, isNull, isObject, isUndefined, objectKeys } from 'lbrx/helpers'
 
 export function countObjectChanges(objA: object | unknown[], objB: object | unknown[]): number {
   if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1

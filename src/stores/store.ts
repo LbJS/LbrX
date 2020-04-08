@@ -1,12 +1,12 @@
-import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
-import { BehaviorSubject, timer, Observable, isObservable, of, iif } from 'rxjs'
-import { debounce, map, distinctUntilChanged, filter, tap, mergeMap, switchMap } from 'rxjs/operators'
-import { StoreConfigOptions, Storages } from './config'
-import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
-import { isNull, objectAssign, deepFreeze, isFunction, isObject, instanceHandler, mergeObjects, logError, throwError } from 'lbrx/helpers'
+import { deepFreeze, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, throwError } from 'lbrx/helpers'
 import { isDev, isDevTools } from 'lbrx/mode'
-import { validateStoreName, validateStorageKey } from './store-unique-name-enforcer'
+import { BehaviorSubject, iif, isObservable, Observable, of, timer } from 'rxjs'
+import { debounce, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
+import { DevToolsSubjects } from '../dev-tools/dev-tools-subjects'
+import { DevToolsDataStruct } from '../dev-tools/store-dev-object'
 import { BaseStore } from './base-store'
+import { Storages, StoreConfigOptions } from './config'
+import { validateStorageKey, validateStoreName } from './store-unique-name-enforcer'
 
 /**
  * @example

@@ -1,6 +1,6 @@
 import { GlobalErrorStore } from 'lbrx'
 import { skip } from 'rxjs/operators'
-import { createError, createCustomError } from 'test-subjects'
+import { createCustomError, createError } from 'test-subjects'
 
 describe('Global Error Store API:', () => {
 

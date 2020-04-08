@@ -1,4 +1,4 @@
-import { objectAssign, objectKeys, isClass, isObject, isNullable } from 'lbrx/helpers'
+import { isClass, isNullable, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
 import { isArray } from './is-array'
 
 export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {

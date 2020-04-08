@@ -1,7 +1,7 @@
-import { Store } from 'lbrx'
-import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
-import { StoreOnOverride } from 'lbrx/hooks'
 import { assertNotNullable } from 'helpers'
+import { Store } from 'lbrx'
+import { StoreOnOverride } from 'lbrx/hooks'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store onOverride():', () => {
 

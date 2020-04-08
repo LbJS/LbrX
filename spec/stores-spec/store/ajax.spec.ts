@@ -1,7 +1,7 @@
-import { from } from 'rxjs'
 import { Store } from 'lbrx'
-import { Todo } from 'test-subjects'
 import fetch from 'node-fetch'
+import { from } from 'rxjs'
+import { Todo } from 'test-subjects'
 
 describe('Store ajax call:', () => {
 

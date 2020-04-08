@@ -1,10 +1,10 @@
-import { DevtoolsOptions } from './dev-tools-options'
+import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from 'lbrx/helpers'
+import { activateDevToolsPushes, isDev } from 'lbrx/mode'
 import { Subscription } from 'rxjs'
+import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
+import { DevtoolsOptions } from './dev-tools-options'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
-import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { objectAssign, countObjectChanges, instanceHandler, parse, objectKeys, isBrowser } from 'lbrx/helpers'
-import { isDev, activateDevToolsPushes } from 'lbrx/mode'
 
 export class DevToolsManager {
 

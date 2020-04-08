@@ -1,4 +1,3 @@
-import { enableProdMode as enableProdModeFunc, isDev as isDevFunc } from 'lbrx/mode'
 
 describe('LbrX Mode:', () => {
 

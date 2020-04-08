@@ -1,6 +1,6 @@
+import { assertNotNullable } from 'helpers'
 import { GlobalErrorStore } from 'lbrx'
-import { createError, createCustomError, CustomError, TestSubjectsFactory } from 'test-subjects'
-import { assertNotNullable, assert } from 'helpers'
+import { CustomError, TestSubjectsFactory } from 'test-subjects'
 
 describe('Global Error Store - Error Reference:', () => {
 

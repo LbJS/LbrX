@@ -1,4 +1,4 @@
-import { throwError, isDate, isObject } from 'lbrx/helpers'
+import { isDate, isObject, throwError } from 'lbrx/helpers'
 
 function dateThrow(this: Date): never {
   throwError(`This date: "${this.toLocaleString()}" is read only.`)

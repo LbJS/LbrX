@@ -1,6 +1,6 @@
+import { assertEqual, assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
-import { TestSubjectA, TestSubjectsFactory, InnerTestSubjectA, DeepNestedTestSubjectA } from 'test-subjects'
-import { assertNotNullable, assertEqual } from 'helpers'
+import { DeepNestedTestSubjectA, InnerTestSubjectA, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store override():', () => {
 

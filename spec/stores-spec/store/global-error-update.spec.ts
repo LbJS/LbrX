@@ -1,5 +1,5 @@
 import { GlobalErrorStore, Store } from 'lbrx'
-import { TestSubjectsFactory, TestSubjectA } from 'test-subjects'
+import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error - Global Error Update', () => {
 

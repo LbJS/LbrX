@@ -1,4 +1,4 @@
-import { objectKeys, objectAssign, isObject, isDate } from 'lbrx/helpers'
+import { isDate, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
 import { isArray } from './is-array'
 
 export function mergeObjects<T extends object>(target: T, source: Partial<T>): T {
