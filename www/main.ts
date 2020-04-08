@@ -1,6 +1,6 @@
-import { LbrXManager, StoreConfig, Store, Storages, ObjectCompareTypes } from 'lbrx'
-import { of } from 'rxjs'
+import { LbrXManager, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
 import { StoreBeforeInit } from 'lbrx/hooks'
+import { of } from 'rxjs'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
