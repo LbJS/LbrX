@@ -23,7 +23,7 @@
 		"build:lib:test": "npm run build:lib:base",
 		"build:lib": "npm run build:lib:base && node lib-build-helper.js",
 		"publish": "cd lib && npm publish",
-		"git:post:publish": "git tag 0.1.0-alpha && git push && git push --tags",
+		"git:post:publish": "git tag 0.2.9-alpha && git push && git push --tags",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:watchAll": "jest --watchAll"

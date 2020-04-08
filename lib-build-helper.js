@@ -123,6 +123,9 @@ function updateAppVersion(packageJsonObj, lastPublishedVer) {
 	const newVersion = `${majorVersion}.${minorVersion}.${patchVersion}${versionType ? '-' + versionType : ''}`
 	// set new version to package json
 	packageJsonObj.version = newVersion
+	if (!packageJsonObj.scripts['git:post:publish'].includes(lastPublishedVer)) {
+		throw new Error(`git:post:publish doesn't include the current last published version.`)
+	}
 	packageJsonObj.scripts['git:post:publish'] = packageJsonObj.scripts['git:post:publish'].replace(lastPublishedVer, newVersion)
 	// clone packageJsonObj to disconnect reference
 	const packageJsonObjCloned = cloneJsonObject(packageJsonObj)
