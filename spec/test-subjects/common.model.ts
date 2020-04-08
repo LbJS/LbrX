@@ -1,4 +1,4 @@
 
 export interface CommonModel {
-	data?: any
+  data?: any
 }

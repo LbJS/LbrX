@@ -1,3 +1,3 @@
 export function isUndefined(value: any): value is undefined {
-	return value === undefined
+  return value === undefined
 }

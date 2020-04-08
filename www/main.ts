@@ -7,108 +7,108 @@ if (PROD_MODE) LbrXManager.enableProdMode()
 LbrXManager.initializeDevTools()
 
 class Address {
-	place: string | null = null
+  place: string | null = null
 }
 
 class User {
-	firstName: string | null = null
-	lastName: string | null = null
-	address: Address | null = null
+  firstName: string | null = null
+  lastName: string | null = null
+  address: Address | null = null
 }
 
 function createLeon(): User {
-	return Object.assign(new User(), {
-		firstName: 'Leon',
-		address: Object.assign(new Address(), {
-			place: 'Hell of a place'
-		})
-	})
+  return Object.assign(new User(), {
+    firstName: 'Leon',
+    address: Object.assign(new Address(), {
+      place: 'Hell of a place'
+    })
+  })
 }
 
 @StoreConfig({
-	name: 'LEON-STORE',
-	objectCompareType: ObjectCompareTypes.advanced,
-	isResettable: true,
-	storageType: Storages.session,
-	storageDebounceTime: 500
+  name: 'LEON-STORE',
+  objectCompareType: ObjectCompareTypes.advanced,
+  isResettable: true,
+  storageType: Storages.session,
+  storageDebounceTime: 500
 })
 class UserStore extends Store<User> implements StoreBeforeInit {
 
-	constructor() {
-		super(createLeon())
-	}
+  constructor() {
+    super(createLeon())
+  }
 
-	public onBeforeInit(initialState: User): void {
-		console.log('ON BEFORE INIT: ', initialState)
-	}
+  public onBeforeInit(initialState: User): void {
+    console.log('ON BEFORE INIT: ', initialState)
+  }
 }
 
 const userStore = new UserStore()
 
 userStore
-	.select$()
-	.subscribe(x => console.log(x))
+  .select$()
+  .subscribe(x => console.log(x))
 userStore
-	.select$(state => state.firstName)
-	.subscribe(x => console.log('firstName: ' + x))
+  .select$(state => state.firstName)
+  .subscribe(x => console.log('firstName: ' + x))
 userStore
-	.select$(state => state.lastName)
-	.subscribe(x => console.log('lastName: ' + x))
+  .select$(state => state.lastName)
+  .subscribe(x => console.log('lastName: ' + x))
 userStore
-	.select$(state => state.address?.place)
-	.subscribe(x => console.log('address: ' + x))
+  .select$(state => state.address?.place)
+  .subscribe(x => console.log('address: ' + x))
 
 userStore
-	.isLoading$.subscribe(value => {
-		if (!value) {
-			console.log('From is loading: ', userStore.value)
-		}
-	})
+  .isLoading$.subscribe(value => {
+    if (!value) {
+      console.log('From is loading: ', userStore.value)
+    }
+  })
 
 setTimeout(() => {
-	userStore.update({
-		firstName: 'Some other name',
-		lastName: 'My first lastName'
-	})
+  userStore.update({
+    firstName: 'Some other name',
+    lastName: 'My first lastName'
+  })
 }, 200)
 
 setTimeout(() => {
-	userStore.update({
-		firstName: 'Some other name',
-		lastName: 'My second lastName',
-		address: {
-			place: 'Some other place'
-		}
-	})
+  userStore.update({
+    firstName: 'Some other name',
+    lastName: 'My second lastName',
+    address: {
+      place: 'Some other place'
+    }
+  })
 }, 500)
 
 setTimeout(() => {
-	userStore.override({
-		firstName: 'Some other name1',
-		lastName: 'My second lastName1',
-		address: {
-			place: 'Some other place1'
-		}
-	})
+  userStore.override({
+    firstName: 'Some other name1',
+    lastName: 'My second lastName1',
+    address: {
+      place: 'Some other place1'
+    }
+  })
 }, 510)
 
 setTimeout(() => {
-	userStore.reset()
+  userStore.reset()
 }, 530)
 
 setTimeout(() => {
-	userStore.reset()
+  userStore.reset()
 }, 550)
 
 setTimeout(async () => {
-	await userStore.hardReset()
-		.initializeAsync(of(createLeon()))
+  await userStore.hardReset()
+    .initializeAsync(of(createLeon()))
 }, 600)
 
 setTimeout(() => {
-	userStore.isLoading = false
+  userStore.isLoading = false
 }, 650)
 
 setTimeout(() => {
-	userStore.isLoading = false
+  userStore.isLoading = false
 }, 700)

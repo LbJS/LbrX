@@ -3,25 +3,25 @@ import { activateDevToolsPushes as activateDevToolsPushesFunc, isDevTools as isD
 
 describe('Dev Tools Mode:', () => {
 
-	let activateDevToolsPushes: () => void
-	let isDevTools: () => boolean
+  let activateDevToolsPushes: () => void
+  let isDevTools: () => boolean
 
-	beforeEach(async () => {
-		const providerModule = await import('provider.module')
-		activateDevToolsPushes = providerModule.activateDevToolsPushes
-		isDevTools = providerModule.isDevTools
-	})
+  beforeEach(async () => {
+    const providerModule = await import('provider.module')
+    activateDevToolsPushes = providerModule.activateDevToolsPushes
+    isDevTools = providerModule.isDevTools
+  })
 
-	afterEach(() => {
-		jest.resetModules()
-	})
+  afterEach(() => {
+    jest.resetModules()
+  })
 
-	it('should deactivated by default.', () => {
-		expect(isDevTools()).toBeFalsy()
-	})
+  it('should deactivated by default.', () => {
+    expect(isDevTools()).toBeFalsy()
+  })
 
-	it('should activated after enabling pushes.', () => {
-		activateDevToolsPushes()
-		expect(isDevTools()).toBeTruthy()
-	})
+  it('should activated after enabling pushes.', () => {
+    activateDevToolsPushes()
+    expect(isDevTools()).toBeTruthy()
+  })
 })
