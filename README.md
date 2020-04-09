@@ -25,17 +25,19 @@ This is an object oriented State Manager that's build for JavaScript application
 - [ ] Full spec coverage of the above
 - [ ] Full documentation
 
+## Important Notice
+
+- select() is deprecated in favor of select\$()
+
+- **Updated RxJS to version 6.5.5**, please ensure you are up to date.
+
 ## Dependencies
 
-- RxJs 6.5.5
+- RxJS 6.5.5
 
 ## Installation
 
     npm i lbrx rxjs@6.5.5
-
-## Important Notice
-
-    select() is deprecated in favor of select$()
 
 ## Example
 
@@ -157,4 +159,4 @@ Pay attention to the values that haven't been changed. They won't trigger their 
 - Support guaranteed for all current major browsers that were updated in the last 2 years.
 - Support for ES5 may be added later as a different package or alternate imports paths may be provided.
 
-> _Note_ The code is compiled to ES9 (EcmaScript 2018) to reduce the chance of unnecessary performance hit while still providing support for all versions of all major browsers from the last 2 years. If you need older browser support, you may need to recompile the code with TypeScript or Babel compiler to an older version. Currently ES6 (EcmaScript 2015) will work just fine, but recompiling to ES5 will not work if you need to support IE.
+> _Details_ The code is compiled to ES9 (EcmaScript 2018) to reduce the chance of unnecessary performance hit while still providing support for all versions of all major browsers from the last 2 years. If you need older browser support, you may need to recompile the code with TypeScript or Babel compiler to an older version. Currently ES6 (EcmaScript 2015) will work just fine, but recompiling to ES5 will not work if you need to support IE.
