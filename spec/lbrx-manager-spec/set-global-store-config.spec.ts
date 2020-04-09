@@ -25,14 +25,14 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
   })
 
   it('should set global store configurations.', () => {
-    LbrXManager.setGlobalStoreConfig({
+    const config: Partial<GlobalStoreConfigOptions> = {
       isResettable: false,
       isSimpleCloning: true,
       objectCompareType: ObjectCompareTypes.reference,
       storageDebounceTime: 500,
       storageType: Storages.local,
-    })
-    expect(getGlobalStoreConfig()).toStrictEqual(<GlobalStoreConfigOptions>{
+    }
+    const expectedValue: GlobalStoreConfigOptions = {
       isResettable: false,
       isSimpleCloning: true,
       objectCompareType: ObjectCompareTypes.reference,
@@ -41,14 +41,16 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       customStorageApi: null,
       stringify,
       parse,
-    })
+    }
+    LbrXManager.setGlobalStoreConfig(config)
+    expect(getGlobalStoreConfig()).toStrictEqual(expectedValue)
   })
 
   it('should set global store configurations.', () => {
-    LbrXManager.setGlobalStoreConfig({
+    const config: Partial<GlobalStoreConfigOptions> = {
       objectCompareType: ObjectCompareTypes.simple
-    })
-    expect(getGlobalStoreConfig()).toStrictEqual(<GlobalStoreConfigOptions>{
+    }
+    const expectedValue: GlobalStoreConfigOptions = {
       isResettable: true,
       isSimpleCloning: false,
       objectCompareType: ObjectCompareTypes.simple,
@@ -57,7 +59,9 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       customStorageApi: null,
       stringify,
       parse,
-    })
+    }
+    LbrXManager.setGlobalStoreConfig(config)
+    expect(getGlobalStoreConfig()).toStrictEqual(expectedValue)
   })
 
   it('should return LbrXManager.', () => {
