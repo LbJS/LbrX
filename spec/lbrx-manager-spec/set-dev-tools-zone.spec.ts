@@ -19,6 +19,7 @@ describe('LbrXManager setDevToolsZone():', () => {
   })
 
   it('should return LbrXManager.', () => {
+    LbrXManager.initializeDevTools()
     const value = LbrXManager.setDevToolsZone({ run: f => f() })
     expect(value).toStrictEqual(LbrXManager)
   })
@@ -32,5 +33,12 @@ describe('LbrXManager setDevToolsZone():', () => {
     const runSpy = jest.spyOn(zone, 'run')
     devToolsManager['_zone'].run(() => { })
     expect(runSpy).toBeCalled()
+  })
+
+  it("should log error if DevTools haven't been initialized before calling set DevTools zone.", () => {
+    const consoleErrorSpy = jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
+    const zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T } = { run: f => f() }
+    LbrXManager.setDevToolsZone(zone)
+    expect(consoleErrorSpy).toBeCalled()
   })
 })

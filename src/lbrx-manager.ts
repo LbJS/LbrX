@@ -1,4 +1,5 @@
 import { DevToolsManager, DevtoolsOptions } from './dev-tools'
+import { logError } from './helpers'
 import { enableProdMode } from './mode'
 import { GlobalStoreConfigOptions, setGlobalStoreConfig } from './stores/config'
 
@@ -51,7 +52,11 @@ export class LbrXManager {
   static setDevToolsZone(
     zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T }
   ): typeof LbrXManager {
-    this._devToolsManager?.setDevToolsZone(zone)
+    if (!this._devToolsManager) {
+      logError('DevTools must be initialized before setting DevTools Zone.')
+    } else {
+      this._devToolsManager.setDevToolsZone(zone)
+    }
     return this
   }
 
