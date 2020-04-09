@@ -1,7 +1,7 @@
 import { compareObjects } from 'lbrx/helpers'
 import { BetterPerson, Person } from 'test-subjects'
 
-describe('Helper Function - compareObjects():', () => {
+describe('Helper Function - compareObjects():', () => { // TODO: Refactor
 
   it('should return that the objects are equal. {testId: 1}', () => {
     const person1 = new Person({

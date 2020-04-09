@@ -1,7 +1,7 @@
 import { instanceHandler } from 'lbrx/helpers'
 import { Address, Person } from 'test-subjects'
 
-describe('Helper Function - instanceHandler():', () => {
+describe('Helper Function - instanceHandler():', () => { // TODO: Refactor
 
   it('should create instance for plain object.', () => {
     const person = new Person({})

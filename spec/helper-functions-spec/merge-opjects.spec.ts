@@ -1,7 +1,7 @@
 import { mergeObjects } from 'lbrx/helpers'
 import { AbcObj } from 'test-subjects'
 
-describe('Helper Function - mergeObjects():', () => {
+describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
 
   it('should result the expected properties values after merging.', () => {
     const objA: AbcObj = {

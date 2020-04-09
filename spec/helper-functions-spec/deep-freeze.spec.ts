@@ -1,7 +1,7 @@
 import { deepFreeze, isArray } from 'lbrx/helpers'
 import { BetterPerson, Person } from '../test-subjects'
 
-describe('Helper Function - deepFreeze():', () => {
+describe('Helper Function - deepFreeze():', () => { // TODO: Refactor
 
   let person: Person
 

@@ -1,7 +1,7 @@
 import { countObjectChanges } from 'lbrx/helpers'
 import { BetterPerson, Person } from '../test-subjects'
 
-describe('Helper Function - countObjectChanges():', () => {
+describe('Helper Function - countObjectChanges():', () => { // TODO: Refactor
 
   const expectedChangesA = 1
   it(`should count ${expectedChangesA} changes between two objects. {testId: 1}`, () => {
