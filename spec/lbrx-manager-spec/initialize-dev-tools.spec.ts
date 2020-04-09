@@ -18,10 +18,10 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
   })
 
   it('should initialize set Redux DevTools configurations.', () => {
-    LbrXManager.initializeDevTools({ name: 'NEW-NAME' })
-    expect((window as any).__REDUX_DEVTOOLS_EXTENSION__.config).toMatchObject({
-      name: 'NEW-NAME'
-    })
+    const devToolsOptions = { name: 'NEW-NAME' }
+    const expectedValue = { name: 'NEW-NAME' }
+    LbrXManager.initializeDevTools(devToolsOptions)
+    expect((window as any).__REDUX_DEVTOOLS_EXTENSION__.config).toStrictEqual(expectedValue)
   })
 
   it('should return LbrXManager.', () => {
