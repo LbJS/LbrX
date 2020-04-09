@@ -69,7 +69,7 @@ function readJsonFromFile(filePath) {
  * @param {{}} jsonObj
  */
 function writeJsonToFile(filePath, jsonObj) {
-  fs.writeFileSync(filePath, JSON.stringify(jsonObj, null, '\t') + '\n', 'utf-8')
+  fs.writeFileSync(filePath, JSON.stringify(jsonObj, null, 2) + '\n', 'utf-8')
 }
 
 /**
