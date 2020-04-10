@@ -6,10 +6,10 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/staffoffrost/lbrx.git"
+    "url": "git+https://github.com/staffoffrost/LbrX.git"
   },
   "bugs": {
-    "url": "https://github.com/staffoffrost/lbrx/issues"
+    "url": "https://github.com/staffoffrost/LbrX/issues"
   },
   "publishConfig": {
     "access": "public"
