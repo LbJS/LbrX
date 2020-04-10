@@ -9,6 +9,8 @@ const FILES_TO_COPY = [
   'LICENSE',
 ]
 
+const GIT_PUBLISH_TAG = 'git-post-publish:tag:push:push-tag'
+
 main()
 
 async function main() {
@@ -127,10 +129,10 @@ function updateAppVersion(packageJsonObj, lastPublishedVer) {
   const newVersion = `${majorVersion}.${minorVersion}.${patchVersion}${versionType ? '-' + versionType : ''}`
   // set new version to package json
   packageJsonObj.version = newVersion
-  if (!packageJsonObj.scripts['git:post:publish'].includes(lastPublishedVer)) {
-    throw new Error(`git:post:publish doesn't include the current last published version.`)
+  if (!packageJsonObj.scripts[GIT_PUBLISH_TAG].includes(lastPublishedVer)) {
+    throw new Error(`${GIT_PUBLISH_TAG} doesn't include the current last published version.`)
   }
-  packageJsonObj.scripts['git:post:publish'] = packageJsonObj.scripts['git:post:publish'].replace(lastPublishedVer, newVersion)
+  packageJsonObj.scripts[GIT_PUBLISH_TAG] = packageJsonObj.scripts[GIT_PUBLISH_TAG].replace(lastPublishedVer, newVersion)
   // clone packageJsonObj to disconnect reference
   const packageJsonObjCloned = cloneJsonObject(packageJsonObj)
   runAsync(() => {
