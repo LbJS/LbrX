@@ -17,16 +17,16 @@ export class LbrXManager {
    */
   static enableProdMode(): typeof LbrXManager {
     enableProdMode()
-    return this
+    return LbrXManager
   }
 
   /**
    * Initializes Redux DevTools.
    */
   static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): typeof LbrXManager {
-    this._devToolsManager = new DevToolsManager(devToolsOptions)
-    this._devToolsManager.initialize()
-    return this
+    LbrXManager._devToolsManager = new DevToolsManager(devToolsOptions)
+    LbrXManager._devToolsManager.initialize()
+    return LbrXManager
   }
 
   /**
@@ -34,7 +34,7 @@ export class LbrXManager {
    */
   static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
     setGlobalStoreConfig(options)
-    return this
+    return LbrXManager
   }
 
   /**
@@ -52,12 +52,12 @@ export class LbrXManager {
   static setDevToolsZone(
     zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T }
   ): typeof LbrXManager {
-    if (!this._devToolsManager) {
+    if (!LbrXManager._devToolsManager) {
       logError('DevTools must be initialized before setting DevTools Zone.')
     } else {
-      this._devToolsManager.setDevToolsZone(zone)
+      LbrXManager._devToolsManager.setDevToolsZone(zone)
     }
-    return this
+    return LbrXManager
   }
 
   private constructor() { }
