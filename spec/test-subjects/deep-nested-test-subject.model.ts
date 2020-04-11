@@ -1,5 +1,5 @@
 
-export class DeepNestedTestSubjectA {
+export class DeepNestedTestSubject {
   public stringValue: string | null = null
   public numberValue: number | null = null
   public booleanValue: boolean | null = null

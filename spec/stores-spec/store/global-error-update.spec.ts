@@ -1,16 +1,16 @@
 import { GlobalErrorStore, Store } from 'lbrx'
-import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error - Global Error Update', () => {
 
   const nestedError = TestSubjectsFactory.createNestedError()
   const pureNestedError = TestSubjectsFactory.createNestedError()
-  let store: Store<TestSubjectA, Error>
+  let store: Store<TestSubject, Error>
   let globalErrorStore: GlobalErrorStore<Error>
 
   beforeEach(async () => {
     const providerModule = await import('provider.module')
-    store = providerModule.StoresFactory.createStore<TestSubjectA>(null)
+    store = providerModule.StoresFactory.createStore<TestSubject>(null)
     globalErrorStore = providerModule.GlobalErrorStore.getStore()
   })
 

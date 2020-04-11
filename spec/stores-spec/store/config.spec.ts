@@ -2,17 +2,17 @@ import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages, Store, S
 import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
 import MockBuilder from 'mock-builder'
 import { GenericStorage } from 'mocks'
-import { StoresFactory as StoresFactory_type, TestSubjectA } from 'test-subjects'
+import { StoresFactory as StoresFactory_type, TestSubject } from 'test-subjects'
 
 describe('Store Config:', () => {
 
   let LbrXManager: typeof LbrXManager_type
   let StoresFactory: typeof StoresFactory_type
-  let store: Store<TestSubjectA>
+  let store: Store<TestSubject>
   let isDev: () => boolean
   let stringify: typeof stringifyFunc
   let parse: typeof parseFunc
-  const createStore = (options: StoreConfigOptions) => StoresFactory.createStore<TestSubjectA>(null, options)
+  const createStore = (options: StoreConfigOptions) => StoresFactory.createStore<TestSubject>(null, options)
 
   beforeEach(async () => {
     const providerModule = await import('provider.module')

@@ -1,20 +1,20 @@
 import { assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
 import { StoreBeforeInit } from 'lbrx/hooks'
-import { StoresFactory as StoresFactory_type, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { StoresFactory as StoresFactory_type, TestSubject, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store onBeforeInit():', () => {
 
-  const createInitialState = () => TestSubjectsFactory.createTestSubjectA_initial()
+  const createInitialState = () => TestSubjectsFactory.createTestSubject_initial()
   const initialState = createInitialState()
   let StoresFactory: typeof StoresFactory_type
-  let store: Store<TestSubjectA> & StoreBeforeInit<TestSubjectA>
-  let onBeforeInitSpy: jest.SpyInstance<void | TestSubjectA, [TestSubjectA]>
+  let store: Store<TestSubject> & StoreBeforeInit<TestSubject>
+  let onBeforeInitSpy: jest.SpyInstance<void | TestSubject, [TestSubject]>
 
   beforeEach(async () => {
     const providerModule = await import('provider.module')
     StoresFactory = providerModule.StoresFactory
-    store = StoresFactory.createStore<TestSubjectA>(null, true/*with hooks*/)
+    store = StoresFactory.createStore<TestSubject>(null, true/*with hooks*/)
     onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
   })
 
@@ -50,7 +50,7 @@ describe('Store onBeforeInit():', () => {
   })
 
   it('should get the nextState as an argument.', done => {
-    onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): void => {
+    onBeforeInitSpy.mockImplementation((nextState: TestSubject): void => {
       expect(nextState).toStrictEqual(initialState)
       done()
     })
@@ -59,7 +59,7 @@ describe('Store onBeforeInit():', () => {
 
   it('should allow changing the next state.', () => {
     const localInitialState = createInitialState()
-    onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
+    onBeforeInitSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       assertNotNullable(nextState.innerTestObjectGetSet)
       nextState.innerTestObjectGetSet.booleanValue = !nextState.innerTestObjectGetSet.booleanValue
       return nextState
@@ -71,7 +71,7 @@ describe('Store onBeforeInit():', () => {
   })
 
   it("should disconnect nextState object's references.", async () => {
-    onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): void => {
+    onBeforeInitSpy.mockImplementation((nextState: TestSubject): void => {
       assertNotNullable(nextState.innerTestObject)
       assertNotNullable(nextState.innerTestObject.obj)
       nextState.innerTestObject.obj.date.setFullYear(1900)
@@ -82,10 +82,10 @@ describe('Store onBeforeInit():', () => {
     await Promise.resolve()
     expect(store.value).toStrictEqual(initialState)
     jest.resetAllMocks()
-    store = StoresFactory.createStore<TestSubjectA>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
+    store = StoresFactory.createStore<TestSubject>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
     onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')
-    let tmpState: TestSubjectA | null = null
-    onBeforeInitSpy.mockImplementation((nextState: TestSubjectA): TestSubjectA => {
+    let tmpState: TestSubject | null = null
+    onBeforeInitSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       tmpState = nextState
       return nextState
     })

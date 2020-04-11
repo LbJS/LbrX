@@ -1,51 +1,51 @@
-import { DeepNestedTestSubjectA } from './deep-nested-test-subject-a.model'
+import { DeepNestedTestSubject } from './deep-nested-test-subject.model'
 import { ErrorTestSubject } from './error-test-subject'
-import { InnerTestSubjectA } from './inner-test-subject-a.model'
-import { TestSubjectA } from './test-subject-a.model'
+import { InnerTestSubject } from './inner-test-subject.model'
 import { TestSubjectConfigurations } from './test-subject-configurations.enum'
+import { TestSubject } from './test-subject.model'
 
 export class TestSubjectsFactory {
 
-  public static createTestSubjectA_initial(): TestSubjectA {
-    return this.createTestSubjectA(TestSubjectConfigurations.initial)
+  public static createTestSubject_initial(): TestSubject {
+    return this.createTestSubject(TestSubjectConfigurations.initial)
   }
 
-  public static createTestSubjectA_configA(): TestSubjectA {
-    return this.createTestSubjectA(TestSubjectConfigurations.configurationA)
+  public static createTestSubject_configA(): TestSubject {
+    return this.createTestSubject(TestSubjectConfigurations.configurationA)
   }
-  public static createTestSubjectA_configA_plain(): TestSubjectA {
-    return this.createTestSubjectA(TestSubjectConfigurations.configurationA_plain)
+  public static createTestSubject_configA_plain(): TestSubject {
+    return this.createTestSubject(TestSubjectConfigurations.configurationA_plain)
   }
-  public static createTestSubjectA_configB(): TestSubjectA {
-    return this.createTestSubjectA(TestSubjectConfigurations.configurationB)
+  public static createTestSubject_configB(): TestSubject {
+    return this.createTestSubject(TestSubjectConfigurations.configurationB)
   }
 
-  public static createTestSubjectA(configuration: TestSubjectConfigurations): TestSubjectA {
+  public static createTestSubject(configuration: TestSubjectConfigurations): TestSubject {
     switch (configuration) {
       case TestSubjectConfigurations.initial:
-        return new TestSubjectA({
+        return new TestSubject({
           stringValue: 'abcdefg',
           numberValue: 5,
           booleanValue: false,
           dateValue: new Date(2020, 5),
           getterSetterDate: new Date(2020, 6),
-          innerTestObject: TestSubjectsFactory.createInnerTestSubjectA(configuration),
-          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubjectA(configuration),
+          innerTestObject: TestSubjectsFactory.createInnerTestSubject(configuration),
+          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubject(configuration),
         })
       case TestSubjectConfigurations.configurationA:
-        return new TestSubjectA({
+        return new TestSubject({
           stringValue: 'abcdefg',
           numberValue: 5,
           booleanValue: false,
           dateValue: new Date(2020, 2),
           getterSetterDate: new Date(2020, 6),
-          innerTestObject: TestSubjectsFactory.createInnerTestSubjectA(configuration),
-          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubjectA(configuration),
+          innerTestObject: TestSubjectsFactory.createInnerTestSubject(configuration),
+          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubject(configuration),
         })
       case TestSubjectConfigurations.configurationA_plain:
-        return JSON.parse(JSON.stringify(this.createTestSubjectA(TestSubjectConfigurations.configurationA)))
+        return JSON.parse(JSON.stringify(this.createTestSubject(TestSubjectConfigurations.configurationA)))
       case TestSubjectConfigurations.configurationB:
-        return new TestSubjectA({
+        return new TestSubject({
           stringValue: 'abcdefg',
           numberValue: 5,
           booleanValue: false,
@@ -57,45 +57,45 @@ export class TestSubjectsFactory {
     }
   }
 
-  public static createInnerTestSubjectA(configuration: TestSubjectConfigurations): InnerTestSubjectA | null {
+  public static createInnerTestSubject(configuration: TestSubjectConfigurations): InnerTestSubject | null {
     switch (configuration) {
       case TestSubjectConfigurations.initial:
-        return new InnerTestSubjectA({
+        return new InnerTestSubject({
           stringValue: 'a b c',
           numberValue: 112346579.1236549,
           booleanValue: true,
           dateValue: new Date(2018),
           getterSetterDate: new Date(2018, 8),
-          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubjectA(configuration),
+          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubject(configuration),
           obj: {
             value: 'aaaaaaaa bbbbbbbbb',
             date: new Date(2017, 5)
           },
         })
       case TestSubjectConfigurations.configurationA:
-        return new InnerTestSubjectA({
+        return new InnerTestSubject({
           stringValue: 'a b c',
           numberValue: 112346579.1236549,
           booleanValue: true,
           dateValue: new Date(2018, 9),
           getterSetterDate: new Date(2018, 8),
-          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubjectA(configuration),
+          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubject(configuration),
           obj: {
             value: 'aaaaaaaa bbbbbbbbb',
             date: new Date(2017, 5)
           },
         })
       case TestSubjectConfigurations.configurationA_plain:
-        return JSON.parse(JSON.stringify(this.createInnerTestSubjectA(TestSubjectConfigurations.configurationA)))
+        return JSON.parse(JSON.stringify(this.createInnerTestSubject(TestSubjectConfigurations.configurationA)))
       case TestSubjectConfigurations.configurationB:
         return null
     }
   }
 
-  public static createDeepNestedTestSubjectA(configuration: TestSubjectConfigurations): DeepNestedTestSubjectA | null {
+  public static createDeepNestedTestSubject(configuration: TestSubjectConfigurations): DeepNestedTestSubject | null {
     switch (configuration) {
       case TestSubjectConfigurations.initial: {
-        const partialDeepNestedObject: Partial<DeepNestedTestSubjectA> = {
+        const partialDeepNestedObject: Partial<DeepNestedTestSubject> = {
           stringValue: 'some string here',
           numberValue: 5.55,
           booleanValue: false,
@@ -123,10 +123,10 @@ export class TestSubjectsFactory {
             'e e'
           ]
         }
-        return Object.assign(new DeepNestedTestSubjectA(), partialDeepNestedObject)
+        return Object.assign(new DeepNestedTestSubject(), partialDeepNestedObject)
       }
       case TestSubjectConfigurations.configurationA: {
-        const partialDeepNestedObject: Partial<DeepNestedTestSubjectA> = {
+        const partialDeepNestedObject: Partial<DeepNestedTestSubject> = {
           stringValue: 'some string here',
           numberValue: 5.55,
           booleanValue: false,
@@ -157,10 +157,10 @@ export class TestSubjectsFactory {
             'e e'
           ]
         }
-        return Object.assign(new DeepNestedTestSubjectA(), partialDeepNestedObject)
+        return Object.assign(new DeepNestedTestSubject(), partialDeepNestedObject)
       }
       case TestSubjectConfigurations.configurationA_plain:
-        return JSON.parse(JSON.stringify(this.createDeepNestedTestSubjectA(TestSubjectConfigurations.configurationA)))
+        return JSON.parse(JSON.stringify(this.createDeepNestedTestSubject(TestSubjectConfigurations.configurationA)))
       case TestSubjectConfigurations.configurationB:
         return null
     }

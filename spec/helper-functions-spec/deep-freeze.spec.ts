@@ -1,13 +1,13 @@
 import { assertIsArray, assertNotNullable } from 'helpers'
 import { deepFreeze } from 'lbrx/helpers'
-import { TestSubjectA, TestSubjectConfigurations, TestSubjectsFactory } from '../test-subjects'
+import { TestSubject, TestSubjectConfigurations, TestSubjectsFactory } from '../test-subjects'
 
 describe('Helper Function - deepFreeze():', () => {
 
-  let testSubject: TestSubjectA
+  let testSubject: TestSubject
 
   beforeEach(() => {
-    testSubject = TestSubjectsFactory.createTestSubjectA_configA()
+    testSubject = TestSubjectsFactory.createTestSubject_configA()
     deepFreeze(testSubject)
   })
 
@@ -34,7 +34,7 @@ describe('Helper Function - deepFreeze():', () => {
   it('should cause test subject to throw on inners object modification.', () => {
     assertNotNullable(testSubject.innerTestObject)
     expect(() => {
-      const newInnerTestObject = TestSubjectsFactory.createInnerTestSubjectA(TestSubjectConfigurations.configurationB)
+      const newInnerTestObject = TestSubjectsFactory.createInnerTestSubject(TestSubjectConfigurations.configurationB)
       testSubject.innerTestObject = newInnerTestObject
     }).toThrow()
   })

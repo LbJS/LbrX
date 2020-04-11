@@ -1,6 +1,6 @@
-import { DeepNestedTestSubjectA } from './deep-nested-test-subject-a.model'
+import { DeepNestedTestSubject } from './deep-nested-test-subject.model'
 
-export class InnerTestSubjectA {
+export class InnerTestSubject {
 
   public stringValue: string | null = null
   public numberValue: number | null = null
@@ -13,10 +13,10 @@ export class InnerTestSubjectA {
   public set getterSetterDate(value: Date | null) {
     this._getterSetterDate = value
   }
-  public deepNestedObj: DeepNestedTestSubjectA | null = null
+  public deepNestedObj: DeepNestedTestSubject | null = null
   public obj: { value: string, date: Date } | null = null
 
-  constructor(innerTestObject?: Partial<InnerTestSubjectA>) {
+  constructor(innerTestObject?: Partial<InnerTestSubject>) {
     if (innerTestObject) Object.assign(this, innerTestObject)
   }
 }

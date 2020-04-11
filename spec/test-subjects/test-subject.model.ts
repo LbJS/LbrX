@@ -1,6 +1,6 @@
-import { InnerTestSubjectA } from './inner-test-subject-a.model'
+import { InnerTestSubject } from './inner-test-subject.model'
 
-export class TestSubjectA {
+export class TestSubject {
 
   public stringValue: string | null
   public numberValue: number | null
@@ -13,12 +13,12 @@ export class TestSubjectA {
   public set getterSetterDate(value: Date | null) {
     this._getterSetterDate = value
   }
-  public innerTestObject: InnerTestSubjectA | null
-  private _innerTestObjectGetSet: InnerTestSubjectA | null
-  public get innerTestObjectGetSet(): InnerTestSubjectA | null {
+  public innerTestObject: InnerTestSubject | null
+  private _innerTestObjectGetSet: InnerTestSubject | null
+  public get innerTestObjectGetSet(): InnerTestSubject | null {
     return this._innerTestObjectGetSet
   }
-  public set innerTestObjectGetSet(value: InnerTestSubjectA | null) {
+  public set innerTestObjectGetSet(value: InnerTestSubject | null) {
     this._innerTestObjectGetSet = value
   }
 
@@ -30,7 +30,7 @@ export class TestSubjectA {
     getterSetterDate = null,
     innerTestObject = null,
     innerTestObjectGetSet = null,
-  }: Partial<TestSubjectA>) {
+  }: Partial<TestSubject>) {
     this.stringValue = stringValue
     this.numberValue = numberValue
     this.booleanValue = booleanValue

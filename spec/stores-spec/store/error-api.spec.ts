@@ -1,13 +1,13 @@
 import { Store } from 'lbrx'
 import { from, timer } from 'rxjs'
-import { TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error API:', () => {
 
   const error = TestSubjectsFactory.createError()
   const pureError = TestSubjectsFactory.createError()
-  const initialState = TestSubjectsFactory.createTestSubjectA_initial()
-  let store: Store<TestSubjectA, Error>
+  const initialState = TestSubjectsFactory.createTestSubject_initial()
+  let store: Store<TestSubject, Error>
 
   beforeEach(async () => {
     const providerModule = await import('provider.module')

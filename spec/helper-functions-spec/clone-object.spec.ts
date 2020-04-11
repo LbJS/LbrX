@@ -4,8 +4,8 @@ import { TestSubjectsFactory } from 'test-subjects'
 
 describe('Helper Function - cloneObject():', () => {
 
-  const stateA = TestSubjectsFactory.createTestSubjectA_configA()
-  const pureStateA = TestSubjectsFactory.createTestSubjectA_configA()
+  const stateA = TestSubjectsFactory.createTestSubject_configA()
+  const pureStateA = TestSubjectsFactory.createTestSubject_configA()
 
   it('should copy all properties', () => {
     const clonedStateA = cloneObject(stateA)

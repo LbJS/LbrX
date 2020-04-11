@@ -1,20 +1,20 @@
 import { assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
-import { ErrorTestSubject, TestSubjectA, TestSubjectsFactory } from 'test-subjects'
+import { ErrorTestSubject, TestSubject, TestSubjectsFactory } from 'test-subjects'
 
 describe('Store Error Reference:', () => {
 
   const error = TestSubjectsFactory.createError()
   const nestedError = TestSubjectsFactory.createNestedError()
   const pureNestedError = TestSubjectsFactory.createNestedError()
-  const initialState = TestSubjectsFactory.createTestSubjectA_initial()
-  let store: Store<TestSubjectA, Error>
-  let loadingStore: Store<TestSubjectA, ErrorTestSubject>
+  const initialState = TestSubjectsFactory.createTestSubject_initial()
+  let store: Store<TestSubject, Error>
+  let loadingStore: Store<TestSubject, ErrorTestSubject>
 
   beforeEach(async () => {
     const providerModule = await import('provider.module')
     store = providerModule.StoresFactory.createStore(initialState)
-    loadingStore = providerModule.StoresFactory.createStore<TestSubjectA>(null, 'LOADING-STORE')
+    loadingStore = providerModule.StoresFactory.createStore<TestSubject>(null, 'LOADING-STORE')
   })
 
   afterEach(() => {
