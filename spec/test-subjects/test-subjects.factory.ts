@@ -2,6 +2,7 @@ import { DeepNestedTestSubject } from './deep-nested-test-subject.model'
 import { ErrorTestSubject } from './error-test-subject'
 import { InnerTestSubject } from './inner-test-subject.model'
 import { TestSubjectConfigurations } from './test-subject-configurations.enum'
+import { TestSubjectWithMethods } from './test-subject-with-methods.model'
 import { TestSubject } from './test-subject.model'
 
 export class TestSubjectsFactory {
@@ -163,6 +164,65 @@ export class TestSubjectsFactory {
         return JSON.parse(JSON.stringify(this.createDeepNestedTestSubject(TestSubjectConfigurations.configurationA)))
       case TestSubjectConfigurations.configurationB:
         return null
+    }
+  }
+
+  public static createTestSubjectWithMethods(configuration: TestSubjectConfigurations): TestSubjectWithMethods {
+    switch (configuration) {
+      case TestSubjectConfigurations.initial: {
+        const partialObj: Partial<TestSubjectWithMethods> = {
+          method: () => { },
+          methodGetSet: () => { },
+          innerObjectWithMethod: { method: () => { } },
+          listOfMethods: [
+            () => { },
+            () => { },
+          ]
+        }
+        const testSubject = this.createTestSubject(configuration)
+        return new TestSubjectWithMethods(Object.assign(testSubject, partialObj))
+      }
+      case TestSubjectConfigurations.configurationA: {
+        const partialObj: Partial<TestSubjectWithMethods> = {
+          method: () => { },
+          methodGetSet: () => { },
+          innerObjectWithMethod: { method: () => { } },
+          listOfMethods: [
+            () => { },
+            () => { },
+            () => { },
+          ]
+        }
+        const testSubject = this.createTestSubject(configuration)
+        return new TestSubjectWithMethods(Object.assign(testSubject, partialObj))
+      }
+      case TestSubjectConfigurations.configurationA_plain: {
+        const partialObj: Partial<TestSubjectWithMethods> = {
+          method: () => { },
+          methodGetSet: () => { },
+          innerObjectWithMethod: { method: () => { } },
+          listOfMethods: [
+            () => { },
+            () => { },
+          ]
+        }
+        const testSubject = this.createTestSubject(configuration)
+        const testSubjectWithMethods = new TestSubjectWithMethods(Object.assign(testSubject, partialObj))
+        return JSON.parse(JSON.stringify(testSubjectWithMethods))
+      }
+      case TestSubjectConfigurations.configurationB: {
+        const partialObj: Partial<TestSubjectWithMethods> = {
+          method: null,
+          methodGetSet: () => { },
+          innerObjectWithMethod: { method: null },
+          listOfMethods: [
+            null,
+            () => { },
+          ]
+        }
+        const testSubject = this.createTestSubject(configuration)
+        return new TestSubjectWithMethods(Object.assign(testSubject, partialObj))
+      }
     }
   }
 
