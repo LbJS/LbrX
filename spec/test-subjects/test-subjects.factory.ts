@@ -10,7 +10,6 @@ export class TestSubjectsFactory {
   public static createTestSubject_initial(): TestSubject {
     return this.createTestSubject(TestSubjectConfigurations.initial)
   }
-
   public static createTestSubject_configA(): TestSubject {
     return this.createTestSubject(TestSubjectConfigurations.configurationA)
   }
@@ -19,6 +18,19 @@ export class TestSubjectsFactory {
   }
   public static createTestSubject_configB(): TestSubject {
     return this.createTestSubject(TestSubjectConfigurations.configurationB)
+  }
+
+  public static createTestSubjectWithMethods_initial(): TestSubjectWithMethods {
+    return this.createTestSubjectWithMethods(TestSubjectConfigurations.initial)
+  }
+  public static createTestSubjectWithMethods_configA(): TestSubjectWithMethods {
+    return this.createTestSubjectWithMethods(TestSubjectConfigurations.configurationA)
+  }
+  public static createTestSubjectWithMethods_configA_plain(): TestSubjectWithMethods {
+    return this.createTestSubjectWithMethods(TestSubjectConfigurations.configurationA_plain)
+  }
+  public static createTestSubjectWithMethods_configB(): TestSubjectWithMethods {
+    return this.createTestSubjectWithMethods(TestSubjectConfigurations.configurationB)
   }
 
   public static createTestSubject(configuration: TestSubjectConfigurations): TestSubject {
