@@ -1,4 +1,4 @@
-import { cloneError, cloneObject, compareObjects, isError, isNull, isNullable, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from 'lbrx/helpers'
+import { cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from 'lbrx/helpers'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { ObjectCompareTypes, Storages, StoreConfigOptions, StoreConfigOptionsInfo, STORE_CONFIG_KEY } from './config'
@@ -172,7 +172,7 @@ export abstract class BaseStore<T extends object, E = any> {
       value = cloneObject(value)
     }
     this._error$.next(value)
-    if (!isNullable(value)) GlobalErrorStore.getStore<E>().setError(value)
+    if (!isEmpty(value)) GlobalErrorStore.getStore<E>().setError(value)
   }
 
   //#endregion public-api

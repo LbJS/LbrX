@@ -1,8 +1,8 @@
-import { isClass, isNullable, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
+import { isClass, isEmpty, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
 import { isArray } from './is-array'
 
 export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
-  if (isNullable(plainObject)) return plainObject
+  if (isEmpty(plainObject)) return plainObject
   if (isClass(instancedObject) && !isClass(plainObject)) {
     plainObject = instancedObject.constructor.length ?
       objectAssign(new instancedObject.constructor(plainObject), plainObject) :
