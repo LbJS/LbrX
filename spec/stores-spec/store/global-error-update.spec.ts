@@ -1,10 +1,11 @@
+import { ErrorFactory } from 'factories'
 import { GlobalErrorStore, Store } from 'lbrx'
-import { TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store Error - Global Error Update', () => {
 
-  const nestedError = TestSubjectsFactory.createNestedError()
-  const pureNestedError = TestSubjectsFactory.createNestedError()
+  const nestedError = ErrorFactory.createNestedError()
+  const pureNestedError = ErrorFactory.createNestedError()
   let store: Store<TestSubject, Error>
   let globalErrorStore: GlobalErrorStore<Error>
 

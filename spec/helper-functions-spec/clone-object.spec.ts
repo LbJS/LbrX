@@ -1,11 +1,11 @@
+import { TestSubjectFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { cloneObject } from 'lbrx/helpers'
-import { TestSubjectsFactory } from 'test-subjects'
 
 describe('Helper Function - cloneObject():', () => {
 
-  const stateA = TestSubjectsFactory.createTestSubject_configA()
-  const pureStateA = TestSubjectsFactory.createTestSubject_configA()
+  const stateA = TestSubjectFactory.createTestSubject_configA()
+  const pureStateA = TestSubjectFactory.createTestSubject_configA()
 
   it('should copy all properties', () => {
     const clonedStateA = cloneObject(stateA)

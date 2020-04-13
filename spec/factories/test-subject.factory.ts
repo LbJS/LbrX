@@ -1,11 +1,6 @@
-import { DeepNestedTestSubject } from './deep-nested-test-subject.model'
-import { ErrorTestSubject } from './error-test-subject'
-import { InnerTestSubject } from './inner-test-subject.model'
-import { TestSubjectConfigurations } from './test-subject-configurations.enum'
-import { TestSubjectWithMethods } from './test-subject-with-methods.model'
-import { TestSubject } from './test-subject.model'
+import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectConfigurations, TestSubjectWithMethods } from 'test-subjects'
 
-export class TestSubjectsFactory {
+export class TestSubjectFactory {
 
   public static createTestSubject_initial(): TestSubject {
     return this.createTestSubject(TestSubjectConfigurations.initial)
@@ -42,8 +37,8 @@ export class TestSubjectsFactory {
           booleanValue: false,
           dateValue: new Date(2020, 5),
           getterSetterDate: new Date(2020, 6),
-          innerTestObject: TestSubjectsFactory.createInnerTestSubject(configuration),
-          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubject(configuration),
+          innerTestObject: TestSubjectFactory.createInnerTestSubject(configuration),
+          innerTestObjectGetSet: TestSubjectFactory.createInnerTestSubject(configuration),
         })
       case TestSubjectConfigurations.configurationA:
         return new TestSubject({
@@ -52,8 +47,8 @@ export class TestSubjectsFactory {
           booleanValue: false,
           dateValue: new Date(2020, 2),
           getterSetterDate: new Date(2020, 6),
-          innerTestObject: TestSubjectsFactory.createInnerTestSubject(configuration),
-          innerTestObjectGetSet: TestSubjectsFactory.createInnerTestSubject(configuration),
+          innerTestObject: TestSubjectFactory.createInnerTestSubject(configuration),
+          innerTestObjectGetSet: TestSubjectFactory.createInnerTestSubject(configuration),
         })
       case TestSubjectConfigurations.configurationA_plain:
         return JSON.parse(JSON.stringify(this.createTestSubject(TestSubjectConfigurations.configurationA)))
@@ -79,7 +74,7 @@ export class TestSubjectsFactory {
           booleanValue: true,
           dateValue: new Date(2018),
           getterSetterDate: new Date(2018, 8),
-          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubject(configuration),
+          deepNestedObj: TestSubjectFactory.createDeepNestedTestSubject(configuration),
           obj: {
             value: 'aaaaaaaa bbbbbbbbb',
             date: new Date(2017, 5)
@@ -92,7 +87,7 @@ export class TestSubjectsFactory {
           booleanValue: true,
           dateValue: new Date(2018, 9),
           getterSetterDate: new Date(2018, 8),
-          deepNestedObj: TestSubjectsFactory.createDeepNestedTestSubject(configuration),
+          deepNestedObj: TestSubjectFactory.createDeepNestedTestSubject(configuration),
           obj: {
             value: 'aaaaaaaa bbbbbbbbb',
             date: new Date(2017, 5)
@@ -236,19 +231,5 @@ export class TestSubjectsFactory {
         return new TestSubjectWithMethods(Object.assign(testSubject, partialObj))
       }
     }
-  }
-
-  public static createError(text: string = 'Some new error data.'): Error {
-    return new Error(text)
-  }
-
-  public static createErrorTestSubject(text: string = 'Some error data.'): ErrorTestSubject {
-    return new ErrorTestSubject(text)
-  }
-
-  public static createNestedError(): ErrorTestSubject {
-    let err = new ErrorTestSubject('Layer3 error')
-    err = new ErrorTestSubject(err, 'Layer2 error')
-    return new ErrorTestSubject(err, 'Layer1 error')
   }
 }

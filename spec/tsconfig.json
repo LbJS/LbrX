@@ -34,6 +34,9 @@
       "mock-builder": [
         "mock-builder"
       ],
+      "factories": [
+        "factories"
+      ],
       "types": [
         "types"
       ],

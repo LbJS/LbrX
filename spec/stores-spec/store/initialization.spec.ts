@@ -1,11 +1,12 @@
+import { TestSubjectFactory } from 'factories'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
-import { TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store Initialization: ', () => {
 
-  const initialState = TestSubjectsFactory.createTestSubject_initial()
-  const pureInitialState = TestSubjectsFactory.createTestSubject_initial()
-  const stateA = TestSubjectsFactory.createTestSubject_configA()
+  const initialState = TestSubjectFactory.createTestSubject_initial()
+  const pureInitialState = TestSubjectFactory.createTestSubject_initial()
+  const stateA = TestSubjectFactory.createTestSubject_configA()
   let store: Store<TestSubject>
   let loadingStore: Store<TestSubject>
   let LbrXManager: typeof LbrXManager_type

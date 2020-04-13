@@ -1,5 +1,6 @@
+import { TestSubjectFactory } from 'factories'
 import { compareObjects } from 'lbrx/helpers'
-import { TestSubject, TestSubjectsFactory, TestSubjectWithMethods } from 'test-subjects'
+import { TestSubject, TestSubjectWithMethods } from 'test-subjects'
 
 // tslint:disable: variable-name
 
@@ -17,16 +18,16 @@ describe('Helper Function - compareObjects():', () => {
   let testSubjectWithMethodsConfigB_copy: TestSubjectWithMethods
 
   beforeEach(() => {
-    testSubjectConfigA = TestSubjectsFactory.createTestSubject_configA()
-    testSubjectConfigA_copy = TestSubjectsFactory.createTestSubject_configA()
-    testSubjectConfigA_plain = TestSubjectsFactory.createTestSubject_configA_plain()
-    testSubjectConfigB = TestSubjectsFactory.createTestSubject_configB()
-    testSubjectConfigB_copy = TestSubjectsFactory.createTestSubject_configB()
-    testSubjectWithMethodsConfigA = TestSubjectsFactory.createTestSubjectWithMethods_configA()
-    testSubjectWithMethodsConfigA_copy = TestSubjectsFactory.createTestSubjectWithMethods_configA()
-    testSubjectWithMethodsConfigA_plain = TestSubjectsFactory.createTestSubjectWithMethods_configA_plain()
-    testSubjectWithMethodsConfigB = TestSubjectsFactory.createTestSubjectWithMethods_configB()
-    testSubjectWithMethodsConfigB_copy = TestSubjectsFactory.createTestSubjectWithMethods_configB()
+    testSubjectConfigA = TestSubjectFactory.createTestSubject_configA()
+    testSubjectConfigA_copy = TestSubjectFactory.createTestSubject_configA()
+    testSubjectConfigA_plain = TestSubjectFactory.createTestSubject_configA_plain()
+    testSubjectConfigB = TestSubjectFactory.createTestSubject_configB()
+    testSubjectConfigB_copy = TestSubjectFactory.createTestSubject_configB()
+    testSubjectWithMethodsConfigA = TestSubjectFactory.createTestSubjectWithMethods_configA()
+    testSubjectWithMethodsConfigA_copy = TestSubjectFactory.createTestSubjectWithMethods_configA()
+    testSubjectWithMethodsConfigA_plain = TestSubjectFactory.createTestSubjectWithMethods_configA_plain()
+    testSubjectWithMethodsConfigB = TestSubjectFactory.createTestSubjectWithMethods_configB()
+    testSubjectWithMethodsConfigB_copy = TestSubjectFactory.createTestSubjectWithMethods_configB()
   })
 
   it('should return that objects are equal.', () => {

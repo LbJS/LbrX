@@ -1,11 +1,12 @@
+import { TestSubjectFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
 import { StoreBeforeInit } from 'lbrx/hooks'
-import { StoresFactory as StoresFactory_type, TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { StoresFactory as StoresFactory_type, TestSubject } from 'test-subjects'
 
 describe('Store onBeforeInit():', () => {
 
-  const createInitialState = () => TestSubjectsFactory.createTestSubject_initial()
+  const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const initialState = createInitialState()
   let StoresFactory: typeof StoresFactory_type
   let store: Store<TestSubject> & StoreBeforeInit<TestSubject>

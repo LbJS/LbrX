@@ -1,13 +1,14 @@
+import { ErrorFactory, TestSubjectFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
-import { ErrorTestSubject, TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { ErrorTestSubject, TestSubject } from 'test-subjects'
 
 describe('Store Error Reference:', () => {
 
-  const error = TestSubjectsFactory.createError()
-  const nestedError = TestSubjectsFactory.createNestedError()
-  const pureNestedError = TestSubjectsFactory.createNestedError()
-  const initialState = TestSubjectsFactory.createTestSubject_initial()
+  const error = ErrorFactory.createError()
+  const nestedError = ErrorFactory.createNestedError()
+  const pureNestedError = ErrorFactory.createNestedError()
+  const initialState = TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject, Error>
   let loadingStore: Store<TestSubject, ErrorTestSubject>
 
@@ -42,7 +43,7 @@ describe('Store Error Reference:', () => {
 
   it('should not be effected by error object change after set.', () => {
     const newErrorMsg = 'New error message'
-    const localError = TestSubjectsFactory.createError()
+    const localError = ErrorFactory.createError()
     store.setError(localError)
     localError.message = newErrorMsg
     const storesError = store.getError()
@@ -53,7 +54,7 @@ describe('Store Error Reference:', () => {
 
   it('should not be effected by returned error object change.', () => {
     const newErrorMsg = 'New error message'
-    let localError: Error | null = TestSubjectsFactory.createError()
+    let localError: Error | null = ErrorFactory.createError()
     store.setError(localError)
     localError = store.getError()
     assertNotNullable(localError)
@@ -74,7 +75,7 @@ describe('Store Error Reference:', () => {
 
   it("should not be effected by custom error object's change after set.", () => {
     const newErrorMsg = 'New error message'
-    const localError = TestSubjectsFactory.createNestedError()
+    const localError = ErrorFactory.createNestedError()
     loadingStore.setError(localError)
     assertNotNullable(localError.innerError?.innerError)
     localError.innerError.innerError.message = newErrorMsg

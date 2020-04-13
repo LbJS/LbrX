@@ -1,11 +1,12 @@
+import { TestSubjectFactory } from 'factories'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
 import { of, throwError, timer } from 'rxjs'
-import { TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store Async Initialization:', () => {
 
-  const initialState = TestSubjectsFactory.createTestSubject_initial()
-  const pureInitialState = TestSubjectsFactory.createTestSubject_initial()
+  const initialState = TestSubjectFactory.createTestSubject_initial()
+  const pureInitialState = TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject>
   let LbrXManager: typeof LbrXManager_type
   let isDev: () => boolean

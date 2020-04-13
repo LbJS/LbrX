@@ -1,9 +1,10 @@
+import { TestSubjectFactory } from 'factories'
 import { Store } from 'lbrx'
-import { TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store Is Loading State', () => {
 
-  const initialState = TestSubjectsFactory.createTestSubject_initial()
+  const initialState = TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject>
 
   beforeEach(async () => {

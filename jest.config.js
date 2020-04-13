@@ -16,6 +16,7 @@ module.exports = {
     "^lbrx/stores/config$": "<rootDir>/src/stores/config",
     "^test-subjects$": "<rootDir>/spec/test-subjects",
     "^mocks$": "<rootDir>/spec/mocks",
+    "^factories$": "<rootDir>/spec/factories",
     "^types$": "<rootDir>/spec/types",
     "^helpers$": "<rootDir>/spec/helpers",
     "^provider.module$": "<rootDir>/spec/provider.module.ts",

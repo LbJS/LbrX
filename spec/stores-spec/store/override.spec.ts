@@ -1,13 +1,14 @@
+import { TestSubjectFactory } from 'factories'
 import { assertEqual, assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
-import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from 'test-subjects'
 
 describe('Store override():', () => {
 
-  const initialState = TestSubjectsFactory.createTestSubject_initial()
-  const createStateA = () => TestSubjectsFactory.createTestSubject_configA()
+  const initialState = TestSubjectFactory.createTestSubject_initial()
+  const createStateA = () => TestSubjectFactory.createTestSubject_configA()
   const stateA = createStateA()
-  const stateB = TestSubjectsFactory.createTestSubject_configB()
+  const stateB = TestSubjectFactory.createTestSubject_configB()
   let store: Store<TestSubject>
 
   beforeEach(async () => {
@@ -61,7 +62,7 @@ describe('Store override():', () => {
   it('should handle instances for plain object.', () => {
     store.override(stateA)
     expect(store.value).toStrictEqual(stateA)
-    const plainStateA = TestSubjectsFactory.createTestSubject_configA_plain()
+    const plainStateA = TestSubjectFactory.createTestSubject_configA_plain()
     store.override(plainStateA)
     expect(store.value).toStrictEqual(stateA)
     expect(store.value).toBeInstanceOf(TestSubject)

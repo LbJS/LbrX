@@ -1,12 +1,13 @@
+import { ErrorFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { GlobalErrorStore } from 'lbrx'
-import { CustomError, TestSubjectsFactory } from 'test-subjects'
+import { CustomError } from 'test-subjects'
 
 describe('Global Error Store - Error Reference:', () => {
 
   const errMsg = 'New Error Msg'
-  const error = TestSubjectsFactory.createError()
-  const nestedError = TestSubjectsFactory.createNestedError()
+  const error = ErrorFactory.createError()
+  const nestedError = ErrorFactory.createNestedError()
   let globalErrorStore: GlobalErrorStore<Error>
 
   beforeEach(async () => {
@@ -24,7 +25,7 @@ describe('Global Error Store - Error Reference:', () => {
   })
 
   it("should not be effected by error object's change after set.", () => {
-    const localError = TestSubjectsFactory.createError()
+    const localError = ErrorFactory.createError()
     globalErrorStore.setError(localError)
     localError.message = errMsg
     const storeError = globalErrorStore.getError()
@@ -34,7 +35,7 @@ describe('Global Error Store - Error Reference:', () => {
   })
 
   it("should not be effected by returned error object's change.", () => {
-    let localError: Error | null = TestSubjectsFactory.createError()
+    let localError: Error | null = ErrorFactory.createError()
     globalErrorStore.setError(localError)
     localError = globalErrorStore.getError()
     assertNotNullable(localError)
@@ -54,7 +55,7 @@ describe('Global Error Store - Error Reference:', () => {
   })
 
   it("should not be effected by custom error object's change after set.", () => {
-    const localNestedError = TestSubjectsFactory.createNestedError()
+    const localNestedError = ErrorFactory.createNestedError()
     globalErrorStore.setError(localNestedError)
     assertNotNullable(localNestedError.innerError?.innerError)
     localNestedError.innerError.innerError.message = errMsg

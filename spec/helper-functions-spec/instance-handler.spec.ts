@@ -1,6 +1,7 @@
+import { TestSubjectFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { instanceHandler } from 'lbrx/helpers'
-import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectsFactory } from 'test-subjects'
+import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from 'test-subjects'
 
 describe('Helper Function - instanceHandler():', () => {
 
@@ -8,8 +9,8 @@ describe('Helper Function - instanceHandler():', () => {
   let plainTestSubject: TestSubject
 
   beforeEach(() => {
-    instancedTestSubject = TestSubjectsFactory.createTestSubject_configA()
-    plainTestSubject = TestSubjectsFactory.createTestSubject_configA_plain()
+    instancedTestSubject = TestSubjectFactory.createTestSubject_configA()
+    plainTestSubject = TestSubjectFactory.createTestSubject_configA_plain()
   })
 
   it('should create an instance for object and all nested objects based on an instanced object.', () => {

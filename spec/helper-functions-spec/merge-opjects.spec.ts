@@ -1,10 +1,10 @@
 import { mergeObjects } from 'lbrx/helpers'
-import { AbcObj } from 'test-subjects'
+import { MergeTestSubject } from 'test-subjects'
 
-describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
+describe('Helper Function - mergeObjects():', () => {
 
   it('should result the expected properties values after merging.', () => {
-    const objA: AbcObj = {
+    const objA: MergeTestSubject = {
       a: null,
       b: 'b',
       c: null,
@@ -12,7 +12,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       e: 'e',
       g: new Date(2019, 0),
     }
-    const objB: AbcObj = {
+    const objB: MergeTestSubject = {
       a: 'a',
       b: null,
       c: {},
@@ -21,7 +21,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       g: new Date(2020, 0),
     }
     const mergedObj = mergeObjects(objA, objB)
-    expect(mergedObj).toMatchObject(<AbcObj>{
+    expect(mergedObj).toStrictEqual(<MergeTestSubject>{
       a: 'a',
       b: null,
       c: {},
@@ -33,7 +33,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
   })
 
   it('should result the expected properties values for nested objects after merging.', () => {
-    const objA: AbcObj = {
+    const objA: MergeTestSubject = {
       objA: {
         a: null,
         b: 'b',
@@ -46,7 +46,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
         a: 'a'
       }
     }
-    const objB: AbcObj = {
+    const objB: MergeTestSubject = {
       objA: {
         a: 'a',
         b: null,
@@ -64,7 +64,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       }
     }
     const mergedObj = mergeObjects(objA, objB)
-    expect(mergedObj).toMatchObject(<AbcObj>{
+    expect(mergedObj).toStrictEqual(<MergeTestSubject>{
       objA: {
         a: 'a',
         b: null,
@@ -88,7 +88,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
   })
 
   it('should result the expected properties values for deep nested objects after merging.', () => {
-    const objA: AbcObj = {
+    const objA: MergeTestSubject = {
       objC: {
         nestedObj: {
           deepNestedObj: {
@@ -97,7 +97,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
         }
       }
     }
-    const objB: AbcObj = {
+    const objB: MergeTestSubject = {
       objC: {
         nestedObj: {
           deepNestedObj: {
@@ -107,7 +107,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       }
     }
     const mergedObj = mergeObjects(objA, objB)
-    expect(mergedObj).toMatchObject(<AbcObj>{
+    expect(mergedObj).toStrictEqual(<MergeTestSubject>{
       objC: {
         nestedObj: {
           deepNestedObj: {
@@ -120,7 +120,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
   })
 
   it('should result the expected property array values after merging.', () => {
-    const objA: AbcObj = {
+    const objA: MergeTestSubject = {
       a: [1],
       b: [2],
       c: null,
@@ -131,7 +131,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
         c: [3],
       }
     }
-    const objB: AbcObj = {
+    const objB: MergeTestSubject = {
       a: ['a'],
       b: null,
       c: ['c'],
@@ -142,7 +142,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       }
     }
     const mergedObj = mergeObjects(objA, objB)
-    expect(mergedObj).toMatchObject(<AbcObj>{
+    expect(mergedObj).toStrictEqual(<MergeTestSubject>{
       a: ['a'],
       b: null,
       c: ['c'],
@@ -157,7 +157,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
   })
 
   it('should result the expected properties array/ object values after merging.', () => {
-    const objA: AbcObj = {
+    const objA: MergeTestSubject = {
       a: {},
       b: [],
       c: [{}],
@@ -166,7 +166,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       f: {},
       g: [{}],
     }
-    const objB: AbcObj = {
+    const objB: MergeTestSubject = {
       a: [],
       b: {},
       c: null,
@@ -175,7 +175,7 @@ describe('Helper Function - mergeObjects():', () => { // TODO: Refactor
       f: new Date(2000, 0),
     }
     const mergedObj = mergeObjects(objA, objB)
-    expect(mergedObj).toMatchObject(<AbcObj>{
+    expect(mergedObj).toStrictEqual(<MergeTestSubject>{
       a: [],
       b: {},
       c: null,
