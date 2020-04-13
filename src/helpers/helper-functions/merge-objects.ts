@@ -1,18 +1,11 @@
-import { isDate, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
-import { isArray } from './is-array'
+import { isEntity, objectAssign, objectKeys } from 'lbrx/helpers'
 
 export function mergeObjects<T extends object>(target: T, source: Partial<T>): T {
   for (let i = 0, keys = objectKeys(target); i < keys.length; i++) {
     const key = keys[i]
     const targetProp = target[key]
     const sourceProp = source[key]
-    if (isDate(targetProp) || isDate(sourceProp)) {
-      target[key] = sourceProp
-    } else if (isObject(targetProp) &&
-      isObject(sourceProp) &&
-      !isArray(targetProp) &&
-      !isArray(sourceProp)
-    ) {
+    if (isEntity(targetProp) && isEntity(sourceProp)) {
       source[key] = mergeObjects(targetProp, sourceProp)
     }
   }
