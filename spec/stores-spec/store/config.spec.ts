@@ -1,8 +1,9 @@
+import { StoresFactory as StoresFactory_type } from 'factories'
 import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages, Store, StoreConfigOptions, StoreConfigOptionsInfo } from 'lbrx'
 import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
 import MockBuilder from 'mock-builder'
 import { GenericStorage } from 'mocks'
-import { StoresFactory as StoresFactory_type, TestSubject } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store Config:', () => {
 
