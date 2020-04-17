@@ -1,8 +1,8 @@
-import { TestSubjectFactory } from 'factories'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'factories'
 import { assertNotNullable } from 'helpers'
 import { Store } from 'lbrx'
 import { StoreBeforeInit } from 'lbrx/hooks'
-import { StoresFactory as StoresFactory_type, TestSubject } from 'test-subjects'
+import { TestSubject } from 'test-subjects'
 
 describe('Store onBeforeInit():', () => {
 
