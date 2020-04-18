@@ -20,7 +20,7 @@ describe('Store ajax call:', () => {
     })
     const providerModule = await import('provider.module')
     store = providerModule.StoresFactory.createStore<Todo>(null)
-  })
+  }, 500)
 
   afterEach(() => {
     jest.resetModules()
