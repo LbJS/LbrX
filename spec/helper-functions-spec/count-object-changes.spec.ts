@@ -1,57 +1,42 @@
+import { splitToObject } from 'helpers'
 import { countObjectChanges } from 'lbrx/helpers'
-import { BetterPerson, Person } from '../test-subjects'
+import { BetterPerson, MergeTestSubject, Person } from '../test-subjects'
 
 describe('Helper Function - countObjectChanges():', () => { // TODO: Refactor
 
   const expectedChangesA = 1
   it(`should count ${expectedChangesA} changes between two objects. {testId: 1}`, () => {
-    const person1 = new Person({
-      firstName: 'some name',
-      lastName: 'some name', // 1
-    })
-    const person2 = new Person({
-      firstName: 'some name',
-      lastName: 'some other name', // 1
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesA)
+    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
+      a: ['a', 'a'],
+      b: ['b', ''], // 1
+    }) as any
+    expect(countObjectChanges(objA, objB)).toBe(expectedChangesA)
   })
 
   const expectedChangesB = 3
   it(`should count ${expectedChangesB} changes between two objects. {testId: 2}`, () => {
-    const person1 = new Person({
-      address: {
-        city: 'some city',
-        country: 'some country', // 1
-        region: 'some region', // 2
-        homeNumber: 6, // 3
-      },
-    })
-    const person2 = new Person({
-      address: {
-        city: 'some city',
-        country: null, // 1
-        // 2 - no region
-        homeNumber: '6', // 3
-      },
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesB)
+    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
+      objA: {
+        a: ['a', 'a'],
+        b: ['b', null], // 1
+        c: [undefined, 'c'], // 2
+        d: [4, '4'], // 3
+      }
+    }) as any
+    expect(countObjectChanges(objA, objB)).toBe(expectedChangesB)
   })
 
   const expectedChangesC = 3
   it(`should count ${expectedChangesC} changes between two objects. {testId: 3}`, () => {
-    const person1 = new Person({
-      birthday: new Date(2000, 0, 1),
-      someDate: new Date(2000, 0, 1), // 1
-      // 2 - no someOtherDate
-      // 3 - no betterDate
-    })
-    const person2 = new BetterPerson({
-      birthday: new Date(2000, 0, 1),
-      someDate: new Date(2000, 0, 2), // 1
-      someOtherDate: new Date(2000, 0, 5), // 2
-      betterDate: new Date(), // 3
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesC)
+    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
+      objA: {
+        a: [new Date(2000, 0, 1), new Date(2000, 0, 1)],
+        b: [new Date(2000, 0, 1), new Date(2000, 0, 2)], // 1
+        c: [new Date(2000, 0, 1), undefined], // 2
+        d: [undefined, new Date(2000, 0, 1)], // 3
+      }
+    }) as any
+    expect(countObjectChanges(objA, objB)).toBe(expectedChangesC)
   })
 
   const expectedChangesD = 2
