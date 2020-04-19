@@ -1,6 +1,6 @@
 import { splitToObject } from 'helpers'
 import { countObjectChanges } from 'lbrx/helpers'
-import { MergeTestSubject } from '../test-subjects'
+import { MergeTestSubject } from 'test-subjects'
 
 describe('Helper Function - countObjectChanges():', () => {
 
