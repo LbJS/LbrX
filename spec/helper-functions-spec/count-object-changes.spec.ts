@@ -1,14 +1,16 @@
 import { splitToObject } from 'helpers'
 import { countObjectChanges } from 'lbrx/helpers'
-import { BetterPerson, MergeTestSubject, Person } from '../test-subjects'
+import { MergeTestSubject } from '../test-subjects'
 
-describe('Helper Function - countObjectChanges():', () => { // TODO: Refactor
+describe('Helper Function - countObjectChanges():', () => {
 
-  const expectedChangesA = 1
+  const expectedChangesA = 2
   it(`should count ${expectedChangesA} changes between two objects. {testId: 1}`, () => {
     const [objA, objB]: any = splitToObject(<MergeTestSubject>{
       a: ['a', 'a'],
       b: ['b', ''], // 1
+      c: [() => { }, () => { }],
+      d: [false, () => { }],
     }) as any
     expect(countObjectChanges(objA, objB)).toBe(expectedChangesA)
   })
@@ -41,211 +43,37 @@ describe('Helper Function - countObjectChanges():', () => { // TODO: Refactor
 
   const expectedChangesD = 2
   it(`should count ${expectedChangesD} changes between two objects. {testId: 4}`, () => {
-    const person1 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            'string',
-            5, // 1
-            {
-              test: 'test',
-              n: null // 2
-            },
-          ]
+    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
+      objC: {
+        nestedObj: {
+          deepNestedObj: {
+            a: [[new Date(2000, 0), { a: 'a' }], [new Date(2000, 0), { a: 'a', b: 'b' }, () => { }]] // 1, 2
+          }
         }
       }
-    })
-    const person2 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            'string',
-            '5', // 1
-            {
-              test: 'test',
-              n: new Date() // 2
-            },
-          ]
-        }
-      }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesD)
+    }) as any
+    expect(countObjectChanges(objA, objB)).toBe(expectedChangesD)
   })
 
-  const expectedChangesE = 4
-  it(`should count ${expectedChangesE} changes between two objects. {testId: 5}`, () => {
-    const person1 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            [
-              1,
-              2, // 1
-              3, // 2
-              // 3 - no 5
-              // 4 - no 6
-            ]
-          ]
-        }
-      }
-    })
-    const person2 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            [
-              1,
-              3, // 1
-              2, // 2
-              5, // 3
-              6, // 4
-            ]
-          ]
-        }
-      }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesE)
-  })
-
-  const expectedChangesF = 1
-  it(`should count ${expectedChangesF} changes between two objects. {testId: 6}`, () => {
-    const person1 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            [
-              {
-                a: new Date(1900, 0),
-                b: new Date(), // 1
-              }
-            ]
-          ]
-        }
-      }
-    })
-    const person2 = new Person({
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            [
-              {
-                a: new Date(1900, 0),
-                b: new Date(1700, 0), // 1
-              }
-            ]
-          ]
-        }
-      }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesF)
-  })
-
-  const expectedChangesG = 13
-  it(`should count ${expectedChangesG} changes between two objects. {testId: 7}`, () => {
-    const person1 = new Person({
-      firstName: 'some name',
-      lastName: 'some name', // 1
-      address: {
-        city: 'some city',
-        country: 'some country', // 2
-        region: 'some region', // 3
-        homeNumber: 6, // 4
+  const expectedChangesG = 6
+  it(`should count ${expectedChangesG} changes between two objects. {testId: 5}`, () => {
+    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
+      a: ['a', 'a'],
+      b: ['b', ''], // 1
+      objA: {
+        a: [new Date(2000, 0, 1), new Date(2000, 0, 1)],
+        b: [new Date(2000, 0, 1), new Date(2000, 0, 2)], // 2
+        c: [new Date(2000, 0, 1), undefined], // 3
+        d: [undefined, new Date(2000, 0, 1)], // 4
       },
-      birthday: new Date(2000, 0, 1),
-      someDate: new Date(2000, 0, 1), // 5
-      // 6 - no someOtherDate
-      // 7 - no betterDate
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            'string',
-            5, // 8
-            {
-              test: 'test',
-              n: null // 9
-            },
-            [
-              1,
-              2, // 10
-              3, // 11
-              // 12 - no 5
-              // 13 - no 6
-            ]
-          ]
+      objC: {
+        nestedObj: {
+          deepNestedObj: {
+            a: [[new Date(2000, 0), { a: 'a' }], [new Date(2000, 0), { a: 'a', b: 'b' }, () => { }]] // 5, 6
+          }
         }
       }
-    })
-    const person2 = new BetterPerson({
-      firstName: 'some name',
-      lastName: 'some other name', // 1
-      address: {
-        city: 'some city',
-        country: null, // 2
-        // 3 - no region
-        homeNumber: '6', // 4
-      },
-      birthday: new Date(2000, 0, 1),
-      someDate: new Date(2000, 0, 2), // 5
-      someOtherDate: new Date(2000, 0, 5), // 6
-      betterDate: new Date(), // 7
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            'string',
-            '5', // 8
-            {
-              test: 'test',
-              n: new Date() // 9
-            },
-            [
-              1,
-              3, // 10
-              2, // 11
-              5, // 12
-              6, // 13
-            ]
-          ]
-        }
-      }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesG)
-  })
-
-  const expectedChangesH = 0
-  it(`should count ${expectedChangesH} changes between two objects. {testId: 8}`, () => {
-    const person1 = new Person({
-      func: () => { }
-    })
-    const person2 = new Person({
-      func: () => { }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesH)
-  })
-
-  const expectedChangesI = 1
-  it(`should count ${expectedChangesI} changes between two objects. {testId: 9}`, () => {
-    const person1 = new Person({
-      func: () => { },
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            () => { },
-            () => { }, // 1
-          ]
-        }
-      }
-    })
-    const person2 = new Person({
-      func: () => { },
-      nestedObject: {
-        nestedValue: {
-          randomList: [
-            () => { },
-            // 1 - no () => { }
-          ]
-        }
-      }
-    })
-    expect(countObjectChanges(person1, person2)).toBe(expectedChangesI)
+    }) as any
+    expect(countObjectChanges(objA, objB)).toBe(expectedChangesG)
   })
 })
