@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 import { from } from 'rxjs'
 import { Todo } from 'test-subjects'
 
-describe('Store ajax call:', () => {
+describe('Store ajax call:', () => { // TODO: refactor to firebase
 
   let wasAjaxError = false
   const getData = (): Promise<Todo> => fetch('https://jsonplaceholder.typicode.com/todos/1').then(r => r.json())
