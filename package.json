@@ -17,8 +17,8 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "npm run test:watch",
-    "start:www": "webpack --watch -d --progress",
-    "build:www": "webpack -p --progress",
+    "start:www": "webpack --watch -d --progress --config playground/webpack.config.js",
+    "build:www": "webpack -p --progress --config playground/webpack.config.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:watchAll": "jest --watchAll",

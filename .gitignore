@@ -13,4 +13,4 @@ lib
 
 # Individual files
 spec/test-results-output/test-report.html
-www/index.js
+playground/www/*.js

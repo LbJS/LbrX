@@ -1,7 +1,9 @@
 const path = require('path')
 
 module.exports = {
-  entry: './www/main.ts',
+  entry: {
+    main: './playground/ts/main.ts',
+  },
   devtool: 'inline-source-map',
   module: {
     rules: [
@@ -10,7 +12,7 @@ module.exports = {
         use: [{
           loader: 'ts-loader',
           options: {
-            configFile: "www/tsconfig.json"
+            configFile: "playground/tsconfig.json"
           }
         }],
         exclude: /node_modules/,
@@ -20,11 +22,11 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js'],
     alias: {
-      lbrx: path.resolve(__dirname, 'src')
+      lbrx: path.resolve(__dirname, '../src')
     }
   },
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'www'),
   },
 }
