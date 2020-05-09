@@ -5,8 +5,7 @@ const ROLLUP_OPTIONS = getRollupBaseOptions()
 
 ROLLUP_OPTIONS.output.format = 'umd'
 ROLLUP_OPTIONS.output.file = './build/bundles/lbdate.umd.js'
-ROLLUP_OPTIONS.output.name = '__lbdateModule'
-ROLLUP_OPTIONS.output.footer = 'typeof window == \'object\' && (window.lbDate = window.__lbdateModule.lbDate);'
+ROLLUP_OPTIONS.output.name = 'lbrx'
 ROLLUP_OPTIONS.plugins.push(typescript({ tsconfig: './src/tsconfig.umd2015.json' }))
 
 export default ROLLUP_OPTIONS

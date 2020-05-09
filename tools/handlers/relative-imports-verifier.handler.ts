@@ -18,7 +18,7 @@ export function testRelativeImports(config: RelativeImportsVerifierConfig): void
         || (line.startsWith('export *')
           && file.endsWith('index.ts'))
       ) {
-        if (!testImport(line, file, config.fileExtension)) {
+        if (!testImport(line, file, config.fileExtension, config.excludedImports)) {
           throw new Error(`File: ${file} has a non relative import at line: ${i + 1} ${line}`)
         }
       }
@@ -26,9 +26,15 @@ export function testRelativeImports(config: RelativeImportsVerifierConfig): void
   })
 }
 
-function testImport(fileLine: string, filePath: string, extension: string): boolean {
+function testImport(
+  fileLine: string,
+  filePath: string,
+  extension: string,
+  excludedImports: string[]
+): boolean {
   let importPath = fileLine.split("'")[1]
   if (!importPath) importPath = fileLine.split('"')[1]
+  if (excludedImports.some(x => x == importPath)) return true
   if (!importPath.startsWith('./') && !importPath.startsWith('../')) return false
   const currentDir = dirname(filePath)
   let relativeFile = resolvePath(currentDir, importPath)
