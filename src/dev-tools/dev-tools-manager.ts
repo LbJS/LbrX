@@ -1,6 +1,6 @@
-import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from 'lbrx/helpers'
-import { activateDevToolsPushes, isDev } from 'lbrx/mode'
 import { Subscription } from 'rxjs'
+import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from '../helpers'
+import { activateDevToolsPushes, isDev } from '../mode'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
 import { DevtoolsOptions } from './dev-tools-options'
 import { DevToolsSubjects } from './dev-tools-subjects'

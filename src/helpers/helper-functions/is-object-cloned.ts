@@ -1,4 +1,5 @@
-import { compareObjects, isObject } from 'lbrx/helpers'
+import { compareObjects } from './compare-objects'
+import { isObject } from './is-object'
 
 export function isObjectCloned(objA: {} | [], objB: {} | []): boolean {
   if (!compareObjects(objA, objB)) return false

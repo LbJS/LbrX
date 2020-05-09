@@ -1,6 +1,6 @@
-import { cloneError, cloneObject, isError, isNull, isObject } from 'lbrx/helpers'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
+import { cloneError, cloneObject, isError, isNull, isObject } from '../helpers'
 
 /**
  * Global Error-API. Will hold and emit the last error from all stores.

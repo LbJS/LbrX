@@ -1,5 +1,8 @@
-import { isClass, isEmpty, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
+import { objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
+import { isClass } from './is-class'
+import { isEmpty } from './is-empty'
+import { isObject } from './is-object'
 
 export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
   if (isEmpty(plainObject)) return plainObject

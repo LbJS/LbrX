@@ -1,5 +1,5 @@
-import { logError, throwError } from 'lbrx/helpers'
-import { isDev } from 'lbrx/mode'
+import { logError, throwError } from '../helpers'
+import { isDev } from '../mode'
 
 const storeNames: string[] = []
 

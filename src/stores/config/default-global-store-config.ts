@@ -1,4 +1,4 @@
-import { parse, stringify } from 'lbrx/helpers'
+import { parse, stringify } from '../../helpers'
 import { GlobalStoreConfigOptions } from './global-store-config-options'
 import { ObjectCompareTypes } from './object-compare-types.enum'
 import { Storages } from './storages.enum'

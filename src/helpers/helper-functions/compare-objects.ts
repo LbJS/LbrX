@@ -1,4 +1,8 @@
-import { isArray, isDate, isFunction, isObject, objectKeys } from 'lbrx/helpers'
+import { objectKeys } from '../short-hand-functions'
+import { isArray } from './is-array'
+import { isDate } from './is-date'
+import { isFunction } from './is-function'
+import { isObject } from './is-object'
 
 export function compareObjects(objA: object | unknown[], objB: object | unknown[]): boolean {
   if (!objA || !objB) return objA === objB

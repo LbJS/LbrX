@@ -1,4 +1,5 @@
-import { isEntity, objectAssign, objectKeys } from 'lbrx/helpers'
+import { objectAssign, objectKeys } from '../short-hand-functions'
+import { isEntity } from './is-entity'
 
 export function mergeObjects<T extends object>(target: T, source: Partial<T>): T {
   for (let i = 0, keys = objectKeys(target); i < keys.length; i++) {

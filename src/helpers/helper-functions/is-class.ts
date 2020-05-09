@@ -1,4 +1,4 @@
-import { Constructable } from 'lbrx/types'
+import { Constructable } from '../../types'
 import { isObject } from './is-object'
 
 export function isClass(value: object): value is Constructable {

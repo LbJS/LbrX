@@ -1,4 +1,7 @@
-import { isArray, isClass, isObject, objectAssign, objectKeys } from 'lbrx/helpers'
+import { objectAssign, objectKeys } from '../short-hand-functions'
+import { isArray } from './is-array'
+import { isClass } from './is-class'
+import { isObject } from './is-object'
 
 export function cloneObject<T extends object>(obj: T): T {
   let copy: T | any[] | null = null

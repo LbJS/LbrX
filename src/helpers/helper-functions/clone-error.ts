@@ -1,4 +1,8 @@
-import { cloneObject, getOwnPropertyNames, isArray, isError, isObject } from 'lbrx/helpers'
+import { getOwnPropertyNames } from '../short-hand-functions'
+import { cloneObject } from './clone-object'
+import { isArray } from './is-array'
+import { isError } from './is-error'
+import { isObject } from './is-object'
 
 export function cloneError<T extends Error>(error: T): T {
   if (!isError(error)) return error
