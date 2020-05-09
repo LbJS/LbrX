@@ -1,7 +1,8 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from '../helpers'
-import { ObjectCompareTypes, Storages, StoreConfigOptions, StoreConfigOptionsInfo, STORE_CONFIG_KEY } from './config'
+import { Class } from '../types'
+import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigOptions, StoreConfigOptionsInfo, STORE_CONFIG_KEY } from './config'
 import { GlobalErrorStore } from './global-error-store'
 
 export abstract class BaseStore<T extends object, E = any> {
@@ -104,7 +105,8 @@ export abstract class BaseStore<T extends object, E = any> {
    * Please proceed with care.
    */
   protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
-    this._config = cloneObject(storeConfig ? storeConfig : this.constructor[STORE_CONFIG_KEY])
+    storeConfig && StoreConfig(storeConfig)(this.constructor as Class)
+    this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
     this._storeName = this._config.name
     this._isResettable = this._config.isResettable
