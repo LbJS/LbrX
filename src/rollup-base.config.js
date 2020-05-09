@@ -9,6 +9,10 @@ export function getRollupBaseOptions() {
       sourcemap: true,
       sourcemapPathTransform: (str) => str.substring(3),
     },
+    external: [
+      'rxjs',
+      'rxjs/operators'
+    ],
     plugins: []
   }
 }
