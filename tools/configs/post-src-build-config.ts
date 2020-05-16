@@ -80,7 +80,7 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
         value: '[appVer]'
       },
       {
-        key: 'scripts.git:tag&push&push-tag',
+        key: 'scripts.git:tag+push+push-tag',
         value: 'git tag [appVer] && git push && git push --tags'
       },
     ]
