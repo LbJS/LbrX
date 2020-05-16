@@ -17,9 +17,9 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Async initialization support (Promise and Observable)
 - [x] Serialization and denationalization configuration for browser storage
 - [x] NgZone Support
+- [x] ES5 support
+- [x] Multi platform support, including Node.JS
 - [ ] Full spec coverage of the above - wip
-- [ ] ES5 support - wip
-- [ ] Commonjs UMD and other modules support - wip
 - [ ] Partial documentation
 - [ ] **List Store**
 - [ ] Playground (Todo list)
@@ -28,9 +28,9 @@ This is an object oriented State Manager that's build for JavaScript application
 
 ## Important Notice
 
-- select() is deprecated in favor of select\$()
+- `select()` is deprecated in favor of `select$()`.
 
-- **Moved back ot RxJS version 6.5.4**, to support Angular.
+- **Requires RxJS version 6.5.4** or higher.
 
 ## Dependencies
 
@@ -38,118 +38,125 @@ This is an object oriented State Manager that's build for JavaScript application
 
 ## Installation
 
-    npm i lbrx rxjs
+```bach
+npm i lbrx rxjs
+```
 
 ## Example
 
 ### Step 1: Initialization
 
-    import { LbrXManager, StoreConfig, Store, Storages } from 'lbrx'
+```typescript
+import { LbrXManager, StoreConfig, Store, Storages } from "lbrx";
 
-    const PROD_MODE = false
-    if (PROD_MODE) LbrXManager.enableProdMode()
-    LbrXManager.initializeDevTools()
+const PROD_MODE = false;
+if (PROD_MODE) LbrXManager.enableProdMode();
+LbrXManager.initializeDevTools();
 
-    class Address {
-      place: string | null = null
-    }
+class Address {
+  place: string | null = null;
+}
 
-    class User {
-      firstName: string | null = null
-      lastName: string | null = null
-      address: Address | null = null
-    }
+class User {
+  firstName: string | null = null;
+  lastName: string | null = null;
+  address: Address | null = null;
+}
 
-    function createLeon(): User {
-      return Object.assign(new User(), {
-        firstName: 'Leon',
-        address: Object.assign(new Address(), {
-          place: 'Hell of a place'
-        })
-      })
-    }
+function createLeon(): User {
+  return Object.assign(new User(), {
+    firstName: "Leon",
+    address: Object.assign(new Address(), {
+      place: "Hell of a place",
+    }),
+  });
+}
+```
 
 ### Step 2: Create Store
 
-    @StoreConfig({
-      name: 'LEON-STORE',
-      objectCompareType: ObjectCompareTypes.advanced,
-      isResettable: true,
-      storageType: Storages.session,
-      storageDebounceTime: 500
-    })
-    class UserStore extends Store<User> {
+```typescript
+@StoreConfig({
+  name: "LEON-STORE",
+  objectCompareType: ObjectCompareTypes.advanced,
+  isResettable: true,
+  storageType: Storages.session,
+  storageDebounceTime: 500,
+})
+class UserStore extends Store<User> {
+  constructor() {
+    super(createLeon());
+  }
+}
 
-      constructor() {
-        super(createLeon())
-      }
-    }
-
-    const userStore = new UserStore()
+const userStore = new UserStore();
+```
 
 ### Step 3: Subscribe to changes
 
-    userStore
-      .select$()
-      .subscribe(x => console.log(x))
-    userStore
-      .select$(state => state.firstName)
-      .subscribe(x => console.log('firstName: ' + x))
-    userStore
-      .select$(state => state.lastName)
-      .subscribe(x => console.log('lastName: ' + x))
-    userStore
-      .select$(state => state.address?.place)
-      .subscribe(x => console.log('address: ' + x))
+```typescript
+userStore.select$().subscribe((x) => console.log(x));
+userStore
+  .select$((state) => state.firstName)
+  .subscribe((x) => console.log("firstName: " + x));
+userStore
+  .select$((state) => state.lastName)
+  .subscribe((x) => console.log("lastName: " + x));
+userStore
+  .select$((state) => state.address?.place)
+  .subscribe((x) => console.log("address: " + x));
 
-    // User {firstName: "Leon", lastName: null, address: Address}
-    // firstName: Leon
-    // lastName: null
-    // address: Hell of a place
+// User {firstName: "Leon", lastName: null, address: Address}
+// firstName: Leon
+// lastName: null
+// address: Hell of a place
+```
 
 ### Step 4: Update Store
 
 Pay attention to the values that haven't been changed. They won't trigger their subscribers, thus preventing unnecessary performance hit.
 
-    setTimeout(() => {
-      userStore.update({
-        firstName: 'Some other name',
-        lastName: 'My first lastName'
-      })
-    }, 200)
+```typescript
+setTimeout(() => {
+  userStore.update({
+    firstName: "Some other name",
+    lastName: "My first lastName",
+  });
+}, 200);
 
-    // User {firstName: "Some other name", lastName: "My first lastName", address: Address}
-    // firstName: Some other name
-    // lastName: My first lastName
+// User {firstName: "Some other name", lastName: "My first lastName", address: Address}
+// firstName: Some other name
+// lastName: My first lastName
 
-    setTimeout(() => {
-      userStore.update({
-        firstName: 'Some other name',
-        lastName: 'My second lastName',
-        address: {
-          place: 'Some other place'
-        }
-      })
-    }, 500)
+setTimeout(() => {
+  userStore.update({
+    firstName: "Some other name",
+    lastName: "My second lastName",
+    address: {
+      place: "Some other place",
+    },
+  });
+}, 500);
 
-    // User {firstName: "Some other name", lastName: "My second lastName", address: Address}
-    // lastName: My second lastName
-    // address: Some other place
+// User {firstName: "Some other name", lastName: "My second lastName", address: Address}
+// lastName: My second lastName
+// address: Some other place
 
-    setTimeout(() => {
-      userStore.reset()
-    }, 500)
+setTimeout(() => {
+  userStore.reset();
+}, 500);
 
-    // User {firstName: "Leon", lastName: null, address: Address}
-    // firstName: Leon
-    // lastName: null
-    // address: Hell of a place
+// User {firstName: "Leon", lastName: null, address: Address}
+// firstName: Leon
+// lastName: null
+// address: Hell of a place
 
-    setTimeout(() => {
-      userStore.reset()
-    }, 550)
+setTimeout(() => {
+  userStore.reset();
+}, 550);
 
-    // NOTHING will print ( because the state didn't change. )
+// NOTHING will print ( because the state didn't change. )
+```
 
 ### Step 5: Debug using Redux DevTools
 
@@ -157,7 +164,17 @@ Pay attention to the values that haven't been changed. They won't trigger their 
 
 ## Browser Support
 
-- Support guaranteed for all current major browsers that were updated in the last 2 years.
-- Support for ES5 will be added soon.
+- All current browsers (major versions from the last 2 years) are supported.
+- Node.JS support.
+- Source files are included in 'node_modules\lbrx\src'.
+- UMD bundles\* are included in 'node_modules\lbrx\bundles'.
+- IE11\*\* support.
 
-> _Details_ The code is compiled to ES9 (EcmaScript 2018) to reduce the chance of unnecessary performance hit while still providing support for all versions of all major browsers from the last 2 years. If you need older browser support, you may need to recompile the code with TypeScript or Babel compiler to an older version. Currently ES6 (EcmaScript 2015) will work just fine, but recompiling to ES5 will not work if you need to support IE.
+_\* Both ES5 and ES2015 UMD bundles are included and both have minified and non minified versions. In all bundles the global would be **lbrx**._
+
+_\*\* Please try to convince your managers to drop IE support._
+
+## Licence
+
+- [MIT Licence](https://github.com/staffoffrost/LbrX/blob/master/LICENSE)
+- Copyright (c) 2020 Leon Bernstein.
