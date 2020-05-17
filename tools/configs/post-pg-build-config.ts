@@ -66,15 +66,15 @@ export const POST_PG_BUILD_CONFIG: PostPgBuildConfig = {
     bannerSets: [
       {
         fileType: '.js',
-        banner: '/*! == Copyright 2020 Leon Bernstein | StaffOfFrost == */'
+        banner: '/*! == Copyright 2020 Leon Bernstein | LbJS == */'
       },
       {
         fileType: '.css',
-        banner: '/*! == Copyright 2020 Leon Bernstein | StaffOfFrost == */'
+        banner: '/*! == Copyright 2020 Leon Bernstein | LbJS == */'
       },
       {
         fileType: '.html',
-        banner: '<!-- Copyright 2020 Leon Bernstein | StaffOfFrost -->'
+        banner: '<!-- Copyright 2020 Leon Bernstein | LbJS -->'
       },
     ],
     excludedFiles: [],

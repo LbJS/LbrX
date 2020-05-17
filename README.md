@@ -176,5 +176,5 @@ _\*\* Please try to convince your managers to drop IE support._
 
 ## Licence
 
-- [MIT Licence](https://github.com/staffoffrost/LbrX/blob/master/LICENSE)
+- [MIT Licence](https://github.com/LbJS/LbrX/blob/master/LICENSE)
 - Copyright (c) 2020 Leon Bernstein.

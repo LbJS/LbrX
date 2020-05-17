@@ -4,13 +4,13 @@
   "description": "State Manager for JS Apps",
   "author": "Leon Bernstein",
   "license": "MIT",
-  "homepage": "https://github.com/LeonBernstein/LbrX#readme",
+  "homepage": "https://github.com/LbJS/LbrX#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/staffoffrost/LbrX.git"
+    "url": "git+https://github.com/LbJS/LbrX.git"
   },
   "bugs": {
-    "url": "https://github.com/staffoffrost/LbrX/issues"
+    "url": "https://github.com/LbJS/LbrX/issues"
   },
   "publishConfig": {
     "access": "public"
