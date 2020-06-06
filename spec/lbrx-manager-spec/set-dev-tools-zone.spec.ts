@@ -7,7 +7,7 @@ describe('LbrXManager setDevToolsZone():', () => {
   let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     LbrXManager = providerModule.LbrXManager
     MockBuilder.addReduxDevToolsExtensionMock()
       .buildMocks()

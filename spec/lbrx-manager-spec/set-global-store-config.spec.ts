@@ -13,7 +13,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
   let parse: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => any
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     LbrXManager = providerModule.LbrXManager
     getGlobalStoreConfig = providerModule.getGlobalStoreConfig
     stringify = providerModule.stringify

@@ -12,7 +12,7 @@ describe('Store Async Initialization:', () => {
   let isDev: () => boolean
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore<TestSubject>(null)
     LbrXManager = providerModule.LbrXManager
     isDev = providerModule.isDev

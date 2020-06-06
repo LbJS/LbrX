@@ -11,7 +11,7 @@ describe('Global Error Store - Error Reference:', () => {
   let globalErrorStore: GlobalErrorStore<Error>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     globalErrorStore = providerModule.GlobalErrorStore.getStore()
   })
 

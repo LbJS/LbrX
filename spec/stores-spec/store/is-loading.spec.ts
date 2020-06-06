@@ -8,7 +8,7 @@ describe('Store Is Loading State', () => {
   let store: Store<TestSubject>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore(initialState)
   })
 

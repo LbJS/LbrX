@@ -5,7 +5,7 @@ describe('Dev Tools Mode:', () => {
   let isDevTools: () => boolean
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     activateDevToolsPushes = providerModule.activateDevToolsPushes
     isDevTools = providerModule.isDevTools
   })

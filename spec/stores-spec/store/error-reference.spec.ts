@@ -13,7 +13,7 @@ describe('Store Error Reference:', () => {
   let loadingStore: Store<TestSubject, ErrorTestSubject>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore(initialState)
     loadingStore = providerModule.StoresFactory.createStore<TestSubject>(null, 'LOADING-STORE')
   })

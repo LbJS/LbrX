@@ -11,7 +11,7 @@ describe('Store Error API:', () => {
   let store: Store<TestSubject, Error>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore(initialState)
   })
 

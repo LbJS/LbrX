@@ -7,7 +7,7 @@ describe('LbrXManager enableProdMode():', () => {
   let isDev: () => boolean
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     LbrXManager = providerModule.LbrXManager
     isDev = providerModule.isDev
   })

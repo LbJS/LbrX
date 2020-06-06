@@ -19,7 +19,7 @@ module.exports = {
     "^factories$": "<rootDir>/spec/factories",
     "^types$": "<rootDir>/spec/types",
     "^helpers$": "<rootDir>/spec/helpers",
-    "^provider.module$": "<rootDir>/spec/provider.module.ts",
+    "^provider$": "<rootDir>/spec/module-provider.ts",
     "^mock-builder$": "<rootDir>/spec/mock-builder.ts",
   },
   testRegex: [

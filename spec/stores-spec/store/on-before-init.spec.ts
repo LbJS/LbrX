@@ -13,7 +13,7 @@ describe('Store onBeforeInit():', () => {
   let onBeforeInitSpy: jest.SpyInstance<void | TestSubject, [TestSubject]>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     StoresFactory = providerModule.StoresFactory
     store = StoresFactory.createStore<TestSubject>(null, true/*with hooks*/)
     onBeforeInitSpy = jest.spyOn(store, 'onBeforeInit')

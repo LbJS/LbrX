@@ -28,8 +28,8 @@
       "test-subjects": [
         "test-subjects"
       ],
-      "provider.module": [
-        "provider.module"
+      "provider": [
+        "module-provider"
       ],
       "mock-builder": [
         "mock-builder"

@@ -18,7 +18,7 @@ describe('Store ajax call:', () => { // TODO: refactor to firebase
       }
       return null
     })
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore<Todo>(null)
   }, 500)
 

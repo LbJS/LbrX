@@ -16,7 +16,7 @@ describe('Store Config:', () => {
   const createStore = (options: StoreConfigOptions) => StoresFactory.createStore<TestSubject>(null, options)
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     LbrXManager = providerModule.LbrXManager
     StoresFactory = providerModule.StoresFactory
     isDev = providerModule.isDev

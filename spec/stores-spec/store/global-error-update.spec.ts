@@ -10,7 +10,7 @@ describe('Store Error - Global Error Update', () => {
   let globalErrorStore: GlobalErrorStore<Error>
 
   beforeEach(async () => {
-    const providerModule = await import('provider.module')
+    const providerModule = await import('provider')
     store = providerModule.StoresFactory.createStore<TestSubject>(null)
     globalErrorStore = providerModule.GlobalErrorStore.getStore()
   })
