@@ -34,7 +34,8 @@ module.exports = {
       "./node_modules/jest-html-reporter",
       {
         pageTitle: "Test Report",
-        theme: "darkTheme",
+        // theme: "darkTheme",
+        styleOverridePath: './darkTheme.css',
         outputPath: "./spec/test-results-output/test-report.html",
         includeFailureMsg: true,
         includeConsoleLog: true,
