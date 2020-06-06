@@ -54,18 +54,18 @@ function resolveConfigPaths(config: HashVerifierConfig): HashVerifierConfig {
 }
 
 function validatePathsExist(config: HashVerifierConfig, hash: string): void {
-  const allFolderPaths = [
+  const allFolderPaths: string[] = [
     config.rootFolder,
     config.excludedSubFolders,
   ].flat()
   allFolderPaths.forEach(folderPath => {
     if (!pathExistsSync(folderPath)) throw new Error(`Folder: "${folderPath}" doesn't exist.`)
   })
-  const allFilePaths = [
+  const allFilePaths: string[] = [
     config.indexHtml,
     config.excludedFiles,
     config.hashSets.map(set => Object.values(set)),
-  ].flat(Infinity)
+  ].flat(Infinity) as string[]
   allFilePaths.forEach(filePath => {
     if (!pathExistsSync(filePath)
       && !pathExistsSync(hashFileName(filePath, hash))
