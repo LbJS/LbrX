@@ -96,7 +96,7 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
   },
   bannerAdder: {
     rootFolder: `${rootFolder}/${buildFolder}/bundles`,
-    isSeparateRow: true,
+    isSeparateRow: false,
     bannerSets: [
       {
         fileType: '.js',
