@@ -1,6 +1,6 @@
 # LbrX - _alpha version_
 
-This is an object oriented State Manager that's build for JavaScript applications that's based on RxJs. The api for querying th data is very similar to .Net EF LINQ but with observables. State updates can also be achieved with partial objects and we will merge the objects for you. Object instance preservation guaranteed if you're working with classes or dates. Unlinked object references guaranteed even with deep nested objects, no changes will apply to your state unintentionally. Two way data flow with no boilerplate code! We also support Redux DevTools for easier state debugging.
+This is an object oriented State Manager that's build for JavaScript applications that's based on RxJs. The api for querying the data is very similar to .Net EF LINQ but with observables. State updates can also be achieved with partial objects and we will merge the objects for you. Object instance preservation guaranteed if you're working with classes or dates. Unlinked object references guaranteed even with deep nested objects, no changes will apply to your state unintentionally. Two way data flow with no boilerplate code! We also support Redux DevTools for easier state debugging.
 
 ## Development progress
 
@@ -41,6 +41,15 @@ This is an object oriented State Manager that's build for JavaScript application
 ```bach
 npm i lbrx rxjs
 ```
+
+## CDN
+
+| URL                                                                         | ES     | Minified |
+| --------------------------------------------------------------------------- | ------ | -------- |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.5-alpha/bundles/lbrx.umd.js>         | ES2015 | No       |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.5-alpha/bundles/lbrx.umd.min.js>     | ES2015 | Yes      |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.5-alpha/bundles/lbrx.umd.es5.js>     | ES5    | No       |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.5-alpha/bundles/lbrx.umd.es5.min.js> | ES5    | Yes      |
 
 ## Example
 

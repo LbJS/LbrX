@@ -12,7 +12,7 @@ export async function handleVersionIncrement(config: PostSrcBuildConfig): Promis
     config.npmGetVerCommand = config.npmGetVerCommand.replace('[appName]', appDetails.appName)
   }
   const npmVersion = (await getCurrentVersionFromNpm(config.npmGetVerCommand)).trim()
-  if (npmVersion === appDetails.appVer) appDetails.appVer = incrementVersion(npmVersion)
+  if (npmVersion === appDetails.curAppVer) appDetails.nextAppVer = incrementVersion(npmVersion)
 }
 
 function getCurrentVersionFromNpm(command: string): Promise<string> {

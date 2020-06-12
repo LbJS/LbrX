@@ -24,7 +24,7 @@ export function handlePkgJsonFile(
     })
   })
   config.propertiesToAddOrUpdate.forEach(set => {
-    if (set.value.includes('[appVer]')) set.value = set.value.replace('[appVer]', appDetails.appVer)
+    if (set.value.includes('[nextAppVer]')) set.value = set.value.replace('[nextAppVer]', appDetails.nextAppVer)
     if (set.value.includes('[appName]')) set.value = set.value.replace('[appName]', appDetails.appName)
     tempObj = obj
     set.key.split('.').forEach((key, i) => {

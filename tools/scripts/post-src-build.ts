@@ -1,4 +1,4 @@
-import { addBanners, copyFiles, handlePkgJsonFile, handleVersionIncrement } from '../handlers'
+import { addBanners, copyFiles, handlePkgJsonFile, handleVersionIncrement, replaceStringsInFile } from '../handlers'
 import { Provider } from '../provider'
 
 export default async function main(): Promise<void> {
@@ -6,6 +6,7 @@ export default async function main(): Promise<void> {
   const logger = Provider.getLoggerHandler()
   logger.config = config.logger
   await handleVersionIncrement(config)
+  replaceStringsInFile(config.fileStringReplacement)
   copyFiles(config.filesToCopy)
   // root package.json
   handlePkgJsonFile(config.rootFolder, config.packageJsonPath, config.rootPackageJsonConfig)

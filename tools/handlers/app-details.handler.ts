@@ -11,13 +11,22 @@ export class AppDetails {
     return this._appName
   }
 
-  private _appVer: string | null = null
-  public get appVer(): string {
-    if (!this._appVer) this._appVer = this._getAppVer()
-    return this._appVer
+  private _curAppVer: string | null = null
+  public get curAppVer(): string {
+    if (!this._curAppVer) this._curAppVer = this._getAppVer()
+    return this._curAppVer
   }
-  public set appVer(value: string) {
-    this._appVer = value
+  public set curAppVer(value: string) {
+    this._curAppVer = value
+  }
+
+  private _nextAppVer: string | null = null
+  public get nextAppVer(): string {
+    if (!this._nextAppVer) this._nextAppVer = this.curAppVer
+    return this._nextAppVer
+  }
+  public set nextAppVer(value: string) {
+    this._nextAppVer = value
   }
 
   constructor(
@@ -40,6 +49,7 @@ export class AppDetails {
 
   public resetDetails(): void {
     this._appName = this._getAppName()
-    this._appVer = this._getAppVer()
+    this._curAppVer = this._getAppVer()
+    this._nextAppVer = this._curAppVer
   }
 }

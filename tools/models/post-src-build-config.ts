@@ -1,4 +1,5 @@
 import { BannerAdderConfig } from './banner-adder-config'
+import { FileStringReplacementConfig } from './file-string-replacement-config'
 import { FileCopyConfig } from './files-copy-config'
 import { LoggerConfig } from './logger-config'
 import { PackageJsonConfig } from './package-json-config'
@@ -15,4 +16,5 @@ export interface PostSrcBuildConfig {
   rootPackageJsonConfig: PackageJsonConfig,
   packageLockJsonConfig: PackageJsonConfig,
   bannerAdder: BannerAdderConfig,
+  fileStringReplacement: FileStringReplacementConfig,
 }

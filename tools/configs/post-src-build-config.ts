@@ -77,11 +77,11 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
     propertiesToAddOrUpdate: [
       {
         key: 'version',
-        value: '[appVer]'
+        value: '[nextAppVer]'
       },
       {
         key: 'scripts.git:tag+push+push-tag',
-        value: 'git tag [appVer] && git push && git push --tags'
+        value: 'git tag [nextAppVer] && git push && git push --tags'
       },
     ]
   },
@@ -90,7 +90,7 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
     propertiesToAddOrUpdate: [
       {
         key: 'version',
-        value: '[appVer]'
+        value: '[nextAppVer]'
       },
     ]
   },
@@ -100,11 +100,25 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
     bannerSets: [
       {
         fileType: '.js',
-        banner: '/*! == LbDate version: [appVer] | Copyright (c) 2020 Leon Bernstein | LbJS | Released under the MIT license == */'
+        banner: '/*! == LbDate version: [nextAppVer] | Copyright (c) 2020 Leon Bernstein | LbJS | Released under the MIT license == */'
       },
     ],
     excludedFiles: [],
     excludedSubFolders: [],
     includedSubFolders: [],
-  }
+  },
+  fileStringReplacement: {
+    rootFolder,
+    sets: [
+      {
+        filePath: 'README.md',
+        replacementSets: [
+          {
+            currStr: 'lbrx@[curAppVer]',
+            nextStr: 'lbrx@[nextAppVer]'
+          }
+        ]
+      }
+    ]
+  },
 }
