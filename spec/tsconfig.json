@@ -25,23 +25,29 @@
       "lbrx/stores/config": [
         "../src/stores/config",
       ],
-      "test-subjects": [
-        "test-subjects"
-      ],
-      "provider": [
-        "module-provider"
-      ],
-      "mock-builder": [
-        "mock-builder"
-      ],
-      "factories": [
-        "factories"
-      ],
-      "types": [
-        "types"
-      ],
       "helpers": [
         "helpers"
+      ],
+      "helpers/factories": [
+        "helpers/factories"
+      ],
+      "helpers/functions": [
+        "helpers/functions"
+      ],
+      "helpers/mocks": [
+        "helpers/mocks"
+      ],
+      "helpers/test-subjects": [
+        "helpers/test-subjects"
+      ],
+      "helpers/types": [
+        "helpers/types"
+      ],
+      "helpers/mock-builder": [
+        "helpers/mock-builder"
+      ],
+      "provider": [
+        "helpers/module-provider"
       ],
     }
   },
