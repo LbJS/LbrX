@@ -14,7 +14,7 @@ dist
 build
 
 # Individual files
-spec/test-results-output/test-report.html
+spec/test-report.html
 playground/www/*.js
 
 # Temp / Cache folders

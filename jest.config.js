@@ -14,13 +14,14 @@ module.exports = {
     "^lbrx/types$": "<rootDir>/src/types",
     "^lbrx/dev-tools$": "<rootDir>/src/dev-tools",
     "^lbrx/stores/config$": "<rootDir>/src/stores/config",
-    "^test-subjects$": "<rootDir>/spec/test-subjects",
-    "^mocks$": "<rootDir>/spec/mocks",
-    "^factories$": "<rootDir>/spec/factories",
-    "^types$": "<rootDir>/spec/types",
     "^helpers$": "<rootDir>/spec/helpers",
-    "^provider$": "<rootDir>/spec/module-provider.ts",
-    "^mock-builder$": "<rootDir>/spec/mock-builder.ts",
+    "^helpers/factories$": "<rootDir>/spec/helpers/factories",
+    "^helpers/functions$": "<rootDir>/spec/helpers/functions",
+    "^helpers/mocks$": "<rootDir>/spec/helpers/mocks",
+    "^helpers/test-subjects$": "<rootDir>/spec/helpers/test-subjects",
+    "^helpers/types$": "<rootDir>/spec/helpers/types",
+    "^helpers/mock-builder$": "<rootDir>/spec/helpers/mock-builder",
+    "^provider$": "<rootDir>/spec/helpers/module-provider.ts",
   },
   testRegex: [
     '/spec/.*\\.spec.ts$'
@@ -35,8 +36,8 @@ module.exports = {
       {
         pageTitle: "Test Report",
         // theme: "darkTheme",
-        styleOverridePath: './darkTheme.css',
-        outputPath: "./spec/test-results-output/test-report.html",
+        styleOverridePath: './dark-theme-test-report.css',
+        outputPath: "./spec/test-report.html",
         includeFailureMsg: true,
         includeConsoleLog: true,
         sort: "status"
