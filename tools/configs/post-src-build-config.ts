@@ -100,7 +100,7 @@ export const POST_SRC_BUILD_CONFIG: PostSrcBuildConfig = {
     bannerSets: [
       {
         fileType: '.js',
-        banner: '/*! == LbDate version: [nextAppVer] | Copyright (c) 2020 Leon Bernstein | LbJS | Released under the MIT license == */'
+        banner: '/*! == LbrX version: [nextAppVer] | Copyright (c) 2020 Leon Bernstein | LbJS | Released under the MIT license == */'
       },
     ],
     excludedFiles: [],
