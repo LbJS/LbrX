@@ -1,6 +1,6 @@
 {
   "name": "lbrx",
-  "version": "0.3.6-alpha",
+  "version": "0.3.7-alpha",
   "description": "State Manager for JS Apps",
   "author": "Leon Bernstein",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "src:publish": "cd build && npm publish && cd .. && ts-node -s tools/log-success.ts \"Publish\"",
     "src:CI-CD": "run-s -s lint test pg:build src:build && npm run src:publish && run-s -s git:* && ts-node -s tools/log-success.ts \"CI-CD\"",
     "git:stage+commit-ver-up": "git add . && git commit -S -m \"ver up\"",
-    "git:tag+push+push-tag": "git tag 0.3.6-alpha && git push && git push --tags"
+    "git:tag+push+push-tag": "git tag 0.3.7-alpha && git push && git push --tags"
   },
   "dependencies": {
     "rxjs": "^6.5.4"
