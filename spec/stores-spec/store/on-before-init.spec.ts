@@ -24,25 +24,25 @@ describe('Store onBeforeInit():', () => {
     jest.resetAllMocks()
   })
 
-  it('should be called after initialization if implemented.', () => {
+  it('should be called before initialization if implemented.', () => {
     store.initialize(initialState)
     expect(onBeforeInitSpy).toBeCalled()
   })
 
-  it('should not be called after initialization if not implemented.', () => {
+  it('should not be called before initialization if not implemented.', () => {
     delete store.onBeforeInit
     store.initialize(initialState)
     expect(onBeforeInitSpy).not.toBeCalled()
   })
 
-  it('should be called after async initialization if implemented.', async () => {
+  it('should be called before async initialization if implemented.', async () => {
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
     expect(store.value).toBeTruthy()
     expect(onBeforeInitSpy).toBeCalled()
   })
 
-  it('should not be called after async initialization if not implemented.', async () => {
+  it('should not be called before async initialization if not implemented.', async () => {
     delete store.onBeforeInit
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
