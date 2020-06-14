@@ -162,13 +162,13 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         Promise.reject("Can't initialize store that's already been initialized or its not in LOADING state!") :
         Promise.resolve()
     }
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (isObservable(promiseOrObservable)) {
         promiseOrObservable = promiseOrObservable.toPromise()
       }
       promiseOrObservable.then(r => {
         if (!this.isLoading || this._initialState || this._state) {
-          isDev() && reject('The store was initialized multiple time while it was in loading state.')
+          isDev() && reject('The store was initialized multiple time whiles it was in loading state.')
         } else {
           if (isFunction(this['onAsyncInitSuccess'])) {
             const modifiedResult = this['onAsyncInitSuccess'](r)
