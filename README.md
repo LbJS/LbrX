@@ -20,7 +20,6 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] ES5 support
 - [x] Multi platform support, including Node.JS
 - [ ] Full spec coverage of the above - wip
-- [ ] Partial documentation
 - [ ] **List Store**
 - [ ] Playground (Todo list)
 - [ ] Full spec coverage of the above
