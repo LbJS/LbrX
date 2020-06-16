@@ -18,7 +18,7 @@
   "main": "src/index.ts",
   "sideEffects": false,
   "scripts": {
-    "start": "npm run test:watch",
+    "start": "npm run pg:start",
     "pg:start": "webpack -d --progress --config playground/webpack.config.js --watch",
     "pg:build": "webpack -p --progress --config playground/webpack.config.js && ts-node -s tools/log-success.ts \"Playground build\"",
     "test": "jest && ts-node -s tools/log-success.ts \"Testing\"",
