@@ -2,8 +2,8 @@
 node_modules/
 
 # VsCode
-.vscode/*
-!.vscode/launch.json
+# .vscode/*
+# !.vscode/launch.json
 
 # Visual Studio
 .vs
