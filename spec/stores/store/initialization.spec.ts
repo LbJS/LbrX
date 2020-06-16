@@ -13,11 +13,11 @@ describe('Store Initialization: ', () => {
   let isDev: () => boolean
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
-    store = providerModule.StoresFactory.createStore(initialState)
-    loadingStore = providerModule.StoresFactory.createStore<TestSubject>(null, 'LOADING-STORE')
-    LbrXManager = providerModule.LbrXManager
-    isDev = providerModule.isDev
+    const provider = await import('provider')
+    store = provider.StoresFactory.createStore(initialState)
+    loadingStore = provider.StoresFactory.createStore<TestSubject>(null, 'LOADING-STORE')
+    LbrXManager = provider.LbrXManager
+    isDev = provider.isDev
   })
 
   afterEach(() => {
