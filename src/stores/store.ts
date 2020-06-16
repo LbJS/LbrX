@@ -45,7 +45,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * Returns stores initial state's value.
    */
   public get initialValue(): Readonly<T> | null {
-    return this._clone(this._initialState)
+    if (!this._initialState) return null
+    const value = this._clone(this._initialState)
+    return isDev() ? deepFreeze(value) : value
   }
 
   //#endregion state-properties

@@ -7,7 +7,7 @@ describe('Store value:', () => {
 
   beforeEach(async () => {
     const provider = await import('provider')
-    store = provider.StoresFactory.createStore<TestSubject>(initialState)
+    store = provider.StoresFactory.createStore<TestSubject>(initialState, 'TEST-STORE')
   })
 
   afterEach(() => {
