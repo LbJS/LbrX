@@ -151,8 +151,8 @@ export abstract class BaseStore<T extends object, E = any> {
     this._parse = this._config.parse
   }
 
-  //#region public-api
   //#endregion private-section
+  //#region public-api
 
   /**
    * Returns the store's error state value.
