@@ -38,14 +38,4 @@ describe('Store initial value value:', () => {
       value.innerTestObject.booleanValue = !value.innerTestObject.booleanValue
     }).toThrow()
   })
-
-  it('should return a non readonly value on prod mode.', () => {
-    LbrXManager.enableProdMode()
-    const value = store.initialValue
-    expect(() => {
-      assertNotNullable(value)
-      assertNotNullable(value.innerTestObject)
-      value.innerTestObject.booleanValue = !value.innerTestObject.booleanValue
-    }).not.toThrow()
-  })
 })

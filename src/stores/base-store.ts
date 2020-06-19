@@ -23,7 +23,8 @@ export abstract class BaseStore<T extends object, E = any> {
    * - While the store is in loading state, no values will be emitted to state's subscribers.
    */
   public get isLoading$(): Observable<boolean> {
-    return this._isLoading$.asObservable().pipe(distinctUntilChanged())
+    return this._isLoading$.asObservable()
+      .pipe(distinctUntilChanged())
   }
   /**
    * @get Returns store's loading state.
