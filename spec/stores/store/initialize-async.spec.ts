@@ -3,7 +3,7 @@ import { TestSubject } from 'helpers/test-subjects'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
 import { of, throwError, timer } from 'rxjs'
 
-describe('Store Async Initialization:', () => {
+describe('Store initializeAsync():', () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   const pureInitialState = TestSubjectFactory.createTestSubject_initial()
