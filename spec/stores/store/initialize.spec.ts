@@ -2,7 +2,7 @@ import { TestSubjectFactory } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
 import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
 
-describe('Store Initialization: ', () => {
+describe('Store initialize(): ', () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   const pureInitialState = TestSubjectFactory.createTestSubject_initial()
