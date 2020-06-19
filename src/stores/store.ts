@@ -28,31 +28,29 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#region state-properties
 
   private readonly _state$ = new BehaviorSubject<T | null>(null)
-  private _state: Readonly<T> = null as unknown as T
-  private set state(value: T) {
+  private _state: Readonly<T> | null = null
+  private set state(value: T | null) {
     this._state = value
     this._state$.next(value)
   }
   /**
    * Returns stores current state's value.
    */
-  public get value(): T {
+  public get value(): T | null {
     return isNull(this._state) ? this._state : this._clone(this._state)
   }
 
-  private _initialState!: Readonly<T>
+  private _initialState: Readonly<T> | null = null
   /**
    * Returns stores initial state's value.
    */
   public get initialValue(): Readonly<T> | null {
-    if (!this._initialState) return null
-    const value = this._clone(this._initialState)
-    return isDev() ? deepFreeze(value) : value
+    return this._initialState
   }
 
   //#endregion state-properties
   private get devData(): DevToolsDataStruct {
-    return { name: this._storeName, state: this._clone(this._state) }
+    return { name: this._storeName, state: this._state ? this._clone(this._state) : {} }
   }
 
   //#region constructor
@@ -117,13 +115,13 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     }
     this._setState(() => isStateCloned ? initialState : this._clone(initialState))
     if (isFunction(this['onAfterInit'])) {
-      const modifiedState: T | void = this['onAfterInit'](this._clone(this._state))
+      const modifiedState: T | void = this['onAfterInit'](this._clone(this._state!))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
     isDevTools() && DevToolsSubjects.initEvent$.next(this.devData)
   }
 
-  private _setState(newStateFn: (state: Readonly<T>) => T): void {
+  private _setState(newStateFn: (state: Readonly<T> | null) => T): void {
     this.state = isDev() ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
   }
 
@@ -203,21 +201,26 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
   public update(stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
+    const initialState = this._initialState
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       logError(`Can't update ${this._storeName} while it's in loading state.`)
-      return
+    } else if (!initialState) {
+      const errMsg = `Store: ${this._storeName} can't be updated while the initial state is null.`
+      isDev() ? throwError(errMsg) : logError(errMsg)
+    } else {
+      this._setState(state => {
+        if (!state) throwError(`Store: ${this._storeName} can't update state`)
+        const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
+        let newState = mergeObjects(this._clone(state), this._clone(newPartialState))
+        if (!this._isSimpleCloning) newState = instanceHandler(initialState, newState)
+        if (isFunction(this['onUpdate'])) {
+          const newModifiedState: T | void = this['onUpdate'](this._clone(newState), state)
+          if (newModifiedState) newState = this._clone(newModifiedState)
+        }
+        return newState
+      })
+      isDevTools() && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
     }
-    this._setState(state => {
-      const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
-      let newState = mergeObjects(this._clone(state), this._clone(newPartialState))
-      if (!this._isSimpleCloning) newState = instanceHandler(this._initialState, newState)
-      if (isFunction(this['onUpdate'])) {
-        const newModifiedState: T | void = this['onUpdate'](this._clone(newState), state)
-        if (newModifiedState) newState = this._clone(newModifiedState)
-      }
-      return newState
-    })
-    isDevTools() && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
   }
 
   /**
@@ -226,36 +229,43 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public override(state: T): void {
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       logError(`Can't override ${this._storeName} while it's in loading state.`)
-      return
+    } else if (!this._initialState) {
+      const errMsg = `Store: ${this._storeName} can't be overridden while the initial state is null.`
+      isDev() ? throwError(errMsg) : logError(errMsg)
+    } else {
+      if (!this._isSimpleCloning) state = instanceHandler(this._initialState, this._clone(state))
+      let modifiedState: T | void
+      if (isFunction(this['onOverride'])) {
+        modifiedState = this['onOverride'](this._clone(state), this._state)
+        if (modifiedState) state = this._clone(modifiedState)
+      }
+      const isCloned = !this._isSimpleCloning || !!modifiedState
+      this._setState(() => isCloned ? state : this._clone(state))
+      isDev() && DevToolsSubjects.overrideEvent$.next(this.devData)
     }
-    if (!this._isSimpleCloning) state = instanceHandler(this._initialState, this._clone(state))
-    let modifiedState: T | void
-    if (isFunction(this['onOverride'])) {
-      modifiedState = this['onOverride'](this._clone(state), this._state)
-      if (modifiedState) state = this._clone(modifiedState)
-    }
-    const isCloned = !this._isSimpleCloning || !!modifiedState
-    this._setState(() => isCloned ? state : this._clone(state))
-    isDev() && DevToolsSubjects.overrideEvent$.next(this.devData)
   }
 
   /**
    * Resets the store's state to it's initial value.
    */
   public reset(): void | never {
+    const initialState = this._initialState
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       logError(`Can't reset ${this._storeName} while it's in loading state.`)
       return
     } else if (!this._isResettable) {
       const errMsg = `Store: ${this._storeName} is not configured as resettable.`
       isDev() ? throwError(errMsg) : logError(errMsg)
+    } else if (!initialState) {
+      const errMsg = `Store: ${this._storeName} can't be reseted while the initial state is null.`
+      isDev() ? throwError(errMsg) : logError(errMsg)
     } else {
       this._setState(state => {
         let modifiedInitialState: T | void
-        if (isFunction(this['onReset'])) modifiedInitialState = this['onReset'](this._clone(this._initialState), state)
-        return this._clone(modifiedInitialState || this._initialState)
+        if (isFunction(this['onReset'])) modifiedInitialState = this['onReset'](this._clone(initialState), state)
+        return this._clone(modifiedInitialState || initialState)
       })
-      isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(this._initialState) })
+      isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(initialState) })
     }
   }
 
@@ -274,8 +284,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     } else {
       isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
       this._isLoading$.next(true)
-      this.state = null as unknown as T
-      this._initialState = null as unknown as T
+      this.state = null
+      this._initialState = null
       this.setError(null)
       this._storage && this._storage.removeItem(this._storageKey)
       isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
