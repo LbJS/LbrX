@@ -29,6 +29,9 @@ module.exports = {
   modulePathIgnorePatterns: [
     '<rootDir>/build/'
   ],
+  setupFilesAfterEnv: [
+    "<rootDir>/spec/helpers/global-after-each.ts"
+  ],
   reporters: [
     "default",
     [
