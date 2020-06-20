@@ -1,11 +1,12 @@
 import { objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isDate } from './is-date'
+import { isEmpty } from './is-empty'
 import { isFunction } from './is-function'
 import { isObject } from './is-object'
 
 export function compareObjects(objA: object | unknown[], objB: object | unknown[]): boolean {
-  if (!objA || !objB) return objA === objB
+  if (isEmpty(objA) || isEmpty(objB)) return objA === objB
   if (isDate(objA) && (!isDate(objB) || objA.getTime() != objB.getTime())) return false
   const compareHelper = (x: unknown, y: unknown): boolean => {
     if (isObject(x)) {

@@ -1,13 +1,13 @@
 import { objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isDate } from './is-date'
+import { isEmpty } from './is-empty'
 import { isFunction } from './is-function'
-import { isNull } from './is-null'
 import { isObject } from './is-object'
 import { isUndefined } from './is-undefined'
 
 export function countObjectChanges(objA: object | unknown[], objB: object | unknown[]): number {
-  if (isNull(objA) || isNull(objB)) return objA === objB ? 0 : 1
+  if (isEmpty(objA) || isEmpty(objB)) return objA === objB ? 0 : 1
   if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime() ? 0 : 1
   let changesCount = 0
   const comparisonHelper = (x: unknown, y: unknown): void => {
