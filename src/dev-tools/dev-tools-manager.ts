@@ -52,7 +52,7 @@ export class DevToolsManager {
       }),
       DevToolsSubjects.initEvent$.subscribe(store => {
         const isLoading = this._appState[store.name] === StoreStates.loading
-        const suffixText = isLoading ? ' (state is loaded)' : ''
+        const suffixText = isLoading ? ' (async)' : ''
         this._appState[store.name] = store.state
         devTools.send({ type: `[${store.name}] - @@INIT${suffixText}` }, this._appState)
       }),
