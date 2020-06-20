@@ -22,6 +22,7 @@ export class DevToolsManager {
     private devToolsOptions: Partial<DevtoolsOptions> = {}
   ) { }
 
+  // TODO: Handle late initialization, when one or more stores already exist.
   public initialize(): void {
     if (!isDev() || !isBrowser() || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
     (window as any).$$stores = DevToolsSubjects.stores
@@ -114,6 +115,8 @@ export class DevToolsManager {
     }))
   }
 
+  // BUG: If the store updates itself asynchronously, this solution won't prevent false updating the store.
+  // Should try to hook to stat's index instead of timeout.
   private _disableNextUpdate(): void {
     DevToolsSubjects.isLoadingErrorsDisabled = true
     this._userEventsSub.unsubscribe()
