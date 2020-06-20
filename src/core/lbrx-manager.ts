@@ -1,7 +1,7 @@
-import { DevToolsManager, DevtoolsOptions } from './dev-tools'
-import { logError } from './helpers'
-import { enableProdMode } from './mode'
-import { GlobalStoreConfigOptions, setGlobalStoreConfig } from './stores/config'
+import { DevToolsManager, DevtoolsOptions } from '../dev-tools'
+import { logError } from '../helpers'
+import { enableProdMode } from '../mode'
+import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../stores/config'
 
 /**
  * LbrX static class.

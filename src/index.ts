@@ -1,2 +1,2 @@
-export * from './public-api'
+export * from './core/public-api'
 
