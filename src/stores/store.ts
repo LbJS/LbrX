@@ -49,10 +49,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   //#endregion state-properties
+  //#region private properties
+
   private get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
+  private _initializeAsyncPromise: Promise<void> | null = null
 
+  //#endregion private properties
   //#region constructor
 
   /**
@@ -157,12 +161,16 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    if (!this.isLoading || this._initialState || this._state) {
-      return isDev() ?
-        Promise.reject("Can't initialize store that's already been initialized or its not in LOADING state!") :
-        Promise.resolve()
-    }
-    return new Promise((resolve, reject) => {
+    this._initializeAsyncPromise = new Promise((resolve, reject) => {
+      if (!this.isLoading || this._initialState || this._state) {
+        const errMsg = `Can't initialize store ${this._storeName} that's already been initialized or its not in LOADING state!`
+        if (isDev()) {
+          reject(new Error(errMsg))
+        } else {
+          logError(errMsg)
+          resolve()
+        }
+      }
       if (isObservable(promiseOrObservable)) {
         promiseOrObservable = promiseOrObservable.toPromise()
       }
@@ -184,6 +192,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         e && reject(e)
       }).finally(resolve)
     })
+    return this._initializeAsyncPromise
   }
 
   /**
