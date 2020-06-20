@@ -1,7 +1,7 @@
 import { BehaviorSubject, iif, isObservable, Observable, of, timer } from 'rxjs'
 import { debounce, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
-import { deepFreeze, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, simpleCloneObject, throwError } from '../helpers'
+import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../helpers'
 import { isDev, isDevTools } from '../mode'
 import { BaseStore } from './base-store'
 import { Storages, StoreConfigOptions } from './config'
@@ -55,6 +55,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
   private _initializeAsyncPromise: Promise<void> | null = null
+  private _preventNextAsyncInit = false
 
   //#endregion private properties
   //#region constructor
@@ -175,7 +176,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         promiseOrObservable = promiseOrObservable.toPromise()
       }
       promiseOrObservable.then(r => {
-        if (!this.isLoading || this._initialState || this._state) {
+        if (this._preventNextAsyncInit) {
+          this._preventNextAsyncInit = false
+        } else if (!this.isLoading || this._initialState || this._state) {
           isDev() && reject('The store was initialized multiple time whiles it was in loading state.')
         } else {
           if (isFunction(this['onAsyncInitSuccess'])) {
@@ -186,10 +189,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
           this._isLoading$.next(false)
         }
       }).catch(e => {
-        if (isFunction(this['onAsyncInitError'])) {
-          e = this['onAsyncInitError'](e)
+        if (this._preventNextAsyncInit) {
+          this._preventNextAsyncInit = false
+        } else {
+          if (isFunction(this['onAsyncInitError'])) {
+            e = this['onAsyncInitError'](e)
+          }
+          e && reject(e)
         }
-        e && reject(e)
       }).finally(resolve)
     })
     return this._initializeAsyncPromise
@@ -286,20 +293,28 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * - Store's error will be set to null.
    * - Clears cached storage if any.
    */
-  public hardReset(): this {
-    if (!this._isResettable) {
-      const errMsg = `Store: ${this._storeName} is not configured as resettable.`
-      isDev() ? throwError(errMsg) : logError(errMsg)
-    } else {
-      isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
-      this._isLoading$.next(true)
-      this.state = null
-      this._initialState = null
-      this.setError(null)
-      this._storage && this._storage.removeItem(this._storageKey)
-      isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
-    }
-    return this
+  public hardReset(): Promise<this> {
+    return new Promise((resolve, reject) => {
+      const promiseState: Promise<void | string> = this._initializeAsyncPromise ?
+        getPromiseState(this._initializeAsyncPromise) :
+        Promise.resolve()
+      promiseState.then(state => {
+        this._preventNextAsyncInit = state === PromiseStates.pending
+        if (!this._isResettable) {
+          const errMsg = `Store: ${this._storeName} is not configured as resettable.`
+          isDev() ? reject(new Error(errMsg)) : logError(errMsg)
+        } else {
+          isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
+          this._isLoading$.next(true)
+          this.state = null
+          this._initialState = null
+          this.setError(null)
+          this._storage && this._storage.removeItem(this._storageKey)
+          isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
+        }
+        resolve(this)
+      })
+    })
   }
 
   /**
