@@ -25,12 +25,6 @@ describe('Store reset():', () => {
     notResettableStore = provider.StoresFactory.createStore(createInitialState(), notResettableStoreConfig)
   })
 
-  afterEach(() => {
-    jest.resetModules()
-    jest.resetAllMocks()
-    MockBuilder.deleteAllMocks()
-  })
-
   it("should reset the store's state to its initial value.", () => {
     store.update(createStateA())
     store.reset()

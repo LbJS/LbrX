@@ -66,6 +66,7 @@ describe('Store override():', () => {
     store.override(plainStateA)
     expect(store.value).toStrictEqual(stateA)
     expect(store.value).toBeInstanceOf(TestSubject)
+    assertNotNullable(store.value)
     expect(store.value.innerTestObject).toBeInstanceOf(InnerTestSubject)
     expect(store.value.innerTestObject?.deepNestedObj).toBeInstanceOf(DeepNestedTestSubject)
     expect(store.value.innerTestObjectGetSet).toBeInstanceOf(InnerTestSubject)
