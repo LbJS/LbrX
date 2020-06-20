@@ -1,7 +1,7 @@
 import { BehaviorSubject, iif, isObservable, Observable, of, timer } from 'rxjs'
 import { debounce, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
-import { deepFreeze, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, throwError } from '../helpers'
+import { deepFreeze, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, simpleCloneObject, throwError } from '../helpers'
 import { isDev, isDevTools } from '../mode'
 import { BaseStore } from './base-store'
 import { Storages, StoreConfigOptions } from './config'
@@ -50,7 +50,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
   //#endregion state-properties
   private get devData(): DevToolsDataStruct {
-    return { name: this._storeName, state: this._state ? this._clone(this._state) : {} }
+    return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
 
   //#region constructor
@@ -251,8 +251,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public reset(): void | never {
     const initialState = this._initialState
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
-      logError(`Can't reset ${this._storeName} while it's in loading state.`)
-      return
+      const errMsg = `Can't reset ${this._storeName} while it's in loading state.`
+      isDev() ? throwError(errMsg) : logError(errMsg)
     } else if (!this._isResettable) {
       const errMsg = `Store: ${this._storeName} is not configured as resettable.`
       isDev() ? throwError(errMsg) : logError(errMsg)
@@ -265,7 +265,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         if (isFunction(this['onReset'])) modifiedInitialState = this['onReset'](this._clone(initialState), state)
         return this._clone(modifiedInitialState || initialState)
       })
-      isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: this._clone(initialState) })
+      isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: simpleCloneObject(initialState) })
     }
   }
 

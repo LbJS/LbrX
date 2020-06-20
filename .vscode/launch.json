@@ -42,7 +42,8 @@
         "--watch",
         "--runInBand",
         "--config",
-        "${workspaceRoot}/jest.config.js"
+        "${workspaceRoot}/jest.config.js",
+        "/${fileBasename}"
       ],
       "windows": {
         "args": [
@@ -52,7 +53,8 @@
           "--watch",
           "--runInBand",
           "--config",
-          "${workspaceRoot}/jest.config.js"
+          "${workspaceRoot}/jest.config.js",
+          "/${fileBasename}"
         ],
       },
       "runtimeArgs": [
