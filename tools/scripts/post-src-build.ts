@@ -5,8 +5,8 @@ export default async function main(): Promise<void> {
   const config = Provider.getPostSrcBuildConfigHandler().config
   const logger = Provider.getLoggerHandler()
   logger.config = config.logger
-  await handleVersionIncrement(config)
-  replaceStringsInFile(config.fileStringReplacement)
+  await handleVersionIncrement()
+  await replaceStringsInFile(config.fileStringReplacement)
   copyFiles(config.filesToCopy)
   // root package.json
   handlePkgJsonFile(config.rootFolder, config.packageJsonPath, config.rootPackageJsonConfig)

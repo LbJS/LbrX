@@ -1,3 +1,4 @@
+import { exec } from 'child_process'
 import { readJsonFromFile, resolvePath } from '../extensions'
 import { PostSrcBuildConfig } from '../models'
 import { ConfigHandler } from './config.handler'
@@ -7,22 +8,15 @@ export class AppDetails {
   private _pkgJsonPath: string
   private _appName: string | null = null
   public get appName(): string {
-    if (!this._appName) this._appName = this._getAppName()
+    if (!this._appName) this._appName = this._getAppNameFromPkgJson()
     return this._appName
   }
 
   private _curAppVer: string | null = null
-  public get curAppVer(): string {
-    if (!this._curAppVer) this._curAppVer = this._getAppVer()
-    return this._curAppVer
-  }
-  public set curAppVer(value: string) {
-    this._curAppVer = value
-  }
 
   private _nextAppVer: string | null = null
   public get nextAppVer(): string {
-    if (!this._nextAppVer) this._nextAppVer = this.curAppVer
+    if (!this._nextAppVer) this._nextAppVer = this._getAppVerFromPkgJson()
     return this._nextAppVer
   }
   public set nextAppVer(value: string) {
@@ -35,21 +29,42 @@ export class AppDetails {
     this._pkgJsonPath = this._config.config.packageJsonPath
   }
 
-  private _getAppName(): string {
+  public async getCurrAppVer(): Promise<string> {
+    if (this._curAppVer) return Promise.resolve(this._curAppVer)
+    let npmCommand: string | null = null
+    if (this._config.config.npmGetVerCommand.includes('[appName]')) {
+      npmCommand = this._config.config.npmGetVerCommand.replace('[appName]', this.appName)
+    }
+    const currVer = await this.getCurrentVersionFromNpm(npmCommand || this._config.config.npmGetVerCommand)
+    if (currVer) {
+      this._curAppVer = currVer.trim()
+      return Promise.resolve(this._curAppVer)
+    } else {
+      return Promise.reject("Can't find current app version.")
+    }
+  }
+
+  public setCurrAppVer(value: string): void {
+    this._curAppVer = value
+  }
+
+  private _getAppNameFromPkgJson(): string {
     const pkgJson: { [key: string]: any } = readJsonFromFile(resolvePath(this._pkgJsonPath))
     if (!pkgJson || !pkgJson.name) throw new Error('Package json is invalid.')
     return pkgJson.name.trim()
   }
 
-  private _getAppVer(): string {
+  private _getAppVerFromPkgJson(): string {
     const pkgJson: { [key: string]: any } = readJsonFromFile(resolvePath(this._pkgJsonPath))
     if (!pkgJson || !pkgJson.version) throw new Error('Package json is invalid.')
     return pkgJson.version.trim()
   }
 
-  public resetDetails(): void {
-    this._appName = this._getAppName()
-    this._curAppVer = this._getAppVer()
-    this._nextAppVer = this._curAppVer
+  private getCurrentVersionFromNpm(command: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(command, (error, stdout, stderr) => {
+        error ? reject(error || stderr) : resolve(stdout)
+      })
+    })
   }
 }
