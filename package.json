@@ -25,7 +25,7 @@
     "test:watch": "jest --watch",
     "test:watchAll": "jest --watchAll",
     "lint": "tslint --project tsconfig.json --config tslint.json --exclude **/*.d.ts --fix && ts-node -s tools/log-success.ts \"Linting\"",
-    "_src:build-script": "rimraf build/* && ts-node -s tools/run.ts --src-build",
+    "_src:build-script": "ts-node -s tools/run.ts --src-build",
     "_src:post-build-script": "ts-node -s tools/run.ts --post-src-build",
     "src:test-build": "run-s -s _src:build-script _src:post-build-script",
     "src:build": "run-s -s _src:build-script \"_src:post-build-script -- --increment-version\"",
