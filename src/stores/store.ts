@@ -7,6 +7,13 @@ import { BaseStore } from './base-store'
 import { Storages, StoreConfigOptions } from './config'
 import { validateStorageKey, validateStoreName } from './store-unique-name-enforcer'
 
+function createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancelled: boolean } {
+  return {
+    promise: null,
+    isCancelled: false,
+  }
+}
+
 /**
  * @example
  * const createUiState: UiState = () => {
@@ -54,8 +61,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   private get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
-  private _initializeAsyncPromise: Promise<void> | null = null
-  private _preventNextAsyncInit = false
+  private _asyncInitPromise = createAsyncInitPromiseObj()
 
   //#endregion private properties
   //#region constructor
@@ -162,7 +168,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    this._initializeAsyncPromise = new Promise((resolve, reject) => {
+    const asyncInitPromise = createAsyncInitPromiseObj()
+    this._asyncInitPromise = asyncInitPromise
+    asyncInitPromise.promise = new Promise((resolve, reject) => {
       if (!this.isLoading || this._initialState || this._state) {
         const errMsg = `Can't initialize store ${this._storeName} that's already been initialized or its not in LOADING state!`
         if (isDev()) {
@@ -176,8 +184,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         promiseOrObservable = promiseOrObservable.toPromise()
       }
       promiseOrObservable.then(r => {
-        if (this._preventNextAsyncInit) {
-          this._preventNextAsyncInit = false
+        if (asyncInitPromise.isCancelled) {
         } else if (!this.isLoading || this._initialState || this._state) {
           isDev() && reject('The store was initialized multiple time whiles it was in loading state.')
         } else {
@@ -189,8 +196,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
           this._isLoading$.next(false)
         }
       }).catch(e => {
-        if (this._preventNextAsyncInit) {
-          this._preventNextAsyncInit = false
+        if (asyncInitPromise.isCancelled) {
         } else {
           if (isFunction(this['onAsyncInitError'])) {
             e = this['onAsyncInitError'](e)
@@ -199,7 +205,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         }
       }).finally(resolve)
     })
-    return this._initializeAsyncPromise
+    return asyncInitPromise.promise
   }
 
   /**
@@ -295,11 +301,12 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public hardReset(): Promise<this> {
     return new Promise((resolve, reject) => {
-      const promiseState: Promise<void | string> = this._initializeAsyncPromise ?
-        getPromiseState(this._initializeAsyncPromise) :
+      const asyncInitPromise = this._asyncInitPromise
+      const initializeAsyncPromiseState: Promise<void | string> = asyncInitPromise.promise ?
+        getPromiseState(asyncInitPromise.promise) :
         Promise.resolve()
-      promiseState.then(state => {
-        this._preventNextAsyncInit = state === PromiseStates.pending
+      initializeAsyncPromiseState.then(state => {
+        asyncInitPromise.isCancelled = state === PromiseStates.pending
         if (!this._isResettable) {
           const errMsg = `Store: ${this._storeName} is not configured as resettable.`
           isDev() ? reject(new Error(errMsg)) : logError(errMsg)
@@ -312,6 +319,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
           this._storage && this._storage.removeItem(this._storageKey)
           isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
         }
+        resolve(this)
+      }).catch(() => {
         resolve(this)
       })
     })
