@@ -1,26 +1,13 @@
-import { exec } from 'child_process'
-import { PostSrcBuildConfig } from '../models'
 import { Provider } from '../provider'
 
-export async function handleVersionIncrement(config: PostSrcBuildConfig): Promise<void> {
+export async function handleVersionIncrement(): Promise<void> {
   let arg = process.argv[3]
   if (arg) arg = arg.substr(2)
   const doInclementVersion = arg === 'increment-version'
   if (!doInclementVersion) return
   const appDetails = Provider.getAppDetailsHandler()
-  if (config.npmGetVerCommand.includes('[appName]')) {
-    config.npmGetVerCommand = config.npmGetVerCommand.replace('[appName]', appDetails.appName)
-  }
-  const npmVersion = (await getCurrentVersionFromNpm(config.npmGetVerCommand)).trim()
-  if (npmVersion === appDetails.curAppVer) appDetails.nextAppVer = incrementVersion(npmVersion)
-}
-
-function getCurrentVersionFromNpm(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      error ? reject(error || stderr) : resolve(stdout)
-    })
-  })
+  const currAppVer = await appDetails.getCurrAppVer()
+  if (currAppVer === appDetails.nextAppVer) appDetails.nextAppVer = incrementVersion(appDetails.nextAppVer)
 }
 
 function incrementVersion(version: string): string {

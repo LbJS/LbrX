@@ -5,7 +5,7 @@ export default async function main(): Promise<void> {
   const config = Provider.getPostPgBuildConfigHandler().config
   const logger = Provider.getLoggerHandler()
   logger.config = config.logger
-  replaceStringsInFile(config.fileStringReplacement)
+  await replaceStringsInFile(config.fileStringReplacement)
   hashFileNames(config.fileHasher)
   verifyHashes(config.hashVerifier)
   await runCommand(config.minifyHtmlCommand)

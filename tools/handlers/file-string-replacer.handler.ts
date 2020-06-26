@@ -2,25 +2,25 @@ import { readStrFromFile, resolvePath, writeStrToFile } from '../extensions'
 import { FileStringReplacementConfig, StringReplacementSet } from '../models'
 import { Provider } from '../provider'
 
-export function replaceStringsInFile(config: FileStringReplacementConfig): void {
-  config.sets.forEach(dataSet => {
+export async function replaceStringsInFile(config: FileStringReplacementConfig): Promise<void> {
+  await Promise.all(config.sets.map(async dataSet => {
     const filePath = resolvePath(config.rootFolder, dataSet.filePath)
     let fileStr = readStrFromFile(filePath)
     if (!fileStr) throw new Error(`This file is empty: ${filePath}`)
-    dataSet.replacementSets = prepareReplacementSets(dataSet.replacementSets)
+    dataSet.replacementSets = await prepareReplacementSets(dataSet.replacementSets)
     fileStr = replaceStrings(
       dataSet.replacementSets,
       fileStr,
       filePath,
     )
     writeStrToFile(filePath, fileStr)
-  })
+  }))
 }
 
-function prepareReplacementSets(replacementSets: StringReplacementSet[]): StringReplacementSet[] {
+async function prepareReplacementSets(replacementSets: StringReplacementSet[]): Promise<StringReplacementSet[]> {
   const hash = Provider.getHashHandler().hash
   const appDetails = Provider.getAppDetailsHandler()
-  const curAppVer = appDetails.curAppVer
+  const curAppVer = await appDetails.getCurrAppVer()
   const nextAppVer = appDetails.nextAppVer
   const replacePlaceHolders = (str: string): string => {
     return str.replace(/\[hash\]/g, hash)
