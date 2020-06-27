@@ -64,6 +64,8 @@ describe('Store initializeAsync():', () => {
   })
 
   it('should not throw an error on second initialization with delay in production mode.', async () => {
+    jest.spyOn(console, 'error')
+      .mockImplementationOnce(() => { })
     LbrXManager.enableProdMode()
     store.initializeAsync(of(initialState))
     await timer(100).toPromise()
