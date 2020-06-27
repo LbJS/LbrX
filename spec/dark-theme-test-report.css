@@ -104,6 +104,10 @@ header {
   background-color: rgba(239, 197, 46, 0.055);
   color: #efc52e;
 }
+.test-result.todo {
+  background-color: rgba(178, 42, 144, 0.055);
+  color: #b22a90;
+}
 
 .test-info {
   display: flex;

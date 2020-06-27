@@ -1,5 +1,5 @@
-import { BehaviorSubject, iif, isObservable, Observable, of, timer } from 'rxjs'
-import { debounce, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
+import { BehaviorSubject, iif, isObservable, Observable, of, Subscription } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
 import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../helpers'
 import { isDev, isDevTools } from '../mode'
@@ -62,6 +62,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
   private _asyncInitPromise = createAsyncInitPromiseObj()
+  private _stateToStorageSub: Subscription | null = null
 
   //#endregion private properties
   //#region constructor
@@ -120,8 +121,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         initialState = storedState
         isStateCloned = true
       }
-      this._state$
-        .pipe(debounce(() => timer(this._storageDebounce)))
+      this._stateToStorageSub = this._state$
+        .pipe(debounceTime(this._storageDebounce))
         .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
     }
     this._setState(() => isStateCloned ? initialState : this._clone(initialState))
@@ -300,29 +301,35 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * - Clears cached storage if any.
    */
   public hardReset(): Promise<this> {
-    return new Promise((resolve, reject) => {
-      const asyncInitPromise = this._asyncInitPromise
-      const initializeAsyncPromiseState: Promise<void | string> = asyncInitPromise.promise ?
-        getPromiseState(asyncInitPromise.promise) :
-        Promise.resolve()
+    if (!this._isResettable) {
+      const errMsg = `Store: ${this._storeName} is not configured as resettable.`
+      if (isDev()) {
+        return Promise.reject(new Error(errMsg))
+      } else {
+        logError(errMsg)
+        return Promise.resolve(this)
+      }
+    }
+    if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
+    const asyncInitPromise = this._asyncInitPromise
+    const initializeAsyncPromiseState: Promise<void | string> = asyncInitPromise.promise ?
+      getPromiseState(asyncInitPromise.promise) :
+      Promise.resolve()
+    return new Promise((resolve) => {
+      const reset = () => {
+        this.isLoading = true
+        this.state = null
+        this._initialState = null
+        this.error = null
+        if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
+        if (this._storage) this._storage.removeItem(this._storageKey)
+        if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+        resolve(this)
+      }
       initializeAsyncPromiseState.then(state => {
         asyncInitPromise.isCancelled = state === PromiseStates.pending
-        if (!this._isResettable) {
-          const errMsg = `Store: ${this._storeName} is not configured as resettable.`
-          isDev() ? reject(new Error(errMsg)) : logError(errMsg)
-        } else {
-          isDevTools() && DevToolsSubjects.hardResetEvent$.next(this._storeName)
-          this._isLoading$.next(true)
-          this.state = null
-          this._initialState = null
-          this.setError(null)
-          this._storage && this._storage.removeItem(this._storageKey)
-          isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
-        }
-        resolve(this)
-      }).catch(() => {
-        resolve(this)
-      })
+        reset()
+      }).catch(reset)
     })
   }
 

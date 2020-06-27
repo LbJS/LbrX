@@ -60,6 +60,25 @@ export abstract class BaseStore<T extends object, E = any> {
         distinctUntilChanged((prev, curr) => isNull(prev) && isNull(curr)),
       )
   }
+  /**
+   * @get Returns the store's error state value.
+   * @set Sets store's error state and also sets global error state if the value is not null.
+   */
+  public get error(): E | null {
+    const value = this._error$.getValue()
+    if (isError(value)) return cloneError(value)
+    if (isObject(value)) return cloneObject(value)
+    return value
+  }
+  public set error(value: E | null) {
+    if (isError(value)) {
+      value = cloneError(value)
+    } else if (isObject(value)) {
+      value = cloneObject(value)
+    }
+    this._error$.next(value)
+    if (!isEmpty(value)) GlobalErrorStore.getStore<E>().setError(value)
+  }
 
   //#endregion error-api
   //#region config
@@ -156,26 +175,17 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region public-api
 
   /**
-   * Returns the store's error state value.
+   * @deprecated Use error property instead.
    */
   public getError(): E | null {
-    const value = this._error$.getValue()
-    if (isError(value)) return cloneError(value)
-    if (isObject(value)) return cloneObject(value)
-    return value
+    return this.error
   }
 
   /**
-   * Sets store's error state and also sets global error state if the value is not null.
+   * @deprecated Use error property instead.
    */
   public setError(value: E | null): void {
-    if (isError(value)) {
-      value = cloneError(value)
-    } else if (isObject(value)) {
-      value = cloneObject(value)
-    }
-    this._error$.next(value)
-    if (!isEmpty(value)) GlobalErrorStore.getStore<E>().setError(value)
+    this.error = value
   }
 
   //#endregion public-api
