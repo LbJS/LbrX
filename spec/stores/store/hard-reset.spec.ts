@@ -6,6 +6,7 @@ import { LbrXManager as LbrXManager_type, Storages, Store } from 'lbrx'
 import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/dev-tools'
 import { getDefaultStoreOptions } from 'lbrx/stores/config'
 import { Subscription as Subscription_type, timer } from 'rxjs'
+import { map } from 'rxjs/operators'
 
 describe('Store hardReset():', () => {
 
@@ -15,6 +16,7 @@ describe('Store hardReset():', () => {
   }
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject>
+  let asyncStore: Store<TestSubject>
   let notResettableStore: Store<TestSubject>
   let storeWithLocalStorage: Store<TestSubject>
   let LbrXManager: typeof LbrXManager_type
@@ -36,6 +38,9 @@ describe('Store hardReset():', () => {
     notResettableStore = StoresFactory.createStore(createInitialState(), {
       name: 'NOT-RESETTABLE-STORE',
       isResettable: false
+    })
+    asyncStore = StoresFactory.createStore<TestSubject>(null, {
+      name: 'ASYNC-STORE',
     })
   })
 
@@ -87,7 +92,14 @@ describe('Store hardReset():', () => {
     expect(storesInstance).toBe(store)
   })
 
-  it.todo('initializeAsyncPromiseState test')
+  it("should cancel async initialization if it's in pending state.", async () => {
+    const asyncTime = 500
+    const testSubjectPromise = timer(asyncTime).pipe(map(() => createInitialState())).toPromise()
+    asyncStore.initializeAsync(testSubjectPromise)
+    await asyncStore.hardReset()
+    await timer(500).toPromise()
+    expect(asyncStore.value).toBeNull()
+  })
 
   it.todo('errors tests')
 
