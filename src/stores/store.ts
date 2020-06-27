@@ -185,9 +185,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         promiseOrObservable = promiseOrObservable.toPromise()
       }
       promiseOrObservable.then(r => {
-        if (asyncInitPromise.isCancelled) {
-        } else if (!this.isLoading || this._initialState || this._state) {
-          isDev() && reject('The store was initialized multiple time whiles it was in loading state.')
+        if (asyncInitPromise.isCancelled) return
+        if (!this.isLoading || this._initialState || this._state) {
+          isDev() && reject('The store was initialized multiple times whiles it was in loading state.')
         } else {
           if (isFunction(this['onAsyncInitSuccess'])) {
             const modifiedResult = this['onAsyncInitSuccess'](r)
@@ -197,13 +197,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
           this._isLoading$.next(false)
         }
       }).catch(e => {
-        if (asyncInitPromise.isCancelled) {
-        } else {
-          if (isFunction(this['onAsyncInitError'])) {
-            e = this['onAsyncInitError'](e)
-          }
-          e && reject(e)
+        if (asyncInitPromise.isCancelled) return
+        if (isFunction(this['onAsyncInitError'])) {
+          e = this['onAsyncInitError'](e)
         }
+        if (e) reject(e)
       }).finally(resolve)
     })
     return asyncInitPromise.promise
@@ -393,13 +391,12 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
         filter<T | null, T>((x => !!x) as (value: T | null) => value is T),
         map<T, T | R>(project || (x => x)),
-        distinctUntilChanged((prev, curr) => {
-          if (wasHardReseted) {
+        mergeMap(x => iif(() =>
+          wasHardReseted,
+          of(x).pipe(distinctUntilChanged((prev, curr) => (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr)),
+          of(x).pipe(tap(() => {
             wasHardReseted = false
-            return false
-          }
-          return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-        }),
+          })))),
         map(x => isObject(x) ? this._clone(x) : x),
       )
   }
