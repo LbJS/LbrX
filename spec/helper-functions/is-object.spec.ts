@@ -11,6 +11,10 @@ describe('Helper Function - isObject():', () => {
     expect(isObject(new ClassTestSubject())).toBeTruthy()
   })
 
+  it("should return true date's object.", () => {
+    expect(isObject(new Date())).toBeTruthy()
+  })
+
   it('should return false for null.', () => {
     expect(isObject(null)).toBeFalsy()
   })
