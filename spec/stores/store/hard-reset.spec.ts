@@ -88,8 +88,8 @@ describe('Store hardReset():', () => {
   })
 
   it("should return store's instance on resolve.", async () => {
-    const storesInstance = await store.hardReset()
-    expect(storesInstance).toBe(store)
+    expect.assertions(1)
+    await expect(store.hardReset()).resolves.toBe(store)
   })
 
   it("should cancel async initialization if it's in pending state.", async () => {
@@ -101,71 +101,19 @@ describe('Store hardReset():', () => {
     expect(asyncStore.value).toBeNull()
   })
 
-  it.todo('errors tests')
+  it("should throw if the store is not resettable and it's in development mode.", async () => {
+    expect.assertions(1)
+    await expect(notResettableStore.hardReset()).rejects.toBeInstanceOf(Error)
+  })
 
-  // it('should throw if the store is in loading state and in development mode.', () => {
-  //   store.isLoading = true
-  //   expect(() => {
-  //     store.reset()
-  //   }).toThrow()
-  // })
-
-  // it('should log an error if the store is in loading state and in production mode.', () => {
-  //   const consoleErrorSpy = jest.spyOn(console, 'error')
-  //     .mockImplementationOnce(() => { })
-  //   LbrXManager.enableProdMode()
-  //   store.update(createStateA())
-  //   store.isLoading = true
-  //   expect(() => {
-  //     store.reset()
-  //   }).not.toThrow()
-  //   expect(consoleErrorSpy).toBeCalledTimes(1)
-  //   expect(store.value).toStrictEqual(createStateA())
-  // })
-
-  // it("should throw if the store is not resettable and it's development mode.", () => {
-  //   expect(() => {
-  //     notResettableStore.reset()
-  //   }).toThrow()
-  // })
-
-  // it("should log an error if the store is not resettable and it's production mode.", () => {
-  //   const consoleErrorSpy = jest.spyOn(console, 'error')
-  //     .mockImplementationOnce(() => { })
-  //   LbrXManager.enableProdMode()
-  //   notResettableStore.update(createStateA())
-  //   expect(() => {
-  //     notResettableStore.reset()
-  //   }).not.toThrow()
-  //   expect(consoleErrorSpy).toBeCalledTimes(1)
-  //   expect(notResettableStore.value).toStrictEqual(createStateA())
-  // })
-
-  // it("should throw if there is no initial state and it's development mode.", () => {
-  //   (store as any)._initialState = null
-  //   expect(() => {
-  //     store.reset()
-  //   }).toThrow()
-  // })
-
-  // it("should log an error if there is no initial state and it's production mode.", () => {
-  //   const consoleErrorSpy = jest.spyOn(console, 'error')
-  //     .mockImplementationOnce(() => { })
-  //   LbrXManager.enableProdMode()
-  //   store.update(createStateA());
-  //   (store as any)._initialState = null
-  //   expect(() => {
-  //     store.reset()
-  //   }).not.toThrow()
-  //   expect(consoleErrorSpy).toBeCalledTimes(1)
-  //   expect(store.value).toStrictEqual(createStateA())
-  // })
-
-  // it("should reset the store's state to its initial value with different reference.", () => {
-  //   store.update(createStateA())
-  //   store.reset()
-  //   expect(store.value).not.toBe(store.initialValue)
-  // })
+  it("should log an error if the store is not resettable and it's in production mode.", async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error')
+      .mockImplementationOnce(() => { })
+    LbrXManager.enableProdMode()
+    expect.assertions(2)
+    await expect(notResettableStore.hardReset()).resolves.toBe(notResettableStore)
+    expect(consoleErrorSpy).toBeCalledTimes(1)
+  })
 
   it('should distribute hardReset event and then loading event to DevToolsSubjects.', done => {
     LbrXManager.initializeDevTools()
