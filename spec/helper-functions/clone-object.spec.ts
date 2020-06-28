@@ -7,12 +7,12 @@ describe('Helper Function - cloneObject():', () => {
   const stateA = TestSubjectFactory.createTestSubject_configA()
   const pureStateA = TestSubjectFactory.createTestSubject_configA()
 
-  it('should copy all properties', () => {
+  it("should copy all of object's properties.", () => {
     const clonedStateA = cloneObject(stateA)
     expect(clonedStateA).toStrictEqual(pureStateA)
   })
 
-  it('should set different references.', () => {
+  it('should clone all inner objects.', () => {
     const clonedStateA = cloneObject(stateA)
     assertNotNullable(clonedStateA.innerTestObjectGetSet?.deepNestedObj?.objectList)
     assertNotNullable(stateA.innerTestObjectGetSet?.deepNestedObj?.objectList)

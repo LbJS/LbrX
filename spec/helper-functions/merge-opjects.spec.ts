@@ -16,7 +16,7 @@ describe('Helper Function - mergeObjects():', () => {
     expectedObj = oC
   })
 
-  it('should merge objects.', () => {
+  it('should return merged object.', () => {
     const mergedObj = mergeObjects(objA, objB)
     expect(mergedObj).toStrictEqual(expectedObj)
   })

@@ -30,14 +30,14 @@ describe('Helper Function - compareObjects():', () => {
     testSubjectWithMethodsConfigB_copy = TestSubjectFactory.createTestSubjectWithMethods_configB()
   })
 
-  it('should return that objects are equal.', () => {
+  it('should return that the given objects are equal.', () => {
     expect(compareObjects(testSubjectConfigA, testSubjectConfigA_copy)).toBeTruthy()
     expect(compareObjects(testSubjectConfigB, testSubjectConfigB_copy)).toBeTruthy()
     expect(compareObjects(testSubjectWithMethodsConfigA, testSubjectWithMethodsConfigA_copy)).toBeTruthy()
     expect(compareObjects(testSubjectWithMethodsConfigB, testSubjectWithMethodsConfigB_copy)).toBeTruthy()
   })
 
-  it('should return that objects are not equal.', () => {
+  it('should return that the given objects are not equal.', () => {
     expect(compareObjects(testSubjectConfigA, testSubjectConfigA_plain)).toBeFalsy()
     expect(compareObjects(testSubjectConfigA, testSubjectConfigB)).toBeFalsy()
     expect(compareObjects(testSubjectWithMethodsConfigA, testSubjectWithMethodsConfigA_plain)).toBeFalsy()

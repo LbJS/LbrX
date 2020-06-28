@@ -1,6 +1,6 @@
 import { isEmpty } from 'lbrx/helpers'
 
-describe('Helper Function - isNullish():', () => {
+describe('Helper Function - isEmpty():', () => {
 
   it('should return true for null.', () => {
     expect(isEmpty(null)).toBeTruthy()
