@@ -30,4 +30,12 @@ describe('Helper Function - isObject():', () => {
   it('should return false for number.', () => {
     expect(isObject(-1986)).toBeFalsy()
   })
+
+  it('should return false for boolean.', () => {
+    expect(isObject(false)).toBeFalsy()
+  })
+
+  it('should return false for Symbol.', () => {
+    expect(isObject(Symbol())).toBeFalsy()
+  })
 })

@@ -7,6 +7,10 @@ describe('Helper Function - isClass():', () => {
     expect(isClass(new ClassTestSubject())).toBeTruthy()
   })
 
+  it('should return true for date object.', () => {
+    expect(isClass(new Date())).toBeTruthy()
+  })
+
   it('should return false for plain object.', () => {
     expect(isClass({})).toBeFalsy()
   })
@@ -17,5 +21,13 @@ describe('Helper Function - isClass():', () => {
 
   it('should return false for undefined.', () => {
     expect(isClass(undefined as unknown as {})).toBeFalsy()
+  })
+
+  it('should return false for boolean.', () => {
+    expect(isClass(true as unknown as {})).toBeFalsy()
+  })
+
+  it('should return false for Symbol.', () => {
+    expect(isClass(Symbol() as unknown as {})).toBeFalsy()
   })
 })
