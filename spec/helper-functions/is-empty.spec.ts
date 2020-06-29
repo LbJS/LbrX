@@ -17,4 +17,8 @@ describe('Helper Function - isEmpty():', () => {
   it('should return false for empty string.', () => {
     expect(isEmpty('')).toBeFalsy()
   })
+
+  it('should return false for false boolean.', () => {
+    expect(isEmpty(false)).toBeFalsy()
+  })
 })
