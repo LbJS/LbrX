@@ -3,9 +3,13 @@ import { isArray } from './is-array'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
 import { isFunction } from './is-function'
+import { isMomentObject } from './is-moment-object'
 import { isObject } from './is-object'
 
-export function countObjectChanges(objA: object | unknown[] | unknown, objB: object | unknown[] | unknown): number {
+export function countObjectChanges(
+  objA: object | unknown[] | unknown,
+  objB: object | unknown[] | unknown,
+): number {
   if (isEmpty(objA) || isEmpty(objB)) return objA === objB ? 0 : 1
   if (isDate(objA)) return (isDate(objB) && objA.getTime() == objB.getTime()) ? 0 : 1
   if (isDate(objB)) return 1
@@ -22,6 +26,10 @@ export function countObjectChanges(objA: object | unknown[] | unknown, objB: obj
   } else if (isArray(objB)) {
     changesCount++
   } else if (isObject(objA) && isObject(objB)) {
+    if (isMomentObject(objA)) {
+      return (isMomentObject(objB) && objA._d.getTime() == objB._d.getTime()) ? 0 : 1
+    }
+    if (isMomentObject(objB)) return 1
     const objBKeys = objectKeys(objB)
     let keyMatches = 0
     objectKeys(objA).forEach(key => {
@@ -34,7 +42,7 @@ export function countObjectChanges(objA: object | unknown[] | unknown, objB: obj
     })
     changesCount += objBKeys.length - keyMatches
   } else if (isFunction(objA) && isFunction(objB)) {
-    return changesCount
+    return 0
   } else if (objA !== objB) {
     changesCount++
   }
