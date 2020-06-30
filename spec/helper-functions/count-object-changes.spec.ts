@@ -1,50 +1,14 @@
-import { splitToObject } from 'helpers/functions'
-import { MergeTestSubject } from 'helpers/test-subjects'
+import { InnerTestSubject, TestSubject } from 'helpers/test-subjects'
 import { countObjectChanges } from 'lbrx/helpers'
+import moment from 'moment'
 
 describe('Helper Function - countObjectChanges():', () => {
-
-  const expectedChangesD = 2
-  it(`should count ${expectedChangesD} changes between two objects. {testId: 4}`, () => {
-    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
-      objC: {
-        nestedObj: {
-          deepNestedObj: {
-            a: [[new Date(2000, 0), { a: 'a' }], [new Date(2000, 0), { a: 'a', b: 'b' }, () => { }]] // 1, 2
-          }
-        }
-      }
-    }) as any
-    expect(countObjectChanges(objA, objB)).toBe(expectedChangesD)
-  })
-
-  const expectedChangesG = 6
-  it(`should count ${expectedChangesG} changes between two objects. {testId: 5}`, () => {
-    const [objA, objB]: any = splitToObject(<MergeTestSubject>{
-      a: ['a', 'a'],
-      b: ['b', ''], // 1
-      objA: {
-        a: [new Date(2000, 0, 1), new Date(2000, 0, 1)],
-        b: [new Date(2000, 0, 1), new Date(2000, 0, 2)], // 2
-        c: [new Date(2000, 0, 1), undefined], // 3
-        d: [undefined, new Date(2000, 0, 1)], // 4
-      },
-      objC: {
-        nestedObj: {
-          deepNestedObj: {
-            a: [[new Date(2000, 0), { a: 'a' }], [new Date(2000, 0), { a: 'a', b: 'b' }, () => { }]] // 5, 6
-          }
-        }
-      }
-    }) as any
-    expect(countObjectChanges(objA, objB)).toBe(expectedChangesG)
-  })
 
   it.each`
     testId | objA                                                      | objB                                                      | numOfDiffs
     ${1}   | ${{ a: 'a', b: 'b' }}                                     | ${{ a: 'a', b: 'c' }}                                     | ${1}
     ${2}   | ${{ a: () => { }, b: null }}                              | ${{ a: false, b: () => { } }}                             | ${2}
-    ${3}   | ${{ a: () => { } }}                                       | ${{ a: () => { }, }}                                      | ${0}
+    ${3}   | ${{ a: () => { } }}                                       | ${{ a: () => { } }}                                       | ${0}
     ${4}   | ${{ a: 'a', b: 'b', c: '3' }}                             | ${{ a: null, b: undefined, c: 3 }}                        | ${3}
     ${5}   | ${{ a: 0, b: 0, c: 0 }}                                   | ${{ a: null, b: undefined, c: '' }}                       | ${3}
     ${6}   | ${{ a: new Date(2000, 0, 1), b: new Date(2000, 0, 1) }}   | ${{ a: new Date(2000, 0, 1), b: null }}                   | ${1}
@@ -96,6 +60,29 @@ describe('Helper Function - countObjectChanges():', () => {
     ${12}  | ${{ a: { b: new Date(2000, 0) } }}                        | ${{ a: { b: {} } }}}                                      | ${1}
     ${13}  | ${{ a: { b: { c: { a: [] } } } }}                         | ${{ a: { b: { c: { a: [] } } } }}                         | ${0}
   `('should count $numOfDiffs differences between two nested objects. (testId: $testId)', ({ objA, arrB, numOfDiffs }) => {
+    expect(countObjectChanges(objA, arrB)).toBe(numOfDiffs)
+    expect(countObjectChanges(arrB, objA)).toBe(numOfDiffs)
+  })
+
+  const instancedTestSubject = new TestSubject({ innerTestObject: new InnerTestSubject({ booleanValue: true }) })
+  const plainTestSubject = JSON.parse(JSON.stringify(instancedTestSubject))
+
+  it.each`
+    testId | objA                                                        | arrB                                                            | numOfDiffs
+    ${1}   | ${new TestSubject({})}                                      | ${new TestSubject({})}                                          | ${0}
+    ${2}   | ${new TestSubject({ getterSetterDate: new Date(1900, 0) })} | ${new TestSubject({ getterSetterDate: new Date(1900, 1) })}     | ${1}
+    ${3}   | ${instancedTestSubject}                                     | ${plainTestSubject}                                             | ${0}
+  `('should count $numOfDiffs differences between two instanced objects. (testId: $testId)', ({ objA, arrB, numOfDiffs }) => {
+    expect(countObjectChanges(objA, arrB)).toBe(numOfDiffs)
+    expect(countObjectChanges(arrB, objA)).toBe(numOfDiffs)
+  })
+
+  it.each`
+    testId | objA                                                        | arrB                                                            | numOfDiffs
+    ${1}   | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 0)) }}                             | ${0}
+    ${2}   | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 1)) }}                             | ${1}
+    ${3}   | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: new Date(1900, 0) }}                                     | ${1}
+  `('should count $numOfDiffs differences between moment properties. (testId: $testId)', ({ objA, arrB, numOfDiffs }) => {
     expect(countObjectChanges(objA, arrB)).toBe(numOfDiffs)
     expect(countObjectChanges(arrB, objA)).toBe(numOfDiffs)
   })
