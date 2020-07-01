@@ -9,5 +9,6 @@ export * from './is-entity'
 export * from './is-error'
 export * from './is-undefined'
 export * from './object-keys'
+export * from './sleep'
 export * from './split-object'
 
