@@ -72,7 +72,7 @@ export class TestSubjectFactory {
           stringValue: 'a b c',
           numberValue: 112346579.1236549,
           booleanValue: true,
-          dateValue: new Date(2018),
+          dateValue: new Date(2018, 9),
           getterSetterDate: new Date(2018, 8),
           deepNestedObj: TestSubjectFactory.createDeepNestedTestSubject(configuration),
           obj: {

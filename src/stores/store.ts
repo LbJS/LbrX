@@ -385,18 +385,15 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     let wasHardReseted = false
     return this._state$.asObservable()
       .pipe(
-        tap(x => {
-          if (!wasHardReseted) wasHardReseted = !x && this.isLoading
-        }),
+        tap(x => wasHardReseted = !wasHardReseted && !x && this.isLoading),
         mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
         filter<T | null, T>((x => !!x) as (value: T | null) => value is T),
         map<T, T | R>(project || (x => x)),
-        mergeMap(x => iif(() =>
-          wasHardReseted,
-          of(x).pipe(distinctUntilChanged((prev, curr) => (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr)),
-          of(x).pipe(tap(() => {
-            wasHardReseted = false
-          })))),
+        distinctUntilChanged((prev, curr) => {
+          if (wasHardReseted) return false
+          return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+        }),
+        tap(() => wasHardReseted = false),
         map(x => isObject(x) ? this._clone(x) : x),
       )
   }
