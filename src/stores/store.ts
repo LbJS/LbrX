@@ -100,7 +100,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
     if (isNull(initialStateOrNull)) {
       this._isLoading$.next(true)
-      isDevTools() && DevToolsSubjects.loadingEvent$.next(this._storeName)
+      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
     } else {
       this._initializeStore(initialStateOrNull)
     }
@@ -133,7 +133,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       const modifiedState: T | void = this['onAfterInit'](this._clone(this._state!))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
-    isDevTools() && DevToolsSubjects.initEvent$.next(this.devData)
+    if (isDevTools()) DevToolsSubjects.initEvent$.next(this.devData)
   }
 
   private _setState(newStateFn: (state: Readonly<T> | null) => T): void {
@@ -153,7 +153,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public initialize(initialState: T): void | never {
     if (!this.isLoading || this._initialState || this._state) {
-      isDev() && throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
+      if (isDev()) throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
       return
     }
     this._initializeStore(initialState)
@@ -190,7 +190,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       promiseOrObservable.then(r => {
         if (asyncInitPromise.isCancelled) return
         if (!this.isLoading || this._initialState || this._state) {
-          isDev() && reject('The store was initialized multiple times whiles it was in loading state.')
+          if (isDev()) reject('The store was initialized multiple times whiles it was in loading state.')
         } else {
           if (isFunction(this['onAsyncInitSuccess'])) {
             const modifiedResult = this['onAsyncInitSuccess'](r)
@@ -243,7 +243,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         }
         return newState
       })
-      isDevTools() && DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
+      if (isDevTools()) DevToolsSubjects.updateEvent$.next(updateName ? objectAssign(this.devData, { updateName }) : this.devData)
     }
   }
 
@@ -265,7 +265,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       }
       const isCloned = !this._isSimpleCloning || !!modifiedState
       this._setState(() => isCloned ? state : this._clone(state))
-      isDev() && DevToolsSubjects.overrideEvent$.next(this.devData)
+      if (isDev()) DevToolsSubjects.overrideEvent$.next(this.devData)
     }
   }
 
@@ -289,7 +289,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         if (isFunction(this['onReset'])) modifiedInitialState = this['onReset'](this._clone(initialState), state)
         return this._clone(modifiedInitialState || initialState)
       })
-      isDevTools() && DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: simpleCloneObject(initialState) })
+      if (isDevTools()) DevToolsSubjects.resetEvent$.next({ name: this._storeName, state: simpleCloneObject(initialState) })
     }
   }
 

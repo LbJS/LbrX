@@ -125,7 +125,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * Please proceed with care.
    */
   protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
-    storeConfig && StoreConfig(storeConfig)(this.constructor as Class)
+    if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
     this._storeName = this._config.name

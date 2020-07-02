@@ -123,10 +123,7 @@
       "object-destructuring",
       "array-destructuring"
     ],
-    "no-unused-expression": [
-      true,
-      "allow-fast-null-checks"
-    ],
+    "no-unused-expression": true,
     "no-trailing-whitespace": [
       true,
       "ignore-comments",

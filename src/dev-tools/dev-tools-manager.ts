@@ -107,7 +107,7 @@ export class DevToolsManager {
           this._zone.run(() => {
             this._disableNextUpdate()
             store._setState(() => instanceHandler(store._initialState || loadingStoresCache[storeName], reduxDevToolsStoreValue))
-            store.isLoading && store._isLoading$.next(false)
+            if (store.isLoading) store._isLoading$.next(false)
           })
           if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
         }
