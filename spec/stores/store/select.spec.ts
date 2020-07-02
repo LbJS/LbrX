@@ -18,7 +18,7 @@ describe('Store select$():', () => {
   })
 
 
-  it("should return store's state on subscribe.", done => {
+  it("should distribute store's state on subscribe.", done => {
     expect.assertions(1)
     store.select$().subscribe(state => {
       expect(state).toStrictEqual(createInitialState())
@@ -26,7 +26,7 @@ describe('Store select$():', () => {
     })
   })
 
-  it("should return store's state when it's updated.", async done => {
+  it("should distribute store's state when it's updated.", async done => {
     expect.assertions(2)
     const jestMatcherState = expect.getState()
     const expectedStates = [
@@ -41,7 +41,7 @@ describe('Store select$():', () => {
     store.update(createStateA())
   })
 
-  it("should return store's state when it's updated but only when it changes.", async done => {
+  it("should distribute store's state when it's updated but only when it changes.", async done => {
     const jestMatcherState = expect.getState()
     const expectedStates = [
       createInitialState(),
@@ -74,7 +74,7 @@ describe('Store select$():', () => {
     store.update(customObjB())
   })
 
-  it('should return the selected property based on the provided projection method.', done => {
+  it('should distribute the selected property based on the provided projection method.', done => {
     expect.assertions(1)
     store.select$(state => state.stringValue).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().stringValue)
@@ -82,7 +82,7 @@ describe('Store select$():', () => {
     })
   })
 
-  it('should return the selected property based on the provided projection method only when it changes.', async done => {
+  it('should distribute the selected property based on the provided projection method only when it changes.', async done => {
     const jestMatcherState = expect.getState()
     const expectedValues = [
       createInitialState().stringValue,
@@ -105,5 +105,99 @@ describe('Store select$():', () => {
     store.update({ stringValue: expectedValues[2] } as TestSubject)
     await sleep()
     store.update({ stringValue: expectedValues[2] } as TestSubject)
+  })
+
+  it('should distribute the selected nested property based on the provided projection method.', done => {
+    expect.assertions(1)
+    store.select$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
+      expect(value).toStrictEqual(createInitialState().innerTestObject!.deepNestedObj!.objectList)
+      done()
+    })
+  })
+
+  it('should distribute the selected property based on the provided projection method only when it changes.', async done => {
+    const jestMatcherState = expect.getState()
+    const expectedValues = [
+      createInitialState().innerTestObject!.deepNestedObj!.objectList,
+      createStateA().innerTestObject!.deepNestedObj!.objectList,
+    ]
+    const numOfAssertions = expectedValues.length
+    expect.assertions(numOfAssertions)
+    store.select$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
+      expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
+      if (jestMatcherState.assertionCalls == numOfAssertions) done()
+    })
+    await sleep()
+    store.update(createInitialState())
+    await sleep()
+    store.update(createStateA())
+    await sleep()
+    store.update(createStateA())
+  })
+
+  it('should allow casting to newly defined object.', async done => {
+    expect.assertions(1)
+    const expectedValue = {
+      s: createInitialState().stringValue,
+      n: createInitialState().numberValue,
+    }
+    store.select$(state => ({
+      s: state.stringValue,
+      n: state.numberValue,
+    })).subscribe(value => {
+      expect(value).toStrictEqual(expectedValue)
+      done()
+    })
+  })
+
+  it('should distribute the newly casted object only when one if its properties changed.', async done => {
+    const jestMatcherState = expect.getState()
+    const expectedValues = [
+      {
+        s: createInitialState().stringValue,
+        n: createInitialState().numberValue,
+      },
+      {
+        s: 'a777a',
+        n: createInitialState().numberValue,
+      },
+      {
+        s: createInitialState().stringValue,
+        n: createInitialState().numberValue,
+      },
+      {
+        s: 'a777a',
+        n: createInitialState().numberValue,
+      },
+      {
+        s: 'a777a',
+        n: 123454321
+      },
+    ]
+    const numOfAssertions = expectedValues.length
+    expect.assertions(numOfAssertions)
+    store.select$(state => ({
+      s: state.stringValue,
+      n: state.numberValue,
+    })).subscribe(value => {
+      expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
+      if (jestMatcherState.assertionCalls == numOfAssertions) done()
+    })
+    await sleep()
+    store.update({ stringValue: 'a777a' })
+    await sleep()
+    store.update({ stringValue: 'a777a' })
+    await sleep()
+    store.update(createInitialState())
+    await sleep()
+    store.update(createInitialState())
+    await sleep()
+    store.update({ stringValue: 'a777a' })
+    await sleep()
+    store.update({ stringValue: 'a777a' })
+    await sleep()
+    store.update({ numberValue: 123454321 })
+    await sleep()
+    store.update({ numberValue: 123454321 })
   })
 })
