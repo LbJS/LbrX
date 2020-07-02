@@ -83,7 +83,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
   constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
     super()
-    this._main(initialStateOrNull, storeConfig)
+    this._main(initialStateOrNull, storeConfig);
+    (this as any).select = (project: any) => {
+      this.select$(project)
+    }
   }
 
   //#endregion constructor
@@ -332,18 +335,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * @deprecated Use select$ instead.
-   */
-  public select(): Observable<T>
-  /**
-   * @deprecated Use select$ instead.
-   */
-  public select<R>(project: (state: T) => R): Observable<R>
-  public select<R>(project?: (state: T) => R): Observable<T | R> {
-    return this.select$(project)
-  }
-
-  /**
    * Returns whole state as an Observable.
    * @example
    * state$ = this.store.select()
@@ -385,7 +376,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     let wasHardReseted = false
     return this._state$.asObservable()
       .pipe(
-        tap(x => wasHardReseted = !wasHardReseted && !x && this.isLoading),
+        tap(x => {
+          if (!wasHardReseted) wasHardReseted = !x && this.isLoading
+        }),
         mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
         filter<T | null, T>((x => !!x) as (value: T | null) => value is T),
         map<T, T | R>(project || (x => x)),

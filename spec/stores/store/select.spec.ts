@@ -11,10 +11,12 @@ describe('Store select$():', () => {
   const customObjB = () => Object.assign(createStateA(),
     { innerTestObject: Object.assign(createStateA().innerTestObject, { numberValue: 777 } as InnerTestSubject) } as TestSubject)
   let store: Store<TestSubject>
+  let asyncStore: Store<TestSubject>
 
   beforeEach(async () => {
     const provider = await import('provider')
     store = provider.StoresFactory.createStore<TestSubject>(createInitialState())
+    asyncStore = provider.StoresFactory.createStore<TestSubject>(null, 'ASYNC-STORE')
   })
 
 
@@ -199,5 +201,40 @@ describe('Store select$():', () => {
     store.update({ numberValue: 123454321 })
     await sleep()
     store.update({ numberValue: 123454321 })
+  })
+
+  it("shouldn't distribute null as a state on async store before initialization.", async () => {
+    const mockCb = jest.fn()
+    asyncStore.select$().subscribe(mockCb)
+    expect(mockCb).not.toBeCalled()
+    await sleep(100)
+  })
+
+  it("shouldn't distribute null on hard reset.", async () => {
+    const mockCb = jest.fn()
+    store.select$().subscribe(mockCb)
+    expect(mockCb).toBeCalledTimes(1)
+    await sleep()
+    await store.hardReset()
+    await sleep(100)
+  })
+
+  it('should distribute the initial state after hard reset even if it is the same state.', async done => {
+    const jestMatcherState = expect.getState()
+    const expectedValues = [
+      createInitialState(),
+      createInitialState(),
+    ]
+    const numOfAssertions = expectedValues.length
+    expect.assertions(numOfAssertions)
+    store.select$(state => state).subscribe(value => {
+      expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
+      if (jestMatcherState.assertionCalls == numOfAssertions) done()
+    })
+    await sleep()
+    await store.hardReset()
+    await sleep(1)
+    store.initialize(createInitialState())
+    await sleep()
   })
 })
