@@ -1,33 +1,67 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { assertNotNullable } from 'helpers/functions'
 import { cloneObject } from 'lbrx/helpers'
+import moment from 'moment'
 
 describe('Helper Function - cloneObject():', () => {
 
-  const stateA = TestSubjectFactory.createTestSubject_configA()
-  const pureStateA = TestSubjectFactory.createTestSubject_configA()
+  const createState = () => TestSubjectFactory.createTestSubject_configA()
+  const createObjWithMoment = () => ({ a: moment(new Date(1900, 1)) })
+  const createObjWithSymbol = () => ({ a: Symbol() })
 
-  it("should copy all of object's properties.", () => {
-    const clonedStateA = cloneObject(stateA)
-    expect(clonedStateA).toStrictEqual(pureStateA)
+  it('should clone object.', () => {
+    const state = createState()
+    const clonedState = cloneObject(createState())
+    assertNotNullable(clonedState.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    assertNotNullable(state.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    assertNotNullable(clonedState.innerTestObjectGetSet.obj)
+    assertNotNullable(state.innerTestObjectGetSet.obj)
+    assertNotNullable(clonedState.innerTestObjectGetSet.deepNestedObj.objectList[0])
+    assertNotNullable(state.innerTestObjectGetSet.deepNestedObj.objectList[0])
+    expect(clonedState).toStrictEqual(createState())
+    expect(clonedState).not.toBe(state)
+    expect(clonedState.dateValue).not.toBe(state.dateValue)
+    expect(clonedState.innerTestObject).not.toBe(state.innerTestObject)
+    expect(clonedState.innerTestObjectGetSet).not.toBe(state.innerTestObjectGetSet)
+    expect(clonedState.innerTestObjectGetSet.getterSetterDate).not.toBe(state.innerTestObjectGetSet.getterSetterDate)
+    expect(clonedState.innerTestObjectGetSet.deepNestedObj).not.toBe(state.innerTestObjectGetSet.deepNestedObj)
+    expect(clonedState.innerTestObjectGetSet.obj.date).not.toBe(state.innerTestObjectGetSet.obj.date)
+    expect(clonedState.innerTestObjectGetSet.deepNestedObj.objectList[0].date).not
+      .toBe(state.innerTestObjectGetSet.deepNestedObj.objectList[0].date)
   })
 
-  it('should clone all inner objects.', () => {
-    const clonedStateA = cloneObject(stateA)
-    assertNotNullable(clonedStateA.innerTestObjectGetSet?.deepNestedObj?.objectList)
-    assertNotNullable(stateA.innerTestObjectGetSet?.deepNestedObj?.objectList)
-    assertNotNullable(clonedStateA.innerTestObjectGetSet.obj)
-    assertNotNullable(stateA.innerTestObjectGetSet.obj)
-    assertNotNullable(clonedStateA.innerTestObjectGetSet.deepNestedObj.objectList[0])
-    assertNotNullable(stateA.innerTestObjectGetSet.deepNestedObj.objectList[0])
-    expect(clonedStateA).not.toBe(stateA)
-    expect(clonedStateA.dateValue).not.toBe(stateA.dateValue)
-    expect(clonedStateA.innerTestObject).not.toBe(stateA.innerTestObject)
-    expect(clonedStateA.innerTestObjectGetSet).not.toBe(stateA.innerTestObjectGetSet)
-    expect(clonedStateA.innerTestObjectGetSet.getterSetterDate).not.toBe(stateA.innerTestObjectGetSet.getterSetterDate)
-    expect(clonedStateA.innerTestObjectGetSet.deepNestedObj).not.toBe(stateA.innerTestObjectGetSet.deepNestedObj)
-    expect(clonedStateA.innerTestObjectGetSet.obj.date).not.toBe(stateA.innerTestObjectGetSet.obj.date)
-    expect(clonedStateA.innerTestObjectGetSet.deepNestedObj.objectList[0].date).not
-      .toBe(stateA.innerTestObjectGetSet.deepNestedObj.objectList[0].date)
+  it('should clone moment object.', () => {
+    const objWithMoment = createObjWithMoment()
+    const clonedObjWithMoment = cloneObject(objWithMoment)
+    expect(moment.isMoment(clonedObjWithMoment.a)).toBeTruthy()
+    expect(clonedObjWithMoment).toStrictEqual(createObjWithMoment())
+    expect(clonedObjWithMoment.a).not.toBe(objWithMoment.a)
+  })
+
+  it('should copy symbols reference.', () => {
+    const objWithSymbol = createObjWithSymbol()
+    const clonedObjWithSymbol = cloneObject(objWithSymbol)
+    expect(typeof clonedObjWithSymbol.a).toBe('symbol')
+    expect(clonedObjWithSymbol).toStrictEqual(objWithSymbol)
+    expect(clonedObjWithSymbol.a).toBe(clonedObjWithSymbol.a)
+  })
+
+  it("should return null or undefined if the value that's provided is null or undefined.", () => {
+    let result = cloneObject(null as unknown as {})
+    expect(result).toBeNull()
+    result = cloneObject(undefined as unknown as {})
+    expect(result).toBeUndefined()
+  })
+
+  it('should return string, number, boolean or method if they are provided', () => {
+    let result = cloneObject(false as unknown as {})
+    expect(result).toBe(false)
+    result = cloneObject('' as unknown as {})
+    expect(result).toBe('')
+    result = cloneObject(0 as unknown as {})
+    expect(result).toBe(0)
+    const method = () => { }
+    result = cloneObject(method as unknown as {})
+    expect(result).toBe(method)
   })
 })
