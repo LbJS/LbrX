@@ -12,6 +12,7 @@ node_modules/
 lib
 dist
 build
+coverage
 
 # Individual files
 spec/test-report.html
