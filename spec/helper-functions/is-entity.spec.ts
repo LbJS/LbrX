@@ -30,4 +30,8 @@ describe('Helper Function - isEntity():', () => {
     const customError = ErrorFactory.createErrorTestSubject()
     expect(isEntity(customError)).toBeFalsy()
   })
+
+  it('should return false for Symbol.', () => {
+    expect(isEntity(Symbol())).toBeFalsy()
+  })
 })
