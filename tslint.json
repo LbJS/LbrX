@@ -3,6 +3,14 @@
   "extends": [
     "tslint:recommended"
   ],
+  "linterOptions": {
+    "exclude": [
+      "**/*.d.ts",
+      "build",
+      "dist",
+      "coverage"
+    ]
+  },
   "jsRules": {},
   "rules": {
     "array-type": false,
