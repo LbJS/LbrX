@@ -1,6 +1,8 @@
 import { objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isClass } from './is-class'
+import { isEmpty } from './is-empty'
+import { isMomentObject } from './is-moment-object'
 import { isObject } from './is-object'
 
 export function cloneObject<T extends object>(obj: T): T {
@@ -11,17 +13,19 @@ export function cloneObject<T extends object>(obj: T): T {
       if (isObject(copy[i])) copy[i] = cloneObject(copy[i])
     }
   } else if (isClass(obj)) {
+    if (isMomentObject(obj)) return obj.clone() as T
     copy = obj.constructor.length ?
-      new obj.constructor(obj) as T :
-      objectAssign(new obj.constructor() as T, obj)
+      objectAssign(new obj.constructor(obj), obj) :
+      objectAssign(new obj.constructor(), obj)
   } else if (isObject(obj)) {
     copy = { ...obj }
   }
-  if (!copy) return obj
-  for (let i = 0, keys = objectKeys(copy); i < keys.length; i++) {
-    const key = keys[i]
-    const objProp = copy[key]
-    if (isObject(objProp)) copy[key] = cloneObject(objProp)
+  if (isObject(copy)) {
+    for (let i = 0, keys = objectKeys(copy); i < keys.length; i++) {
+      const key = keys[i]
+      const objProp = copy[key]
+      if (isObject(objProp)) copy[key] = cloneObject(objProp)
+    }
   }
-  return copy as T
+  return isEmpty(copy) ? obj : copy as T
 }
