@@ -6,6 +6,11 @@ module.exports = {
       tsConfig: './spec/tsconfig.json'
     }
   },
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/types/*",
+    "!src/hooks/*",
+  ],
   moduleNameMapper: {
     "^lbrx$": "<rootDir>/src",
     "^lbrx/helpers$": "<rootDir>/src/helpers",
