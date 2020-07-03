@@ -1,24 +1,40 @@
 import { objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isClass } from './is-class'
+import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
+import { isMomentObject } from './is-moment-object'
 import { isObject } from './is-object'
+import { isString } from './is-string'
+import { newDate } from './new-date'
 
 export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
   if (isEmpty(plainObject)) return plainObject
   if (isClass(instancedObject) && !isClass(plainObject)) {
-    plainObject = instancedObject.constructor.length ?
-      objectAssign(new instancedObject.constructor(plainObject), plainObject) :
-      objectAssign(new instancedObject.constructor(), plainObject)
-  }
-  if (isArray(instancedObject) &&
+    if (isString(plainObject) && plainObject.length > 0) {
+      if (isDate(instancedObject)) {
+        plainObject = newDate(plainObject) as T
+      } else if (isMomentObject(instancedObject)) {
+        const clonedMomentObj = instancedObject.clone()
+        clonedMomentObj._d = newDate(plainObject)
+        if (clonedMomentObj._i) clonedMomentObj._i = newDate(plainObject)
+        plainObject = clonedMomentObj as T
+      }
+    } else if (isObject(plainObject)) {
+      plainObject = instancedObject.constructor.length ?
+        objectAssign(new instancedObject.constructor(plainObject), plainObject) :
+        objectAssign(new instancedObject.constructor(), plainObject)
+    }
+  } else if (isArray(instancedObject) &&
     instancedObject[0] &&
     isArray(plainObject)
   ) {
     for (let i = 0; i < plainObject.length; i++) {
       plainObject[i] = instanceHandler(instancedObject[0], plainObject[i])
     }
-  } else {
+    return plainObject
+  }
+  if (isObject(instancedObject) && isObject(plainObject)) {
     for (let i = 0, keys = objectKeys(instancedObject); i < keys.length; i++) {
       const key = keys[i]
       const instancedObjectProp = instancedObject[key]

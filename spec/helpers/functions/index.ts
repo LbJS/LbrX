@@ -11,4 +11,5 @@ export * from './is-undefined'
 export * from './object-keys'
 export * from './sleep'
 export * from './split-object'
+export * from './to-plain-object'
 
