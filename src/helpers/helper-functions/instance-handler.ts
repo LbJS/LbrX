@@ -21,8 +21,14 @@ export function instanceHandler<T extends object>(instancedObject: T, plainObjec
         plainObject = clonedMomentObj as T
       }
     } else if (isObject(plainObject)) {
+      if (instancedObject.constructor.length) {
+        plainObject = objectAssign(new instancedObject.constructor(plainObject), plainObject)
+        plainObject = new instancedObject.constructor(plainObject)
+      } else {
+        plainObject = objectAssign(new instancedObject.constructor(), plainObject)
+      }
       plainObject = instancedObject.constructor.length ?
-        objectAssign(new instancedObject.constructor(plainObject), plainObject) :
+        new instancedObject.constructor(plainObject) :
         objectAssign(new instancedObject.constructor(), plainObject)
     }
   } else if (isArray(instancedObject) &&
