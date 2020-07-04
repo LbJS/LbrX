@@ -1,6 +1,7 @@
 import { Subscription } from 'rxjs'
 import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from '../helpers'
 import { activateDevToolsPushes, isDev } from '../mode'
+import { KeyValue, Zone } from '../types'
 import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
 import { DevtoolsOptions } from './dev-tools-options'
 import { DevToolsSubjects } from './dev-tools-subjects'
@@ -10,7 +11,7 @@ export class DevToolsManager {
 
   private _userEventsSub = new Subscription()
   private _reduxEventsSub = new Subscription()
-  private _appState: { [storeName: string]: any } = {}
+  private _appState: KeyValue = {}
   private _loadingStoresCache = {}
   private _zone = {
     run: (f: any) => f()
@@ -128,7 +129,7 @@ export class DevToolsManager {
     })
   }
 
-  public setDevToolsZone(zone: { run: <T = void>(fn: (...args: any[]) => T, applyThis?: any, applyArgs?: any[]) => T }): void {
+  public setDevToolsZone(zone: Zone): void {
     this._zone = zone
   }
 }

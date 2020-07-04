@@ -3,7 +3,7 @@ import { isArray } from './is-array'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
 import { isFunction } from './is-function'
-import { isMoment } from './is-moment-object'
+import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
 export function countObjectChanges(
