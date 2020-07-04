@@ -3,7 +3,7 @@ import { isArray } from './is-array'
 import { isClass } from './is-class'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
-import { isMoment } from './is-moment-object'
+import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
 export function cloneObject<T extends object>(obj: T): T {
