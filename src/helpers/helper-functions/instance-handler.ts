@@ -3,7 +3,7 @@ import { isArray } from './is-array'
 import { isClass } from './is-class'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
-import { isMomentObject } from './is-moment-object'
+import { isMoment } from './is-moment-object'
 import { isObject } from './is-object'
 import { isString } from './is-string'
 import { newDate } from './new-date'
@@ -14,7 +14,7 @@ export function instanceHandler<T extends object>(instancedObject: T, plainObjec
     if (isString(plainObject) && plainObject.length > 0) {
       if (isDate(instancedObject)) {
         plainObject = newDate(plainObject) as T
-      } else if (isMomentObject(instancedObject)) {
+      } else if (isMoment(instancedObject)) {
         const clonedMomentObj = instancedObject.clone()
         clonedMomentObj._d = newDate(plainObject)
         if (clonedMomentObj._i) clonedMomentObj._i = newDate(plainObject)

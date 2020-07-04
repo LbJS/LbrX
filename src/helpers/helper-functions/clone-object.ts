@@ -1,9 +1,11 @@
 import { objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isClass } from './is-class'
+import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
-import { isMomentObject } from './is-moment-object'
+import { isMoment } from './is-moment-object'
 import { isObject } from './is-object'
+import { newDate } from './new-date'
 
 export function cloneObject<T extends object>(obj: T): T {
   let copy: T | any[] | null = null
@@ -13,7 +15,8 @@ export function cloneObject<T extends object>(obj: T): T {
       if (isObject(copy[i])) copy[i] = cloneObject(copy[i])
     }
   } else if (isClass(obj)) {
-    if (isMomentObject(obj)) return obj.clone() as T
+    if (isMoment(obj)) return obj.clone() as T
+    if (isDate(obj)) return newDate(obj) as T
     copy = obj.constructor.length ?
       objectAssign(new obj.constructor(obj), obj) :
       objectAssign(new obj.constructor(), obj)
