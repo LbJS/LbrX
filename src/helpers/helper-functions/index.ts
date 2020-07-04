@@ -22,7 +22,6 @@ export * from './is-promise'
 export * from './is-string'
 export * from './is-undefined'
 export * from './merge-objects'
-export * from './new-date'
 export * from './simple-clone-object'
 export * from './simple-compare-objects'
 
