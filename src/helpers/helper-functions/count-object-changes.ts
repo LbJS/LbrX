@@ -3,7 +3,7 @@ import { isArray } from './is-array'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
 import { isFunction } from './is-function'
-import { isMomentObject } from './is-moment-object'
+import { isMoment } from './is-moment-object'
 import { isObject } from './is-object'
 
 export function countObjectChanges(
@@ -26,10 +26,10 @@ export function countObjectChanges(
   } else if (isArray(objB)) {
     changesCount++
   } else if (isObject(objA) && isObject(objB)) {
-    if (isMomentObject(objA)) {
-      return (isMomentObject(objB) && objA._d.getTime() == objB._d.getTime()) ? 0 : 1
+    if (isMoment(objA)) {
+      return (isMoment(objB) && objA._d.getTime() == objB._d.getTime()) ? 0 : 1
     }
-    if (isMomentObject(objB)) return 1
+    if (isMoment(objB)) return 1
     const objBKeys = objectKeys(objB)
     let keyMatches = 0
     objectKeys(objA).forEach(key => {
