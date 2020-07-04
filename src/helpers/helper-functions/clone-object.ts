@@ -1,11 +1,10 @@
-import { objectAssign, objectKeys } from '../short-hand-functions'
+import { newDate, objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isClass } from './is-class'
 import { isDate } from './is-date'
 import { isEmpty } from './is-empty'
 import { isMoment } from './is-moment-object'
 import { isObject } from './is-object'
-import { newDate } from './new-date'
 
 export function cloneObject<T extends object>(obj: T): T {
   let copy: T | any[] | null = null

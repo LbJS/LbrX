@@ -1,4 +1,4 @@
-import { objectAssign, objectKeys } from '../short-hand-functions'
+import { newDate, objectAssign, objectKeys } from '../short-hand-functions'
 import { isArray } from './is-array'
 import { isClass } from './is-class'
 import { isDate } from './is-date'
@@ -6,7 +6,6 @@ import { isEmpty } from './is-empty'
 import { isMoment } from './is-moment-object'
 import { isObject } from './is-object'
 import { isString } from './is-string'
-import { newDate } from './new-date'
 
 export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
   if (isEmpty(plainObject)) return plainObject
