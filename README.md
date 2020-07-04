@@ -19,7 +19,11 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] NgZone Support
 - [x] ES5 support
 - [x] Multi platform support, including Node.JS
+- [x] Global and single Store Error api
 - [ ] Full spec coverage of the above - wip
+- [ ] LbrX utility functions available for import
+- [ ] Store pause api
+- [ ] Methods override in store config, like cloneObject, compareObjects and more...
 - [ ] **List Store**
 - [ ] Playground (Todo list)
 - [ ] Full spec coverage of the above
@@ -27,13 +31,11 @@ This is an object oriented State Manager that's build for JavaScript application
 
 ## Important Notice
 
-- `select()` is deprecated in favor of `select$()`.
-
-- **Requires RxJS version 6.5.4** or higher.
+- Added support for moment.js.
 
 ## Dependencies
 
-- RxJS
+- RxJS 6.5.4 or higher.
 
 ## Installation
 
@@ -176,11 +178,11 @@ setTimeout(() => {
 - Node.JS support.
 - Source files are included in 'node_modules\lbrx\src'.
 - UMD bundles\* are included in 'node_modules\lbrx\bundles'.
-- IE11\*\* support.
+- IE11\*\* ES5 syntax support.
 
-_\* Both ES5 and ES2015 UMD bundles are included and both have minified and non minified versions. In all bundles the global would be **lbrx**._
+_\* Both ES5 and ES2015 UMD bundles are included and both have minified and non minified versions. In all bundles the global would be `lbrx`._
 
-_\*\* Please try to convince your managers to drop IE support._
+_\*\* For IE11 you may need additional polyfills but if you're using a framework, they may already be included._
 
 ## Licence
 
