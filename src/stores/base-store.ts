@@ -9,6 +9,8 @@ export abstract class BaseStore<T extends object, E = any> {
 
   //#region loading-state
 
+  // TODO: add isPausing
+
   /**
    * This is a protected property.
    * We do not recommend overriding this method.

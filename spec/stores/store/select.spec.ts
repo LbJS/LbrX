@@ -1,6 +1,7 @@
 
 import { sleep } from 'helpers/functions'
 import { InnerTestSubject, Store, TestSubject, TestSubjectFactory } from 'provider'
+import { Observable } from 'rxjs'
 
 describe('Store select$():', () => {
 
@@ -236,5 +237,13 @@ describe('Store select$():', () => {
     await sleep(1)
     store.initialize(createInitialState())
     await sleep()
+  })
+
+  it('should compile when provided with an optional parameter.', () => {
+    function stateProjectionFactory<R>(optionalProjection?: (state: Readonly<TestSubject>) => R): Observable<TestSubject | R> {
+      return store.select$(optionalProjection)
+    }
+    stateProjectionFactory()
+    stateProjectionFactory(state => state.booleanValue)
   })
 })
