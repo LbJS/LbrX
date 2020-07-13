@@ -16,18 +16,22 @@ function createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancell
 
 /**
  * @example
- * const createUiState: UiState = () => {
- * 	return {...}
+ * const createWeatherState: WeatherState = () => {
+ *   return {
+ *     isRaining: true,
+ *     isSunny: false,
+ *     precipitation: 7
+ *   }
  * }
  *
- * `@`StoreConfig({
- * 	name: 'UI-STORE'
+ * `@`StoreConfig({ // <= decorator
+ *   name: 'WEATHER-STORE'
  * })
- * export class UiStore extends Store<UiState, AppError> {
+ * export class WeatherStore extends Store<WeatherState, AppError> {
  *
- * 	constructor() {
- * 		super(createUiState())
- * 	}
+ *   constructor() {
+ *     super(createWeatherState())
+ *   }
  * }
  */
 export class Store<T extends object, E = any> extends BaseStore<T, E> {
@@ -35,7 +39,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#region state-properties
 
   private readonly _state$ = new BehaviorSubject<T | null>(null)
+  // TODO: create state private property: StoreStates
+  // TODO: change _state to value
   private _state: Readonly<T> | null = null
+  // TODO: create public get state
   private set state(value: T | null) {
     this._state = value
     this._state$.next(value)
@@ -44,8 +51,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * Returns stores current state's value.
    */
   public get value(): T | null {
-    return isNull(this._state) ? this._state : this._clone(this._state)
+    return isNull(this._state) ? null : this._clone(this._state)
   }
+  // TODO: create private set value
 
   private _initialState: Readonly<T> | null = null
   /**
@@ -211,30 +219,35 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Update the store's value
+   * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
+   * - If you want to override the current store's state, use the `override` method.
    * @example
-   *  this.store.update({ key: value })
+   *  weatherStore.update({ isWindy: true });
    */
   public update(state: Partial<T>, updateName?: string): void
   /**
-   * Update the store's value
+   * Updates the store's state using a function that will be called by the store.
+   * The function will be provided with the current state as a parameter and it must return a new partial state.
+   * The returned partial state will be then merged with current store's state.
+   * - If you want to override the current store's state, use the `override` method.
    * @example
-   * this.store.update(state => {
-   *   return {...}
-   * })
+   * weatherStore.update(state => ({
+   *    isSunny: !state.isRaining
+   * }));
    */
-  public update(stateCallback: (state: Readonly<T>) => Partial<T>, updateName?: string): void
-  public update(stateOrCallback: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
+  public update(stateFunction: (state: Readonly<T>) => Partial<T>, updateName?: string): void
+  public update(stateOrFunction: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
     const initialState = this._initialState
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
-      logError(`Can't update ${this._storeName} while it's in loading state.`)
+      const errMsg = `Can't update ${this._storeName} while it's in loading state.`
+      isDev() ? throwError(errMsg) : logError(errMsg)
     } else if (!initialState) {
       const errMsg = `Store: ${this._storeName} can't be updated while the initial state is null.`
       isDev() ? throwError(errMsg) : logError(errMsg)
     } else {
       this._setState(state => {
         if (!state) throwError(`Store: ${this._storeName} can't update state`)
-        const newPartialState = isFunction(stateOrCallback) ? stateOrCallback(state) : stateOrCallback
+        const newPartialState = isFunction(stateOrFunction) ? stateOrFunction(state) : stateOrFunction
         let newState = mergeObjects(this._clone(state), this._clone(newPartialState))
         if (!this._isSimpleCloning) newState = instanceHandler(initialState, newState)
         if (isFunction(this['onUpdate'])) {
@@ -248,7 +261,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Overrides the state's value completely, without merging.
+   * Overrides the current store's state completely.
    */
   public override(state: T): void {
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
@@ -270,7 +283,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Resets the store's state to it's initial value.
+   * Resets the store's state to it's initial state.
    */
   public reset(): void | never {
     const initialState = this._initialState
@@ -294,12 +307,12 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Resets the following store parameters:
-   * - State will be set to null.
-   * - Initial state will be set to null.
-   * - Activates Loading state.
-   * - Store's error will be set to null.
-   * - Clears cached storage if any.
+   * Sets the following:
+   * - Store's state will be set to `null`.
+   * - Store's initial state will be set to `null`.
+   * - Store's error will be set to `null`.
+   * - Sets the store to 'Loading...' state.
+   * - Clears store's cache storage if any (LocalStorage, SessionStorage, etc.).
    */
   public hardReset(): Promise<this> {
     if (!this._isResettable) {
@@ -335,37 +348,34 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Returns whole state as an Observable.
+   * Returns the state as an Observable.
    * @example
-   * state$ = this.store.select()
-   *
-   * myFunc() {
-   * 	this.tate$.subscribe(state => {
-   * 		// do some work...
-   * 	})
-   * }
+   * weatherStore.select$().subscribe(state => {
+   *   // do something with the weather...
+   * });
    */
   public select$(): Observable<T>
   /**
-   * Returns partial state as an Observable.
+   * Returns the extracted state as an Observable based on the provided projection method.
    * @example
-   * isSideNavOpen$ = this.store.select(state => state.isSideNavOpen)
-   *
-   * myFunc() {
-   * 	this.isSideNavOpen$.subscribe(isSideNavOpen => {
-   * 		// do some work...
-   * 	})
-   * }
+   * weatherStore.select$(state => state.isRaining)
+   *   .subscribe(isRaining => {
+   *     if (isRaining) {
+   *        // do something when it's raining...
+   *     }
+   *  });
    */
   public select$<R>(project: (state: T) => R): Observable<R>
   /**
-   * Returns partial or whole state as an Observable based on the given project function.
+   * Returns the state or the extracted state as an Observable, based on the provided projection method if it is provided.
+   * - This overload provides you with a more dynamic approach compare to other overloads.
+   * - With this overload you can create an dynamic Observable factory.
    * @example
-   * mySelect(projectionFunction = undefined) {
-   * 	this.store.select(projectionFunction)
+   * stateProjectionFactory(optionalProjection) {
+   *   return weatherStore.select$(optionalProjection);
    * }
    */
-  public select$<R>(project: ((state: T) => R) | undefined): Observable<R>
+  public select$<R>(project?: (state: T) => R): Observable<T | R>
   public select$<R>(project?: (state: T) => R): Observable<T | R> {
     const tillLoaded$ = this._isLoading$.asObservable()
       .pipe(
