@@ -1,4 +1,5 @@
 import { objectAssign, objectKeys } from '../short-hand-functions'
+import { isArray } from './is-array'
 import { isEntity } from './is-entity'
 
 export function mergeObjects<T extends object>(target: T, source: Partial<T>): T {
@@ -6,7 +7,9 @@ export function mergeObjects<T extends object>(target: T, source: Partial<T>): T
     const key = keys[i]
     const targetProp = target[key]
     const sourceProp = source[key]
-    if (isEntity(targetProp) && isEntity(sourceProp)) {
+    if ((isEntity(targetProp) && isEntity(sourceProp))
+      || (isArray(targetProp) && isArray(sourceProp))
+    ) {
       source[key] = mergeObjects(targetProp, sourceProp)
     }
   }
