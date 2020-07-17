@@ -7,16 +7,33 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch JS Program",
+      "name": "Launch JS",
       "program": "${file}",
       "skipFiles": [
         "<node_internals>/**"
       ]
     },
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch TS",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register"
+      ],
+      "args": [
+        "${file}"
+      ],
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceRoot}/tools/tsconfig.json"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+    },
+    {
       "type": "chrome",
       "request": "attach",
-      "name": "Attach to Localhost",
+      "name": "Attach to 127.0.0.1",
       "port": 9222,
       "url": "127.0.0.1:5500*",
       "sourceMaps": true,
@@ -33,9 +50,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Jest Tests",
+      "name": "Launch Jest",
       "cwd": "${workspaceFolder}",
-      "args": [
+      "runtimeArgs": [
+        "--nolazy",
         "--inspect-brk",
         "${workspaceRoot}/node_modules/.bin/jest",
         "--no-cache",
@@ -46,7 +64,8 @@
         "/${fileBasename}"
       ],
       "windows": {
-        "args": [
+        "runtimeArgs": [
+          "--nolazy",
           "--inspect-brk",
           "${workspaceRoot}/node_modules/jest/bin/jest.js",
           "--no-cache",
@@ -57,11 +76,9 @@
           "/${fileBasename}"
         ],
       },
-      "runtimeArgs": [
-        "--nolazy"
-      ],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229
     },
   ]
 }
