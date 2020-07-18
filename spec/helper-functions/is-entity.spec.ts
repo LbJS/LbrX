@@ -1,5 +1,6 @@
 import { ErrorFactory, TestSubjectFactory } from 'helpers/factories'
 import { isEntity } from 'lbrx/helpers'
+import moment from 'moment'
 
 describe('Helper Function - isEntity():', () => {
 
@@ -33,5 +34,9 @@ describe('Helper Function - isEntity():', () => {
 
   it('should return false for Symbol.', () => {
     expect(isEntity(Symbol())).toBeFalsy()
+  })
+
+  it('should return false for Moment object.', () => {
+    expect(isEntity(moment())).toBeFalsy()
   })
 })
