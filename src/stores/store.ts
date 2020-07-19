@@ -327,7 +327,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     }
     if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
     const asyncInitPromise = this._asyncInitPromise
-    const initializeAsyncPromiseState: Promise<void | string> = asyncInitPromise.promise ?
+    const initializeAsyncPromiseState: Promise<void | PromiseStates> = asyncInitPromise.promise ?
       getPromiseState(asyncInitPromise.promise) :
       Promise.resolve()
     return new Promise((resolve) => {
