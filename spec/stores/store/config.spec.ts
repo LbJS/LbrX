@@ -2,7 +2,7 @@ import { StoresFactory as StoresFactory_type } from 'helpers/factories'
 import MockBuilder from 'helpers/mock-builder'
 import { GenericStorage } from 'helpers/mocks'
 import { TestSubject } from 'helpers/test-subjects'
-import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages, Store, StoreConfigOptions, StoreConfigOptionsInfo } from 'lbrx'
+import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages, Store, StoreConfigInfo, StoreConfigOptions } from 'lbrx'
 import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
 
 describe('Store Config:', () => {
@@ -37,7 +37,7 @@ describe('Store Config:', () => {
     store = createStore({
       name: 'TEST-STORE'
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: true,
       storageType: Storages.none,
@@ -133,7 +133,7 @@ describe('Store Config:', () => {
       isSimpleCloning: true,
       storageKey: 'TEST-STORE-KEY',
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: false,
       storageType: Storages.local,
@@ -160,7 +160,7 @@ describe('Store Config:', () => {
       isSimpleCloning: true,
       storageKey: 'TEST-STORE-KEY',
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: false,
       storageType: Storages.session,
@@ -183,7 +183,7 @@ describe('Store Config:', () => {
       storageType: Storages.custom,
       customStorageApi: new GenericStorage(),
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: true,
       storageType: Storages.custom,
@@ -207,7 +207,7 @@ describe('Store Config:', () => {
       storageType: Storages.local,
       customStorageApi: new GenericStorage(),
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: true,
       storageType: Storages.local,
@@ -232,7 +232,7 @@ describe('Store Config:', () => {
       storageType: Storages.custom,
       customStorageApi: null,
     })
-    const expectedConfig: Required<StoreConfigOptionsInfo> = {
+    const expectedConfig: Required<StoreConfigInfo> = {
       name: 'TEST-STORE',
       isResettable: true,
       storageType: Storages.none,

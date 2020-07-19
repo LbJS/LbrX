@@ -5,7 +5,8 @@ import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObj
 import { isDev, isDevTools } from '../mode'
 import { BaseStore } from './base-store'
 import { Storages, StoreConfigOptions } from './config'
-import { validateStorageKey, validateStoreName } from './store-unique-name-enforcer'
+import { validateStorageKey } from './helpers/validate-storage-key'
+import { validateStoreName } from './helpers/validate-store-name'
 
 function createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancelled: boolean } {
   return {

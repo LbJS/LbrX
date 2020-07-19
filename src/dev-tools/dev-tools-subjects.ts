@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs'
-import { DevToolsDataStruct } from './store-dev-object'
+import { DevToolsDataStruct } from './dev-tools-data.struct'
 
 export class DevToolsSubjects {
   public static readonly stores: { [storeName: string]: any } = {}

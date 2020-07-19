@@ -5,9 +5,9 @@ import { cloneError, cloneObject, isError, isNull, isObject } from '../helpers'
 /**
  * Global Error-API. Will hold and emit the last error from all stores.
  */
-export class GlobalErrorStore<T = any> {
+export class LbrxErrorStore<T = any> {
 
-  private static _globalErrorStore: GlobalErrorStore | null = null
+  private static _globalErrorStore: LbrxErrorStore | null = null
 
   private readonly _error$ = new BehaviorSubject<T | null>(null)
 
@@ -25,11 +25,11 @@ export class GlobalErrorStore<T = any> {
 
   protected constructor() { }
 
-  public static getStore<E>(): GlobalErrorStore<E> {
-    if (isNull(GlobalErrorStore._globalErrorStore)) {
-      GlobalErrorStore._globalErrorStore = new GlobalErrorStore<E>()
+  public static getStore<E>(): LbrxErrorStore<E> {
+    if (isNull(LbrxErrorStore._globalErrorStore)) {
+      LbrxErrorStore._globalErrorStore = new LbrxErrorStore<E>()
     }
-    return GlobalErrorStore._globalErrorStore
+    return LbrxErrorStore._globalErrorStore
   }
 
   public getError(): T | null {

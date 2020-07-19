@@ -1,15 +1,15 @@
 import { createCustomError, createError } from 'helpers/test-subjects'
-import { GlobalErrorStore } from 'lbrx'
+import { LbrxErrorStore } from 'lbrx'
 import { skip } from 'rxjs/operators'
 
-describe('Global Error Store API:', () => {
+describe('Lbrx Error Store API:', () => {
 
   const errorMsg = 'Some Error.'
-  let globalErrorStore: GlobalErrorStore<string | Error>
+  let lbrxErrorStore: LbrxErrorStore<string | Error>
 
   beforeEach(async () => {
     const providerModule = await import('provider')
-    globalErrorStore = providerModule.GlobalErrorStore.getStore()
+    lbrxErrorStore = providerModule.LbrxErrorStore.getStore()
   })
 
   afterEach(() => {
@@ -17,62 +17,62 @@ describe('Global Error Store API:', () => {
   })
 
   it('should have null as the default error value', () => {
-    expect(globalErrorStore.getError()).toBeNull()
+    expect(lbrxErrorStore.getError()).toBeNull()
   })
 
   it('should return that no error exist by default.', () => {
-    expect(globalErrorStore.isError()).toBeFalsy()
+    expect(lbrxErrorStore.isError()).toBeFalsy()
   })
 
   it('should return that an error exist after setting a new error.', () => {
-    globalErrorStore.setError(errorMsg)
-    expect(globalErrorStore.isError()).toBeTruthy()
+    lbrxErrorStore.setError(errorMsg)
+    expect(lbrxErrorStore.isError()).toBeTruthy()
   })
 
   it('should return the error message after setting a new error.', () => {
-    globalErrorStore.setError(errorMsg)
-    expect(globalErrorStore.getError()).toBe(errorMsg)
+    lbrxErrorStore.setError(errorMsg)
+    expect(lbrxErrorStore.getError()).toBe(errorMsg)
   })
 
   it('should return the error message from observable after setting a new error.', done => {
-    globalErrorStore.error$.pipe(skip(1))
+    lbrxErrorStore.error$.pipe(skip(1))
       .subscribe(value => {
         expect(value).toBe(errorMsg)
         done()
       })
-    globalErrorStore.setError(errorMsg)
+    lbrxErrorStore.setError(errorMsg)
   }, 100)
 
   it('should return the errors data flow from observable.', () => {
     const errorsStream = ['First Error', 'Second Error', null, 'Third Error', new Error('Some data')]
     const expectedErrorsStream = [null, 'First Error', 'Second Error', null, 'Third Error', new Error('Some data')]
     const actualErrorsStream: (string | null | Error)[] = []
-    globalErrorStore.error$.subscribe(value => {
+    lbrxErrorStore.error$.subscribe(value => {
       actualErrorsStream.push(value)
     })
-    errorsStream.forEach(value => globalErrorStore.setError(value))
+    errorsStream.forEach(value => lbrxErrorStore.setError(value))
     expect(actualErrorsStream).toStrictEqual(expectedErrorsStream)
   })
 
   it('should not emit null value more then once.', async () => {
     let nullCounter = 0
-    globalErrorStore.error$.subscribe(value => {
+    lbrxErrorStore.error$.subscribe(value => {
       if (value === null) nullCounter++
     })
-    globalErrorStore.setError(null)
-    globalErrorStore.setError(null)
-    globalErrorStore.setError(null)
+    lbrxErrorStore.setError(null)
+    lbrxErrorStore.setError(null)
+    lbrxErrorStore.setError(null)
     await Promise.resolve()
     expect(nullCounter).toBe(1)
   })
 
   it('should be the exact same error object.', () => {
-    globalErrorStore.setError(createError())
-    expect(globalErrorStore.getError()).toStrictEqual(createError())
+    lbrxErrorStore.setError(createError())
+    expect(lbrxErrorStore.getError()).toStrictEqual(createError())
   })
 
   it('should be the exact same nested custom error object.', () => {
-    globalErrorStore.setError(createCustomError())
-    expect(globalErrorStore.getError()).toStrictEqual(createCustomError())
+    lbrxErrorStore.setError(createCustomError())
+    expect(lbrxErrorStore.getError()).toStrictEqual(createCustomError())
   })
 })

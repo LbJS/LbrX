@@ -1,9 +1,4 @@
-
-export enum PromiseStates {
-  pending = 'pending',
-  fulfilled = 'fulfilled',
-  rejected = 'rejected',
-}
+import { PromiseStates } from './promise-states.enum'
 
 export function getPromiseState(promise: Promise<void>): Promise<string> {
   const obj = {}

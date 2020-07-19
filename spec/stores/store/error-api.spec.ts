@@ -20,7 +20,7 @@ describe('Store Error API:', () => {
   })
 
   it('should have null as the default error value.', () => {
-    expect(store.getError()).toBeNull()
+    expect(store.error).toBeNull()
   })
 
   it('should return null as the default error value from observable.', done => {
@@ -31,12 +31,12 @@ describe('Store Error API:', () => {
   })
 
   it('should return the exact same error after setting it.', () => {
-    store.setError(error)
-    expect(store.getError()).toStrictEqual(pureError)
+    store.error = error
+    expect(store.error).toStrictEqual(pureError)
   })
 
   it('should return the exact same error from observable after setting it.', done => {
-    store.setError(error)
+    store.error = error
     store.error$.subscribe(value => {
       expect(value).toStrictEqual(pureError)
       done()
@@ -48,9 +48,9 @@ describe('Store Error API:', () => {
     store.error$.subscribe(value => {
       if (value === null) nullCounter++
     })
-    store.setError(null)
-    store.setError(null)
-    store.setError(null)
+    store.error = null
+    store.error = null
+    store.error = null
     await timer(100).toPromise()
     expect(nullCounter).toBe(1)
   }, 200)
@@ -60,7 +60,7 @@ describe('Store Error API:', () => {
     const expectedErrors = [null, error, null, error]
     const actualErrors: any[] = []
     store.error$.subscribe(value => actualErrors.push(value))
-    from(errorsStream).subscribe(value => store.setError(value))
+    from(errorsStream).subscribe(value => store.error = value)
     await Promise.resolve()
     expect(actualErrors).toStrictEqual(expectedErrors)
   })

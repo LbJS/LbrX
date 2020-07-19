@@ -22,6 +22,8 @@ export * from './is-promise'
 export * from './is-string'
 export * from './is-undefined'
 export * from './merge-objects'
+export * from './promise-states.enum'
 export * from './simple-clone-object'
 export * from './simple-compare-objects'
+export * from './throw-error'
 
