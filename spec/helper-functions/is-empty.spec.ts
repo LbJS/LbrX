@@ -21,4 +21,15 @@ describe('Helper Function - isEmpty():', () => {
   it('should return false for false boolean.', () => {
     expect(isEmpty(false)).toBeFalsy()
   })
+
+  it('should return true for null variable.', () => {
+    const nullValue = null
+    expect(isEmpty(nullValue)).toBeTruthy()
+  })
+
+  it('should return true for undefined variable.', () => {
+    // tslint:disable-next-line: prefer-const
+    let empty: undefined
+    expect(isEmpty(empty)).toBeTruthy()
+  })
 })
