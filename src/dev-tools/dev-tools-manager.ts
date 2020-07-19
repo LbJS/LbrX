@@ -2,8 +2,8 @@ import { Subscription } from 'rxjs'
 import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from '../helpers'
 import { activateDevToolsPushes, isDev } from '../mode'
 import { KeyValue, Zone } from '../types'
-import { DEFAULT_DEV_TOOLS_OPTIONS } from './default-dev-tools-options'
-import { DevtoolsOptions } from './dev-tools-options'
+import { getDefaultDevToolsConfig } from './default-dev-tools-config'
+import { DevtoolsOptions } from './dev-tools-options.interface'
 import { DevToolsSubjects } from './dev-tools-subjects'
 import { StoreStates } from './store-states.enum'
 
@@ -28,7 +28,7 @@ export class DevToolsManager {
     if (!isDev() || !isBrowser() || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
     (window as any).$$stores = DevToolsSubjects.stores
     const devToolsOptions = this.devToolsOptions
-    const mergedOptions = objectAssign(DEFAULT_DEV_TOOLS_OPTIONS, devToolsOptions)
+    const mergedOptions = objectAssign(getDefaultDevToolsConfig(), devToolsOptions)
     this.devToolsOptions = mergedOptions
     const reduxDevToolsOptions = {
       name: mergedOptions.name

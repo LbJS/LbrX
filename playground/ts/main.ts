@@ -101,7 +101,7 @@ setTimeout(() => {
 }, 550)
 
 setTimeout(async () => {
-  await userStore.hardReset()
+  (await userStore.hardReset())
     .initializeAsync(of(createLeon()))
 }, 600)
 

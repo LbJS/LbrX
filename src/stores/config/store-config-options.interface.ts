@@ -1,4 +1,4 @@
-import { GlobalStoreConfigOptions } from './global-store-config-options'
+import { GlobalStoreConfigOptions } from './global-store-config-options.interface'
 
 /**
  * Store configuration options.

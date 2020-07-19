@@ -2,8 +2,8 @@ import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from '../helpers'
 import { Class } from '../types'
-import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigOptions, StoreConfigOptionsInfo, STORE_CONFIG_KEY } from './config'
-import { GlobalErrorStore } from './global-error-store'
+import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
+import { LbrxErrorStore } from './lbrx-error-store'
 
 export abstract class BaseStore<T extends object, E = any> {
 
@@ -79,7 +79,7 @@ export abstract class BaseStore<T extends object, E = any> {
       value = cloneObject(value)
     }
     this._error$.next(value)
-    if (!isEmpty(value)) GlobalErrorStore.getStore<E>().setError(value)
+    if (!isEmpty(value)) LbrxErrorStore.getStore<E>().setError(value)
   }
 
   //#endregion error-api
@@ -90,11 +90,11 @@ export abstract class BaseStore<T extends object, E = any> {
    * We do not recommend overriding this method.
    * Please proceed with care.
    */
-  protected _config!: StoreConfigOptionsInfo
+  protected _config!: StoreConfigInfo
   /**
    * Returns store's active configuration.
    */
-  public get config(): StoreConfigOptionsInfo {
+  public get config(): StoreConfigInfo {
     return this._config
   }
   protected _storeName!: string

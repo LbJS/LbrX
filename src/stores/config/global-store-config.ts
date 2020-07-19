@@ -1,13 +1,13 @@
 import { cloneObject, mergeObjects } from '../../helpers'
-import { getDefaultStoreOptions } from './default-global-store-config'
-import { GlobalStoreConfigOptions } from './global-store-config-options'
+import { getDefaultStoreConfig } from './default-global-store-config'
+import { GlobalStoreConfigOptions } from './global-store-config-options.interface'
 
-let globalStoreOptions: GlobalStoreConfigOptions = getDefaultStoreOptions()
+let globalStoreOptions: GlobalStoreConfigOptions | null = null
 
 export function setGlobalStoreConfig(options: GlobalStoreConfigOptions): void {
-  globalStoreOptions = mergeObjects(globalStoreOptions, options)
+  globalStoreOptions = mergeObjects(getDefaultStoreConfig(), options)
 }
 
 export function getGlobalStoreConfig(): GlobalStoreConfigOptions {
-  return cloneObject(globalStoreOptions)
+  return globalStoreOptions ? cloneObject(globalStoreOptions) : getDefaultStoreConfig()
 }
