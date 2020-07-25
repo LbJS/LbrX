@@ -1,5 +1,6 @@
 import { ClassTestSubject } from 'helpers/test-subjects'
 import { isClass } from 'lbrx/helpers'
+import moment from 'moment'
 
 describe('Helper Function - isClass():', () => {
 
@@ -9,6 +10,10 @@ describe('Helper Function - isClass():', () => {
 
   it('should return true for date object.', () => {
     expect(isClass(new Date())).toBeTruthy()
+  })
+
+  it('should return true for moment.', () => {
+    expect(isClass(moment())).toBeTruthy()
   })
 
   it('should return false for plain object.', () => {
