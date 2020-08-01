@@ -11,7 +11,6 @@ describe('Helper Function - simpleCompareObjects():', () => {
   const createStateConfigA = () => TestSubjectFactory.createTestSubject_configA()
   const createStateConfigB = () => TestSubjectFactory.createTestSubject_configB()
   const createStateConfigA_plain = () => TestSubjectFactory.createTestSubject_configA_plain()
-  const createStateWithMethodsConfigA_plain = () => TestSubjectFactory.createTestSubjectWithMethods_configA_plain()
 
   it('should return that the given objects are equal.', () => {
     expect(simpleCompareObjects(createStateConfigA(), createStateConfigA())).toBeTruthy()
