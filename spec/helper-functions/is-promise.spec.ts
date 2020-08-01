@@ -1,6 +1,6 @@
 import { isPromise } from 'lbrx/helpers'
 
-describe('"isPromise" helper function', () => {
+describe('Helper Function - isPromise():', () => {
 
   it('should return true for Promise instance.', () => {
     expect(isPromise(new Promise(() => { }))).toBeTruthy()
