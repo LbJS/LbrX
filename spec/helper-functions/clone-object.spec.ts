@@ -5,20 +5,20 @@ import moment from 'moment'
 
 describe('Helper Function - cloneObject():', () => {
 
-  const createState = () => TestSubjectFactory.createTestSubject_configA()
+  const createTestSubjectA = () => TestSubjectFactory.createTestSubject_configA()
   const createObjWithMoment = () => ({ a: moment(new Date(1900, 1)) })
   const createObjWithSymbol = () => ({ a: Symbol() })
 
   it('should clone object.', () => {
-    const state = createState()
-    const clonedState = cloneObject(createState())
+    const state = createTestSubjectA()
+    const clonedState = cloneObject(createTestSubjectA())
     assertNotNullable(clonedState.innerTestObjectGetSet?.deepNestedObj?.objectList)
     assertNotNullable(state.innerTestObjectGetSet?.deepNestedObj?.objectList)
     assertNotNullable(clonedState.innerTestObjectGetSet.obj)
     assertNotNullable(state.innerTestObjectGetSet.obj)
     assertNotNullable(clonedState.innerTestObjectGetSet.deepNestedObj.objectList[0])
     assertNotNullable(state.innerTestObjectGetSet.deepNestedObj.objectList[0])
-    expect(clonedState).toStrictEqual(createState())
+    expect(clonedState).toStrictEqual(createTestSubjectA())
     expect(clonedState).not.toBe(state)
     expect(clonedState.dateValue).not.toBe(state.dateValue)
     expect(clonedState.innerTestObject).not.toBe(state.innerTestObject)
