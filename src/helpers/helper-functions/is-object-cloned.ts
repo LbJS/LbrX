@@ -1,7 +1,7 @@
 import { compareObjects } from './compare-objects'
 import { isObject } from './is-object'
 
-export function isObjectCloned(objA: {} | [], objB: {} | []): boolean {
+export function isObjectCloned(objA: {}, objB: {}): boolean {
   if (!compareObjects(objA, objB)) return false
   if (!isObject(objA) || !isObject(objB)) return false
   if (objA === objB || objA.constructor.name != objB.constructor.name) return false

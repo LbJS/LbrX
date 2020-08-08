@@ -5,7 +5,7 @@ import { isFunction } from './is-function'
 import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
-export function compareObjects(objA: object | unknown[] | unknown, objB: object | unknown[] | unknown): boolean {
+export function compareObjects(objA: {}, objB: {}): boolean {
   if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime()
   if (isMoment(objA) || isMoment(objB)) return isMoment(objA) && isMoment(objB) && objA.valueOf() == objB.valueOf()
   if (isArray(objA) && isArray(objB)) {
