@@ -1,14 +1,15 @@
 import { TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable, toPlainObject } from 'helpers/functions'
+import { assertNotNullable, objectAssign, toPlainObject } from 'helpers/functions'
 import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from 'helpers/test-subjects'
 import { instanceHandler } from 'lbrx/helpers'
-import moment, { Moment } from 'moment'
+import moment from 'moment'
 
 describe('Helper Function - instanceHandler():', () => {
 
   const createInstancedObjA = () => TestSubjectFactory.createTestSubject_configA()
   const createPlainObjA = () => TestSubjectFactory.createTestSubject_configA_plain()
-  const createObjWithMoment = () => ({ a: moment(new Date(1900, 1)) })
+  const createObjWithMomentA = () => ({ a: moment() })
+  const createObjWithMomentB = () => ({ a: moment(new Date(1900, 1)) })
   const createObjWithSymbol = () => ({ a: Symbol() })
 
   it('should create an instance for the root object and all nested objects.', () => {
@@ -26,9 +27,14 @@ describe('Helper Function - instanceHandler():', () => {
   })
 
   it('should create a moment object if it is moment.', () => {
-    const objWithMoment = createObjWithMoment()
-    const plainObj = toPlainObject(objWithMoment)
-    const resultObj = instanceHandler(objWithMoment, plainObj) as { a: Moment }
+    let objWithMoment = createObjWithMomentA()
+    let plainObj = toPlainObject(objWithMoment)
+    let resultObj = instanceHandler(objWithMoment, plainObj)
+    expect(moment.isMoment(resultObj.a)).toBeTruthy()
+    expect(resultObj).toStrictEqual(objWithMoment)
+    objWithMoment = createObjWithMomentB()
+    plainObj = toPlainObject(objWithMoment)
+    resultObj = instanceHandler(objWithMoment, plainObj)
     expect(moment.isMoment(resultObj.a)).toBeTruthy()
     expect(resultObj).toStrictEqual(objWithMoment)
   })
@@ -36,7 +42,7 @@ describe('Helper Function - instanceHandler():', () => {
   it('should ignore symbol on instanced obj.', () => {
     const objWithSymbol = createObjWithSymbol()
     const plainObjWithSymbol = toPlainObject(createObjWithSymbol())
-    const result = instanceHandler(objWithSymbol, plainObjWithSymbol) as { a: symbol }
+    const result = instanceHandler(objWithSymbol, plainObjWithSymbol)
     expect(result.a).toBeUndefined()
   })
 
@@ -52,5 +58,16 @@ describe('Helper Function - instanceHandler():', () => {
     expect(result).toBeNull()
     result = instanceHandler(createInstancedObjA(), undefined as unknown as {})
     expect(result).toBeUndefined()
+  })
+
+  it('should return the plain object if the instanced object is not applicable.', () => {
+    let instancedObj = { a: new TestSubject({}) }
+    let plainObj: { a: string | number } = { a: 'test' }
+    let result = instanceHandler(instancedObj, objectAssign({}, plainObj))
+    expect(result).toStrictEqual(plainObj)
+    instancedObj = { a: new TestSubject({}) }
+    plainObj = { a: 10 }
+    result = instanceHandler(instancedObj, objectAssign({}, plainObj))
+    expect(result).toStrictEqual(plainObj)
   })
 })

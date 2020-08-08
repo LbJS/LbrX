@@ -7,46 +7,48 @@ import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 import { isString } from './is-string'
 
-export function instanceHandler<T extends object>(instancedObject: T, plainObject: T): T {
-  if (isEmpty(plainObject)) return plainObject
-  if (isClass(instancedObject) && !isClass(plainObject)) {
-    if (isString(plainObject) && plainObject.length > 0) {
-      if (isDate(instancedObject)) {
-        plainObject = newDate(plainObject) as T
-      } else if (isMoment(instancedObject)) {
-        const clonedMomentObj = instancedObject.clone()
-        clonedMomentObj._d = newDate(plainObject)
-        if (clonedMomentObj._i) clonedMomentObj._i = newDate(plainObject)
-        plainObject = clonedMomentObj as T
+export function instanceHandler<T extends object>(instancedObj: T, plainObj: {}): T
+export function instanceHandler<T extends object>(instancedObjs: T[], plainObjs: {}[]): T[]
+export function instanceHandler<T extends object>(instanced: T | T[], plain: {} | {}[]): T | T[] {
+  if (isEmpty(plain)) return plain
+  if (isClass(instanced) && !isClass(plain)) {
+    if (isString(plain) && plain.length > 0) {
+      if (isDate(instanced)) {
+        plain = newDate(plain)
+      } else if (isMoment(instanced)) {
+        const clonedMoment = instanced.clone()
+        clonedMoment._d = newDate(plain)
+        if (instanced._i) clonedMoment._i = newDate(plain)
+        plain = clonedMoment
       }
-    } else if (isObject(plainObject)) {
-      if (instancedObject.constructor.length) {
-        plainObject = objectAssign(new instancedObject.constructor(plainObject), plainObject)
-        plainObject = new instancedObject.constructor(plainObject)
+    } else if (isObject(plain)) {
+      if (instanced.constructor.length) {
+        plain = objectAssign(new instanced.constructor(plain), plain)
+        plain = new instanced.constructor(plain)
       } else {
-        plainObject = objectAssign(new instancedObject.constructor(), plainObject)
+        plain = objectAssign(new instanced.constructor(), plain)
       }
-      plainObject = instancedObject.constructor.length ?
-        new instancedObject.constructor(plainObject) :
-        objectAssign(new instancedObject.constructor(), plainObject)
+      plain = instanced.constructor.length ?
+        new instanced.constructor(plain) :
+        objectAssign(new instanced.constructor(), plain)
     }
-  } else if (isArray(instancedObject) &&
-    instancedObject[0] &&
-    isArray(plainObject)
+  } else if (isArray(instanced)
+    && instanced[0]
+    && isArray(plain)
   ) {
-    for (let i = 0; i < plainObject.length; i++) {
-      plainObject[i] = instanceHandler(instancedObject[0], plainObject[i])
+    for (let i = 0; i < plain.length; i++) {
+      plain[i] = instanceHandler(instanced[0], plain[i])
     }
-    return plainObject
+    return plain as T[]
   }
-  if (isObject(instancedObject) && isObject(plainObject)) {
-    for (let i = 0, keys = objectKeys(instancedObject); i < keys.length; i++) {
+  if (isObject(instanced) && isObject(plain)) {
+    for (let i = 0, keys = objectKeys(instanced); i < keys.length; i++) {
       const key = keys[i]
-      const instancedObjectProp = instancedObject[key]
-      if (isObject(instancedObjectProp)) {
-        plainObject[key] = instanceHandler(instancedObjectProp, plainObject[key])
+      const instancedProp = instanced[key]
+      if (isObject(instancedProp)) {
+        plain[key] = instanceHandler(instancedProp, plain[key])
       }
     }
   }
-  return plainObject
+  return plain as T
 }
