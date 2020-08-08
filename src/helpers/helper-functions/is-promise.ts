@@ -1,4 +1,4 @@
 
-export function isPromise(obj: unknown): obj is Promise<unknown> {
-  return obj instanceof Promise
+export function isPromise<T = any>(value: any): value is Promise<T> {
+  return value instanceof Promise
 }

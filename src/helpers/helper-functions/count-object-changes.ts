@@ -6,10 +6,7 @@ import { isFunction } from './is-function'
 import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
-export function countObjectChanges(
-  objA: object | unknown[] | unknown,
-  objB: object | unknown[] | unknown,
-): number {
+export function countObjectChanges(objA: {}, objB: {}): number {
   if (isEmpty(objA) || isEmpty(objB)) return objA === objB ? 0 : 1
   if (isDate(objA)) return (isDate(objB) && objA.getTime() == objB.getTime()) ? 0 : 1
   if (isDate(objB)) return 1

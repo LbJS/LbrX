@@ -1,6 +1,6 @@
 import { PromiseStates } from './promise-states.enum'
 
-export function getPromiseState(promise: Promise<any>): Promise<PromiseStates> {
+export function getPromiseState<T = any>(promise: Promise<T>): Promise<PromiseStates> {
   const obj = {}
   return Promise.race([promise, obj])
     .then(result => result === obj ?

@@ -1,3 +1,4 @@
+import { getOwnPropertyNames } from '../short-hand-functions'
 import { isDate } from './is-date'
 import { isObject } from './is-object'
 import { throwError } from './throw-error'
@@ -7,7 +8,7 @@ function dateThrow(this: Date): never {
 }
 
 export function deepFreeze<T extends object>(object: T): Readonly<T> {
-  for (const key of Object.getOwnPropertyNames(object)) {
+  for (const key of getOwnPropertyNames(object)) {
     const value = object[key]
     if (isDate(value)) {
       value.setTime = dateThrow

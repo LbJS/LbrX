@@ -6,7 +6,9 @@ import { isEmpty } from './is-empty'
 import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
-export function cloneObject<T extends object>(obj: T): T {
+export function cloneObject<T extends object>(obj: T): T
+export function cloneObject<T extends object>(objArr: T[]): T[]
+export function cloneObject<T extends object>(obj: T | T[]): T | T[] {
   let copy: T | any[] | null = null
   if (isArray(obj)) {
     copy = [...obj]
