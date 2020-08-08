@@ -83,6 +83,7 @@ describe('Helper Function - countObjectChanges():', () => {
     ${5.01} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 0)) }}                             | ${0}
     ${5.02} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 1)) }}                             | ${1}
     ${5.03} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: new Date(1900, 0) }}                                     | ${1}
+    ${5.03} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: {} }}                                                    | ${1}
   `('should count $numOfDiffs differences between moment properties. (testId: $testId)', ({ objA, objB, numOfDiffs }) => {
     expect(countObjectChanges(objA, objB)).toBe(numOfDiffs)
     expect(countObjectChanges(objB, objA)).toBe(numOfDiffs)

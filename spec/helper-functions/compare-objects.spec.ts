@@ -44,6 +44,8 @@ describe('Helper Function - compareObjects():', () => {
     ${1.11} | ${{ a: [], b: {} }}                                       | ${{ a: {}, b: [] }}                                       | ${false}
     ${1.12} | ${{ a: {}, b: {} }}                                       | ${{ a: new Date(2000, 0, 1), b: () => { } }}              | ${false}
     ${1.13} | ${{ a: null, b: undefined }}                              | ${{ a: null, b: undefined }}                              | ${true}
+    ${1.14} | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${true}
+    ${1.15} | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${{ a: 'a', b: 'b' }}                                     | ${false}
   `('should return $isEqual. (testId: $testId)', ({ objA, objB, isEqual }) => {
     expect(compareObjects(objA, objB)).toBe(isEqual)
     expect(compareObjects(objB, objA)).toBe(isEqual)
