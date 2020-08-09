@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { cloneError, cloneObject, isError, isNull, isObject } from '../helpers'
+import { cloneError, cloneObject, isError, isNull, isObject } from '../utils'
 
 /**
  * Global Error-API. Will hold and emit the last error from all stores.

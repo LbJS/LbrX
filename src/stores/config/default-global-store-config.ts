@@ -1,4 +1,4 @@
-import { parse, stringify } from '../../helpers'
+import { parse, stringify } from '../../utils'
 import { GlobalStoreConfigOptions } from './global-store-config-options.interface'
 import { ObjectCompareTypes } from './object-compare-types.enum'
 import { Storages } from './storages.enum'
