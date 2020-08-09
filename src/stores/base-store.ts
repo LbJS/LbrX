@@ -1,7 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from '../helpers'
-import { Class } from '../types'
+import { Class, cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
 

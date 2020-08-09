@@ -1,4 +1,4 @@
-import { isError } from '.'
+import { isError } from './is-error'
 
 export function throwError(error?: Error): never
 export function throwError(message?: string): never

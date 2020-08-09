@@ -1,6 +1,5 @@
-import { isFunction, logError, mergeObjects, objectKeys, throwError } from '../../helpers'
 import { isDev } from '../../mode'
-import { Class } from '../../types'
+import { Class, isFunction, logError, mergeObjects, objectKeys, throwError } from '../../utils'
 import { getGlobalStoreConfig } from './global-store-config'
 import { STORE_CONFIG_KEY } from './store-config-key'
 import { StoreConfigOptions } from './store-config-options.interface'
