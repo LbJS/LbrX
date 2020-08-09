@@ -5,7 +5,6 @@ import { compareObjects } from 'lbrx/helpers'
 import moment from 'moment'
 
 // tslint:disable: variable-name
-
 describe('Helper Function - compareObjects():', () => {
 
   const createStateConfigA = () => TestSubjectFactory.createTestSubject_configA()
