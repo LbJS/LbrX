@@ -1,6 +1,6 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { assertNotNullable } from 'helpers/functions'
-import { cloneObject } from 'lbrx/helpers'
+import { cloneObject } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - cloneObject():', () => {

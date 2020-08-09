@@ -1,4 +1,4 @@
-import { isEmpty } from 'lbrx/helpers'
+import { isEmpty } from 'lbrx/utils'
 
 describe('Helper Function - isEmpty():', () => {
 

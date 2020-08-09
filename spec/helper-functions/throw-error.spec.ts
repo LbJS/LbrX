@@ -1,4 +1,4 @@
-import { throwError } from 'lbrx/helpers'
+import { throwError } from 'lbrx/utils'
 
 describe('Helper Function - throwError():', () => {
 

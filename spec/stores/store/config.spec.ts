@@ -3,7 +3,7 @@ import MockBuilder from 'helpers/mock-builder'
 import { GenericStorage } from 'helpers/mocks'
 import { TestSubject } from 'helpers/test-subjects'
 import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages, Store, StoreConfigInfo, StoreConfigOptions } from 'lbrx'
-import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/helpers'
+import { parse as parseFunc, stringify as stringifyFunc } from 'lbrx/utils'
 
 describe('Store Config:', () => {
 

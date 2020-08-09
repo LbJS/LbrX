@@ -1,7 +1,7 @@
 import { MergedTestSubjectFactory } from 'helpers/factories'
 import { toPlainObject } from 'helpers/functions'
 import { InnerTestSubject, MergeTestSubject, TestSubject } from 'helpers/test-subjects'
-import { mergeObjects } from 'lbrx/helpers'
+import { mergeObjects } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - mergeObjects():', () => {

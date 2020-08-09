@@ -7,6 +7,9 @@
       "lbrx": [
         "../src",
       ],
+      "lbrx/utils": [
+        "../src/utils",
+      ],
       "lbrx/dev-tools": [
         "../src/dev-tools",
       ],

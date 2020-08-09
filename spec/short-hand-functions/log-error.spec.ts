@@ -1,4 +1,4 @@
-import { logError } from 'lbrx/helpers'
+import { logError } from 'lbrx/utils'
 
 describe('Short Hand Function - logError():', () => {
 

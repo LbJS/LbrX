@@ -1,4 +1,4 @@
-import { getPromiseState, PromiseStates } from 'lbrx/helpers'
+import { getPromiseState, PromiseStates } from 'lbrx/utils'
 
 describe('Helper Function - getPromiseState():', () => {
 

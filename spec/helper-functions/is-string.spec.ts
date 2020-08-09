@@ -1,4 +1,4 @@
-import { isString } from 'lbrx/helpers'
+import { isString } from 'lbrx/utils'
 
 describe('Helper Function - isString():', () => {
 

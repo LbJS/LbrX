@@ -1,4 +1,4 @@
-import { isNull } from 'lbrx/helpers'
+import { isNull } from 'lbrx/utils'
 
 describe('Helper Function - isNull():', () => {
 

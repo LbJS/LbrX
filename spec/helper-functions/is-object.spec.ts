@@ -1,5 +1,5 @@
 import { ClassTestSubject } from 'helpers/test-subjects'
-import { isObject } from 'lbrx/helpers'
+import { isObject } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - isObject():', () => {
