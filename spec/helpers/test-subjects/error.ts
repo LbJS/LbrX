@@ -1,4 +1,4 @@
-import { isError, isString } from 'lbrx/helpers'
+import { isError, isString } from 'lbrx/utils'
 
 export function createError(): Error {
   return new Error('Some error text')

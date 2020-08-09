@@ -1,6 +1,6 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { objectAssign } from 'helpers/functions'
-import { isObjectCloned } from 'lbrx/helpers'
+import { isObjectCloned } from 'lbrx/utils'
 
 // tslint:disable: variable-name
 describe('Helper Function - isObjectCloned():', () => {

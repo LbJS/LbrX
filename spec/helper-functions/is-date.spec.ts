@@ -1,4 +1,4 @@
-import { isDate } from 'lbrx/helpers'
+import { isDate } from 'lbrx/utils'
 
 describe('Helper Function - isDate():', () => {
 

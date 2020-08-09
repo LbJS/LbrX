@@ -1,4 +1,4 @@
-import { isPromise } from 'lbrx/helpers'
+import { isPromise } from 'lbrx/utils'
 
 describe('Helper Function - isPromise():', () => {
 

@@ -1,4 +1,4 @@
-import { isMoment } from 'lbrx/helpers'
+import { isMoment } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - isMoment():', () => {

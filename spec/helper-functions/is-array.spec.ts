@@ -1,4 +1,4 @@
-import { isArray } from 'lbrx/helpers'
+import { isArray } from 'lbrx/utils'
 
 describe('Helper Function - isArray():', () => {
 

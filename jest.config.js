@@ -13,6 +13,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^lbrx$": "<rootDir>/src",
+    "^lbrx/utils$": "<rootDir>/src/utils.ts",
     "^lbrx/helpers$": "<rootDir>/src/helpers",
     "^lbrx/mode$": "<rootDir>/src/mode",
     "^lbrx/hooks$": "<rootDir>/src/hooks",

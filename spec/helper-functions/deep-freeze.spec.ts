@@ -1,7 +1,7 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { assertIsArray, assertNotNullable } from 'helpers/functions'
 import { TestSubject, TestSubjectConfigurations } from 'helpers/test-subjects'
-import { deepFreeze } from 'lbrx/helpers'
+import { deepFreeze } from 'lbrx/utils'
 
 describe('Helper Function - deepFreeze():', () => {
 

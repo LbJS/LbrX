@@ -1,4 +1,4 @@
-import { isBool } from 'lbrx/helpers'
+import { isBool } from 'lbrx/utils'
 
 describe('Helper Function - isBool():', () => {
 

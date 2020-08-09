@@ -1,4 +1,4 @@
-import { isUndefined } from 'lbrx/helpers'
+import { isUndefined } from 'lbrx/utils'
 
 describe('Helper Function - isUndefined():', () => {
 

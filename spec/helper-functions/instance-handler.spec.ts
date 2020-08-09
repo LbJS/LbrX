@@ -1,7 +1,7 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { assertNotNullable, objectAssign, toPlainObject } from 'helpers/functions'
 import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from 'helpers/test-subjects'
-import { instanceHandler } from 'lbrx/helpers'
+import { instanceHandler } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - instanceHandler():', () => {

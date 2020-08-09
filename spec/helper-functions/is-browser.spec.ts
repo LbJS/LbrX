@@ -1,5 +1,5 @@
 import MockBuilder from 'helpers/mock-builder'
-import { isBrowser } from 'lbrx/helpers'
+import { isBrowser } from 'lbrx/utils'
 
 describe('Helper Function - isBrowser():', () => {
 

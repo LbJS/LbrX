@@ -1,7 +1,7 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { toPlainObject } from 'helpers/functions'
 import { InnerTestSubject, TestSubject } from 'helpers/test-subjects'
-import { simpleCompareObjects } from 'lbrx/helpers'
+import { simpleCompareObjects } from 'lbrx/utils'
 import moment from 'moment'
 
 // tslint:disable: variable-name

@@ -1,4 +1,4 @@
-import { isError } from 'helpers/functions'
+import { isError } from 'lbrx/utils'
 import { ErrorTestSubject } from 'provider'
 
 describe('Helper Function - isError():', () => {

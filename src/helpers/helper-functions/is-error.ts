@@ -1,5 +1,6 @@
-import { ConstructableError } from '../../types'
 
-export function isError(value: any): value is Error & ConstructableError {
+export function isError(value: any): value is Error
+export function isError<T>(value: any): value is T
+export function isError<T>(value: any): value is Error | T {
   return value instanceof Error
 }

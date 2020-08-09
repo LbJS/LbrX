@@ -1,4 +1,4 @@
-import { logWarn } from 'lbrx/helpers'
+import { logWarn } from 'lbrx/utils'
 
 describe('Short Hand Function - logWarn():', () => {
 

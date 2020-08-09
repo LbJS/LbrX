@@ -1,5 +1,5 @@
 import { TestSubjectFactory } from 'helpers/factories'
-import { isFunction } from 'lbrx/helpers'
+import { isFunction } from 'lbrx/utils'
 import moment from 'moment'
 
 describe('Helper Function - isFunction():', () => {

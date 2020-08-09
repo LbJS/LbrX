@@ -1,4 +1,4 @@
-import { PromiseStates } from 'lbrx/helpers'
+import { PromiseStates } from 'lbrx/utils'
 
 describe('Promise states enum:', () => {
 
