@@ -4,16 +4,7 @@ import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
 import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
-import { Storages, StoreConfigOptions } from './config'
-import { validateStorageKey } from './helpers/validate-storage-key'
-import { validateStoreName } from './helpers/validate-store-name'
-
-function createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancelled: boolean } {
-  return {
-    promise: null,
-    isCancelled: false,
-  }
-}
+import { StoreConfigOptions } from './config'
 
 /**
  * @example
@@ -39,7 +30,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
   //#region state-properties
 
-  private readonly _state$ = new BehaviorSubject<T | null>(null)
+  private _state$ = new BehaviorSubject<T | null>(null)
   // TODO: create state private property: StoreStates
   // TODO: change _state to value
   private _state: Readonly<T> | null = null
@@ -70,49 +61,24 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   private get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
-  private _asyncInitPromise = createAsyncInitPromiseObj()
+  private _asyncInitPromise = super._createAsyncInitPromiseObj()
   private _stateToStorageSub: Subscription | null = null
 
   //#endregion private properties
   //#region constructor
 
   /**
-   * @param initialState - Null as an initial state will activate stores loading state.
-   * @param storeConfig ? - Set this parameter only if you creating
-   * store's instance without extending it.
-   */
-  constructor(initialState: null, storeConfig?: StoreConfigOptions)
-  /**
-   * @param initialState - Set all state's params for the initial value. Use Null for
-   * unneeded properties instead of undefined.
-   * @param storeConfig ?- Set this parameter only if you creating
-   * store's instance without extending it.
+   * Synchronous initialization. Use `initialize` method after constructor.
    */
   constructor(initialState: T, storeConfig?: StoreConfigOptions)
-  constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
+  /**
+   * Asynchronous initialization. Use `initializeAsync` method after constructor.
+   * The store will be set into loading state until initialization.
+   */
+  constructor(initialState: null, storeConfig?: StoreConfigOptions)
   constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
-    super()
-    this._main(initialStateOrNull, storeConfig);
-    (this as any).select = (project: any) => {
-      this.select$(project)
-    }
-  }
-
-  //#endregion constructor
-  //#region private-section
-
-  private _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
-    this._initializeConfig(storeConfig)
-    if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-    validateStoreName(this._storeName)
-    if (this._config.storageType != Storages.none) validateStorageKey(this._storageKey, this._storeName)
-    if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
-    if (isNull(initialStateOrNull)) {
-      this._isLoading$.next(true)
-      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
-    } else {
-      this._initializeStore(initialStateOrNull)
-    }
+    super(initialStateOrNull, storeConfig)
+    if (initialStateOrNull) this._initializeStore(initialStateOrNull)
   }
 
   private _initializeStore(initialState: T): void {
@@ -145,8 +111,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     if (isDevTools()) DevToolsSubjects.initEvent$.next(this.devData)
   }
 
+  //#endregion constructor
+  //#region private-section
+
   private _setState(newStateFn: (state: Readonly<T> | null) => T): void {
-    this.state = isDev() ? deepFreeze(newStateFn(this._state)) : newStateFn(this._state)
+    this.state = this._mergeStates(newStateFn, this._state)
   }
 
   //#endregion private-section
@@ -181,7 +150,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    const asyncInitPromise = createAsyncInitPromiseObj()
+    const asyncInitPromise = super._createAsyncInitPromiseObj()
     this._asyncInitPromise = asyncInitPromise
     asyncInitPromise.promise = new Promise((resolve, reject) => {
       if (!this.isLoading || this._initialState || this._state) {
