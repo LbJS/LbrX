@@ -1,10 +1,20 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { Class, cloneError, cloneObject, compareObjects, isEmpty, isError, isNull, isObject, logWarn, simpleCloneObject, simpleCompareObjects } from '../utils'
+import { DevToolsSubjects } from '../dev-tools'
+import { isDev, isDevTools } from '../mode'
+import { Class, cloneError, cloneObject, compareObjects, deepFreeze, isEmpty, isError, isNull, isObject, isUndefined, logError, logWarn, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
 
 export abstract class BaseStore<T extends object, E = any> {
+
+  //#region static
+
+  private static _storageKeys: string[] = []
+
+  private static _storeNames: string[] = []
+
+  //#endregion static
 
   //#region loading-state
 
@@ -115,17 +125,27 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion config
   //#region constructor
 
-  constructor() { }
+  constructor(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions) {
+    this._main(initialStateOrNull, storeConfig)
+  }
 
   //#endregion constructor
   //#region private-section
 
-  /**
-   * This is a protected method.
-   * We do not recommend overriding this method.
-   * Please proceed with care.
-   */
-  protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
+  private _main(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions): void {
+    if (isUndefined(initialStateOrNull)) throwError('Initial state cannot be undefined.')
+    this._initializeConfig(storeConfig)
+    if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
+    this._validateStoreName(this._storeName)
+    if (this._config.storageType != Storages.none) this._validateStorageKey(this._storageKey, this._storeName)
+    if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
+    if (isNull(initialStateOrNull)) {
+      this._isLoading$.next(true)
+      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+    }
+  }
+
+  private _initializeConfig(storeConfig?: StoreConfigOptions): void {
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
@@ -172,22 +192,37 @@ export abstract class BaseStore<T extends object, E = any> {
     this._parse = this._config.parse
   }
 
+  protected _mergeStates<S extends object>(newStateFn: (state: S | null) => S, currState: S | null): S {
+    return isDev() ? deepFreeze(newStateFn(currState)) : newStateFn(currState)
+  }
+
+  protected _validateStorageKey(storageKey: string, storeName: string): void {
+    if (BaseStore._storageKeys.includes(storageKey)) {
+      const errorMsg = `This storage key is not unique: "${storageKey}" from store: "${storeName}"!`
+      isDev() ? throwError(errorMsg) : logError(errorMsg)
+    } else {
+      BaseStore._storageKeys.push(storageKey)
+    }
+  }
+
+  protected _validateStoreName(storeName: string): void {
+    if (BaseStore._storeNames.includes(storeName)) {
+      const errorMsg = `There are multiple stores with the same store name: "${storeName}"!`
+      isDev() ? throwError(errorMsg) : logError(errorMsg)
+    } else {
+      BaseStore._storeNames.push(storeName)
+    }
+  }
+
+  protected _createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancelled: boolean } {
+    return {
+      promise: null,
+      isCancelled: false,
+    }
+  }
+
   //#endregion private-section
   //#region public-api
-
-  /**
-   * @deprecated Use error property instead.
-   */
-  public getError(): E | null {
-    return this.error
-  }
-
-  /**
-   * @deprecated Use error property instead.
-   */
-  public setError(value: E | null): void {
-    this.error = value
-  }
 
   //#endregion public-api
 }
