@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
-import { DevToolsSubjects } from '../dev-tools'
+import { DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
 import { Class, cloneError, cloneObject, compareObjects, deepFreeze, isEmpty, isError, isNull, isObject, isUndefined, logError, logWarn, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
@@ -10,9 +10,17 @@ export abstract class BaseStore<T extends object, E = any> {
 
   //#region static
 
-  private static _storageKeys: string[] = []
+  /**
+   * This is a protected property. Proceed with care.
+   * - Used as private.
+   */
+  protected static _storageKeys: string[] = []
 
-  private static _storeNames: string[] = []
+  /**
+   * This is a protected property. Proceed with care.
+   * - Used as private.
+   */
+  protected static _storeNames: string[] = []
 
   //#endregion static
 
@@ -23,7 +31,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected property.
    * We do not recommend overriding this method.
-   * Please proceed with care.
+   * Proceed with care.
    */
   protected readonly _isLoading$ = new BehaviorSubject<boolean>(false)
   /**
@@ -33,10 +41,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * then will set it self to none loading state after it wil be initialized.
    * - While the store is in loading state, no values will be emitted to state's subscribers.
    */
-  public get isLoading$(): Observable<boolean> {
-    return this._isLoading$.asObservable()
-      .pipe(distinctUntilChanged())
-  }
+  public isLoading$: Observable<boolean> = this._isLoading$.asObservable().pipe(distinctUntilChanged())
   /**
    * @get Returns store's loading state.
    * @set Sets store's loading state.
@@ -46,6 +51,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
   public set isLoading(value: boolean) {
     this._isLoading$.next(value)
+    this._storesState = StoreStates.loading
   }
 
   //#endregion loading-state
@@ -54,14 +60,14 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected property.
    * We do not recommend overriding this method.
-   * Please proceed with care.
+   * Proceed with care.
    */
   protected readonly _error$ = new BehaviorSubject<E | null>(null)
   /**
    * Store's error state.
    */
-  public get error$(): Observable<E | null> {
-    return this._error$.asObservable()
+  public error$: Observable<E | null> =
+    this._error$.asObservable()
       .pipe(
         map(x => {
           if (isError(x)) return cloneError(x)
@@ -70,13 +76,13 @@ export abstract class BaseStore<T extends object, E = any> {
         }),
         distinctUntilChanged((prev, curr) => isNull(prev) && isNull(curr)),
       )
-  }
+
   /**
    * @get Returns the store's error state value.
    * @set Sets store's error state and also sets global error state if the value is not null.
    */
   public get error(): E | null {
-    const value = this._error$.getValue()
+    const value = this._error$.value
     if (isError(value)) return cloneError(value)
     if (isObject(value)) return cloneObject(value)
     return value
@@ -92,12 +98,28 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   //#endregion error-api
+  //#region stores-state
+
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _storesState$ = new BehaviorSubject<StoreStates>(StoreStates.normal)
+  public storesState$: Observable<StoreStates> = this._storesState$.asObservable().pipe(distinctUntilChanged())
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected get _storesState(): StoreStates {
+    return this._storesState$.value
+  }
+  protected set _storesState(value: StoreStates) {
+    this._storesState$.next(value)
+  }
+
+  //#endregion stores-state
   //#region config
 
   /**
-   * This is a protected property.
-   * We do not recommend overriding this method.
-   * Please proceed with care.
+   * This is a protected property. Proceed with care.
    */
   protected _config!: StoreConfigInfo
   /**
@@ -106,20 +128,53 @@ export abstract class BaseStore<T extends object, E = any> {
   public get config(): StoreConfigInfo {
     return this._config
   }
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _storeName!: string
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _isResettable!: boolean
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _isSimpleCloning!: boolean
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _objectCompareType!: ObjectCompareTypes
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _storage!: Storage | null
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _storageDebounce!: number
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _storageKey!: string
-  protected _clone!: <R extends object>(obj: R) => R
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _clone!: <R extends object | null>(obj: R) => R
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _compare!: <R extends object>(objA: R, pbjB: R) => boolean
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _stringify!: (
     value: any,
     replacer?: (this: any, key: string, value: any) => any | (number | string)[] | null,
     space?: string | number
   ) => string
+  /**
+   * This is a protected property. Proceed with care.
+   */
   protected _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
 
   //#endregion config
@@ -132,7 +187,11 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion constructor
   //#region private-section
 
-  private _main(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions): void {
+  /**
+   * This is a protected method. Proceed with care.
+   * - Used as private.
+   */
+  protected _main(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions): void {
     if (isUndefined(initialStateOrNull)) throwError('Initial state cannot be undefined.')
     this._initializeConfig(storeConfig)
     if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
@@ -145,7 +204,11 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
-  private _initializeConfig(storeConfig?: StoreConfigOptions): void {
+  /**
+   * This is a protected method. Proceed with care.
+   * - Used as private.
+   */
+  protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
@@ -192,10 +255,16 @@ export abstract class BaseStore<T extends object, E = any> {
     this._parse = this._config.parse
   }
 
+  /**
+   * This is a protected method. Proceed with care.
+   */
   protected _mergeStates<S extends object>(newStateFn: (state: S | null) => S, currState: S | null): S {
     return isDev() ? deepFreeze(newStateFn(currState)) : newStateFn(currState)
   }
 
+  /**
+   * This is a protected method. Proceed with care.
+   */
   protected _validateStorageKey(storageKey: string, storeName: string): void {
     if (BaseStore._storageKeys.includes(storageKey)) {
       const errorMsg = `This storage key is not unique: "${storageKey}" from store: "${storeName}"!`
@@ -205,6 +274,9 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
+  /**
+   * This is a protected method. Proceed with care.
+   */
   protected _validateStoreName(storeName: string): void {
     if (BaseStore._storeNames.includes(storeName)) {
       const errorMsg = `There are multiple stores with the same store name: "${storeName}"!`
@@ -214,6 +286,9 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
+  /**
+   * This is a protected method. Proceed with care.
+   */
   protected _createAsyncInitPromiseObj(): { promise: Promise<void> | null, isCancelled: boolean } {
     return {
       promise: null,

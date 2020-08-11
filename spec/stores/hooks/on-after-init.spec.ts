@@ -38,7 +38,7 @@ describe('Store onAfterInit():', () => {
   it('should be called after async initialization if implemented.', async () => {
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
-    expect(store.value).toBeTruthy()
+    expect(store.state).toBeTruthy()
     expect(onAfterInitSpy).toBeCalled()
   })
 
@@ -46,7 +46,7 @@ describe('Store onAfterInit():', () => {
     delete store.onAfterInit
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
-    expect(store.value).toBeTruthy()
+    expect(store.state).toBeTruthy()
     expect(onAfterInitSpy).not.toBeCalled()
   })
 
@@ -68,7 +68,7 @@ describe('Store onAfterInit():', () => {
     store.initialize(localInitialState)
     assertNotNullable(localInitialState.innerTestObjectGetSet)
     localInitialState.innerTestObjectGetSet.booleanValue = !localInitialState.innerTestObjectGetSet.booleanValue
-    expect(store.value).toStrictEqual(localInitialState)
+    expect(store.state).toStrictEqual(localInitialState)
   })
 
   it("should disconnect nextState object's references.", async () => {
@@ -81,7 +81,7 @@ describe('Store onAfterInit():', () => {
     })
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
-    expect(store.value).toStrictEqual(initialState)
+    expect(store.state).toStrictEqual(initialState)
     jest.resetAllMocks()
     store = StoresFactory.createStore<TestSubject>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
     onAfterInitSpy = jest.spyOn(store, 'onAfterInit')
@@ -98,6 +98,6 @@ describe('Store onAfterInit():', () => {
     tmpState!.innerTestObject.obj.date.setFullYear(1900)
     assertNotNullable(tmpState!.innerTestObjectGetSet)
     tmpState!.innerTestObjectGetSet.numberValue = 777
-    expect(store.value).toStrictEqual(initialState)
+    expect(store.state).toStrictEqual(initialState)
   })
 })

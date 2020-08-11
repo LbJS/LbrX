@@ -25,11 +25,11 @@ describe('Store initialize(): ', () => {
   })
 
   it('should set the initial value as the first state.', () => {
-    expect(store.value).toStrictEqual(pureInitialState)
+    expect(store.state).toStrictEqual(pureInitialState)
   })
 
   it("should set the initial value to store's initial value property.", () => {
-    expect(store.value).toStrictEqual(store.initialValue)
+    expect(store.state).toStrictEqual(store.initialState)
   })
 
   it('should return the initial state from observable.', done => {
@@ -40,12 +40,12 @@ describe('Store initialize(): ', () => {
   }, 100)
 
   it('should have null as an initial value.', () => {
-    expect(loadingStore.value).toBeNull()
+    expect(loadingStore.state).toBeNull()
   })
 
   it('should set the initial value after initialization.', () => {
     loadingStore.initialize(initialState)
-    expect(loadingStore.value).toStrictEqual(pureInitialState)
+    expect(loadingStore.state).toStrictEqual(pureInitialState)
   })
 
   it('should return the initial state from observable after initialization.', done => {
@@ -76,13 +76,13 @@ describe('Store initialize(): ', () => {
     LbrXManager.enableProdMode()
     loadingStore.initialize(initialState)
     loadingStore.initialize(stateA)
-    expect(loadingStore.value).toStrictEqual(pureInitialState)
+    expect(loadingStore.state).toStrictEqual(pureInitialState)
   })
 
   it('should have value after loading is finished.', done => {
     loadingStore.isLoading$.subscribe(value => {
       if (!value) {
-        expect(loadingStore.value).toStrictEqual(pureInitialState)
+        expect(loadingStore.state).toStrictEqual(pureInitialState)
         done()
       }
     })

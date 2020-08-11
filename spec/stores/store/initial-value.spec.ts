@@ -22,16 +22,16 @@ describe('Store initial value value:', () => {
   })
 
   it('should be null before initialization.', () => {
-    expect(nullStore.initialValue).toBeNull()
+    expect(nullStore.initialState).toBeNull()
   })
 
   it('should have value after initialization.', () => {
     nullStore.initialize(initialState)
-    expect(nullStore.initialValue).toStrictEqual(initialState)
+    expect(nullStore.initialState).toStrictEqual(initialState)
   })
 
   it('should return a readonly value on dev mode.', () => {
-    const value = store.initialValue
+    const value = store.initialState
     expect(() => {
       assertNotNullable(value)
       assertNotNullable(value.innerTestObject)
