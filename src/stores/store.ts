@@ -1,6 +1,6 @@
 import { BehaviorSubject, iif, isObservable, Observable, of, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
-import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
+import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
 import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
@@ -31,25 +31,39 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#region state-properties
 
   private _state$ = new BehaviorSubject<T | null>(null)
-  // TODO: create state private property: StoreStates
-  // TODO: change _state to value
-  private _state: Readonly<T> | null = null
-  // TODO: create public get state
-  private set state(value: T | null) {
-    this._state = value
+  private get _state(): Readonly<T> | null {
+    return this._state$.value
+  }
+  private set _state(value: Readonly<T> | null) {
     this._state$.next(value)
   }
+
   /**
-   * Returns stores current state's value.
+   * Returns the current store's state.
+   */
+  public get state(): T | null {
+    const state = this._state$.value
+    return isNull(state) ? null : this._clone(state)
+  }
+
+  /**
+   * @deprecated
    */
   public get value(): T | null {
-    return isNull(this._state) ? null : this._clone(this._state)
+    const state = this._state$.value
+    return isNull(state) ? null : this._clone(state)
   }
-  // TODO: create private set value
 
   private _initialState: Readonly<T> | null = null
   /**
-   * Returns stores initial state's value.
+   * Returns the initial store's state.
+   */
+  public get initialState(): Readonly<T> | null {
+    return this._initialState
+  }
+
+  /**
+   * @deprecated
    */
   public get initialValue(): Readonly<T> | null {
     return this._initialState
@@ -82,30 +96,30 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   private _initializeStore(initialState: T): void {
-    let isStateCloned = false
-    if (isFunction(this['onBeforeInit'])) {
-      const modifiedInitialState: T | void = this['onBeforeInit'](this._clone(initialState))
-      if (modifiedInitialState) {
-        initialState = this._clone(modifiedInitialState)
-        isStateCloned = true
-      }
-    }
-    this._initialState = deepFreeze(this._clone(initialState))
+    let isStateFromStorage = false
     const storage = this._storage
     if (storage) {
-      let storedState: T | null = this._parse(storage.getItem(this._storageKey))
+      const storedState: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedState) {
-        if (!this._isSimpleCloning) storedState = instanceHandler(initialState, storedState)
-        initialState = storedState
-        isStateCloned = true
+        initialState = this._isSimpleCloning ? storedState : instanceHandler(initialState, storedState)
+        isStateFromStorage = true
       }
       this._stateToStorageSub = this._state$
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
     }
-    this._setState(() => isStateCloned ? initialState : this._clone(initialState))
+    if (isFunction(this['onBeforeInit'])) {
+      const modifiedInitialState: T | void = this['onBeforeInit'](this._clone(initialState))
+      if (modifiedInitialState) {
+        initialState = this._clone(modifiedInitialState)
+        isStateFromStorage = false
+      }
+    }
+    initialState = isStateFromStorage ? initialState : this._clone(initialState)
+    this._initialState = deepFreeze(initialState)
+    this._setState(() => this._clone(initialState))
     if (isFunction(this['onAfterInit'])) {
-      const modifiedState: T | void = this['onAfterInit'](this._clone(this._state!))
+      const modifiedState: T | void = this['onAfterInit'](this._clone(this._state))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
     if (isDevTools()) DevToolsSubjects.initEvent$.next(this.devData)
@@ -115,7 +129,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#region private-section
 
   private _setState(newStateFn: (state: Readonly<T> | null) => T): void {
-    this.state = this._mergeStates(newStateFn, this._state)
+    this._state = this._mergeStates(newStateFn, this._state)
+    this._storesState = StoreStates.normal
   }
 
   //#endregion private-section
@@ -294,6 +309,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         return Promise.resolve(this)
       }
     }
+    this._storesState = StoreStates.hardResetting
     if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
     const asyncInitPromise = this._asyncInitPromise
     const initializeAsyncPromiseState: Promise<void | PromiseStates> = asyncInitPromise.promise ?
@@ -302,7 +318,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return new Promise((resolve) => {
       const reset = () => {
         this.isLoading = true
-        this.state = null
+        this._state = null
         this._initialState = null
         this.error = null
         if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
@@ -310,10 +326,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
         resolve(this)
       }
-      initializeAsyncPromiseState.then(state => {
-        asyncInitPromise.isCancelled = state === PromiseStates.pending
-        reset()
-      }).catch(reset)
+      initializeAsyncPromiseState
+        .then(state => {
+          asyncInitPromise.isCancelled = state === PromiseStates.pending
+          reset()
+        }).catch(() => reset())
     })
   }
 
@@ -326,7 +343,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public select$(): Observable<T>
   /**
-   * Returns the extracted state as an Observable based on the provided projection method.
+   * Returns the extracted partial state as an Observable based on the provided projection method.
    * @example
    * weatherStore.select$(state => state.isRaining)
    *   .subscribe(isRaining => {
@@ -337,7 +354,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public select$<R>(project: (state: T) => R): Observable<R>
   /**
-   * Returns the state or the extracted state as an Observable, based on the provided projection method if it is provided.
+   * Returns the state or the extracted partial state as an Observable based on the provided projection method if it is provided.
    * - This overload provides you with a more dynamic approach compare to other overloads.
    * - With this overload you can create an dynamic Observable factory.
    * @example

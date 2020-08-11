@@ -53,6 +53,6 @@ describe('Store onAsyncInitSuccess():', () => {
     await store.initializeAsync(Promise.resolve(initialState))
     assertNotNullable(localInitialState.innerTestObjectGetSet)
     localInitialState.innerTestObjectGetSet.booleanValue = !localInitialState.innerTestObjectGetSet.booleanValue
-    expect(store.value).toStrictEqual(localInitialState)
+    expect(store.state).toStrictEqual(localInitialState)
   })
 })
