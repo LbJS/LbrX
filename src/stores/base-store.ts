@@ -1,8 +1,8 @@
-import { BehaviorSubject, Observable } from 'rxjs'
-import { distinctUntilChanged, map } from 'rxjs/operators'
-import { DevToolsSubjects, StoreStates } from '../dev-tools'
+import { BehaviorSubject, Observable, Subscription } from 'rxjs'
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
+import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { Class, cloneError, cloneObject, compareObjects, deepFreeze, isEmpty, isError, isNull, isObject, isUndefined, logError, logWarn, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
+import { Class, cloneError, cloneObject, compareObjects, deepFreeze, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
 
@@ -178,14 +178,25 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
 
   //#endregion config
+  //#region private-properties
+
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _asyncInitPromise = this._createAsyncInitPromiseObj()
+
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _stateToStorageSub: Subscription | null = null
+
+  //#endregion private-properties
   //#region constructor
 
-  constructor(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions) {
-    this._main(initialStateOrNull, storeConfig)
-  }
+  constructor() { }
 
   //#endregion constructor
-  //#region private-section
+  //#region private-methods
 
   /**
    * This is a protected method. Proceed with care.
@@ -201,6 +212,8 @@ export abstract class BaseStore<T extends object, E = any> {
     if (isNull(initialStateOrNull)) {
       this._isLoading$.next(true)
       if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+    } else {
+      this._initializeStore(initialStateOrNull)
     }
   }
 
@@ -257,6 +270,40 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /**
    * This is a protected method. Proceed with care.
+   * - Used as private.
+   */
+  protected _initializeStore(initialState: T | T[]): void {
+    let isStateFromStorage = false
+    const storage = this._storage
+    if (storage) {
+      const storedState: T | T[] | null = this._parse(storage.getItem(this._storageKey))
+      if (storedState) {
+        initialState = this._isSimpleCloning ? storedState : instanceHandler(initialState, storedState)
+        isStateFromStorage = true
+      }
+      this._stateToStorageSub = this._getState$()
+        .pipe(debounceTime(this._storageDebounce))
+        .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
+    }
+    if (isFunction(this['onBeforeInit'])) {
+      const modifiedInitialState: T | T[] | null = this['onBeforeInit'](this._clone(initialState))
+      if (modifiedInitialState) {
+        initialState = this._clone(modifiedInitialState)
+        isStateFromStorage = false
+      }
+    }
+    initialState = isStateFromStorage ? initialState : this._clone(initialState)
+    this._setInitialState(deepFreeze(initialState))
+    this._setState(() => this._clone(initialState))
+    if (isFunction(this['onAfterInit'])) {
+      const modifiedState: T | T[] | null = this['onAfterInit'](this._clone(this._getState()))
+      if (modifiedState) this._setState(() => this._clone(modifiedState))
+    }
+    if (isDevTools()) DevToolsSubjects.initEvent$.next(this._getDevData())
+  }
+
+  /**
+   * This is a protected method. Proceed with care.
    */
   protected _mergeStates<S extends object>(newStateFn: (state: S | null) => S, currState: S | null): S {
     return isDev() ? deepFreeze(newStateFn(currState)) : newStateFn(currState)
@@ -296,8 +343,29 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
-  //#endregion private-section
-  //#region public-api
+  //#endregion private-methods
+  //#region abstract
 
-  //#endregion public-api
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _getState$(): Observable<T | T[] | null>
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _setState(newStateFna: (state: Readonly<T | T[]> | null) => T | T[]): void
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _getState(): T | T[] | null
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _setInitialState(state: Readonly<T | T[]> | null): void
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _getDevData(): DevToolsDataStruct
+
+  //#endregion abstract
 }

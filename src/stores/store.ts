@@ -1,8 +1,8 @@
-import { BehaviorSubject, iif, isObservable, Observable, of, Subscription } from 'rxjs'
-import { debounceTime, distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
+import { BehaviorSubject, iif, isObservable, Observable, of } from 'rxjs'
+import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { deepFreeze, getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
+import { getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 
@@ -75,8 +75,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   private get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
-  private _asyncInitPromise = super._createAsyncInitPromiseObj()
-  private _stateToStorageSub: Subscription | null = null
 
   //#endregion private properties
   //#region constructor
@@ -90,51 +88,41 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * The store will be set into loading state until initialization.
    */
   constructor(initialState: null, storeConfig?: StoreConfigOptions)
+  /**
+   * Dynamic initialization. Use `isLoading` to check if the store was initialized asynchronously.
+   */
+  constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
   constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
-    super(initialStateOrNull, storeConfig)
-    if (initialStateOrNull) this._initializeStore(initialStateOrNull)
-  }
-
-  private _initializeStore(initialState: T): void {
-    let isStateFromStorage = false
-    const storage = this._storage
-    if (storage) {
-      const storedState: T | null = this._parse(storage.getItem(this._storageKey))
-      if (storedState) {
-        initialState = this._isSimpleCloning ? storedState : instanceHandler(initialState, storedState)
-        isStateFromStorage = true
-      }
-      this._stateToStorageSub = this._state$
-        .pipe(debounceTime(this._storageDebounce))
-        .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
-    }
-    if (isFunction(this['onBeforeInit'])) {
-      const modifiedInitialState: T | void = this['onBeforeInit'](this._clone(initialState))
-      if (modifiedInitialState) {
-        initialState = this._clone(modifiedInitialState)
-        isStateFromStorage = false
-      }
-    }
-    initialState = isStateFromStorage ? initialState : this._clone(initialState)
-    this._initialState = deepFreeze(initialState)
-    this._setState(() => this._clone(initialState))
-    if (isFunction(this['onAfterInit'])) {
-      const modifiedState: T | void = this['onAfterInit'](this._clone(this._state))
-      if (modifiedState) this._setState(() => this._clone(modifiedState))
-    }
-    if (isDevTools()) DevToolsSubjects.initEvent$.next(this.devData)
+    super()
+    this._main(initialStateOrNull, storeConfig)
   }
 
   //#endregion constructor
-  //#region private-section
+  //#region private-methods
 
-  private _setState(newStateFn: (state: Readonly<T> | null) => T): void {
+  protected _getState$(): Observable<T | null> {
+    return this._state$
+  }
+
+  protected _setState(newStateFn: (state: Readonly<T> | null) => T): void {
     this._state = this._mergeStates(newStateFn, this._state)
     this._storesState = StoreStates.normal
   }
 
-  //#endregion private-section
-  //#region public-api
+  protected _getState(): T | T[] | null {
+    return this._state
+  }
+
+  protected _setInitialState(state: Readonly<T> | null): void {
+    this._initialState = state
+  }
+
+  protected _getDevData(): DevToolsDataStruct {
+    return this.devData
+  }
+
+  //#endregion private-methods
+  //#region public-methods
 
   /**
    * Use this method to initialize the store.
@@ -165,7 +153,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    const asyncInitPromise = super._createAsyncInitPromiseObj()
+    const asyncInitPromise = this._createAsyncInitPromiseObj()
     this._asyncInitPromise = asyncInitPromise
     asyncInitPromise.promise = new Promise((resolve, reject) => {
       if (!this.isLoading || this._initialState || this._state) {
@@ -388,5 +376,5 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       )
   }
 
-  //#endregion public-api
+  //#endregion public-methods
 }
