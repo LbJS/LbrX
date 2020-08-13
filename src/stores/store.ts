@@ -1,7 +1,8 @@
-import { BehaviorSubject, iif, isObservable, Observable, of } from 'rxjs'
+import { BehaviorSubject, iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
+import { SelectScope } from '../types'
 import { getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
@@ -30,11 +31,17 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
   //#region state-properties
 
-  private _state$ = new BehaviorSubject<T | null>(null)
-  private get _state(): Readonly<T> | null {
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _state$ = new BehaviorSubject<T | null>(null)
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected get _state(): Readonly<T> | null {
     return this._state$.value
   }
-  private set _state(value: Readonly<T> | null) {
+  protected set _state(value: Readonly<T> | null) {
     this._state$.next(value)
   }
 
@@ -54,7 +61,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return isNull(state) ? null : this._clone(state)
   }
 
-  private _initialState: Readonly<T> | null = null
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _initialState: Readonly<T> | null = null
   /**
    * Returns the initial store's state.
    */
@@ -72,7 +82,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#endregion state-properties
   //#region private properties
 
-  private get devData(): DevToolsDataStruct {
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }
 
@@ -80,16 +93,16 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#region constructor
 
   /**
-   * Synchronous initialization. Use `initialize` method after constructor.
+   * Synchronous initialization.
    */
   constructor(initialState: T, storeConfig?: StoreConfigOptions)
   /**
-   * Asynchronous initialization. Use `initializeAsync` method after constructor.
-   * The store will be set into loading state until initialization.
+   * Asynchronous or delayed initialization.
+   * The store will be set into loading state till initialization.
    */
   constructor(initialState: null, storeConfig?: StoreConfigOptions)
   /**
-   * Dynamic initialization. Use `isLoading` to check if the store was initialized asynchronously.
+   * Dynamic initialization.
    */
   constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
   constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
@@ -98,19 +111,23 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   //#endregion constructor
-  //#region private-methods
+  //#region protected-methods
 
   protected _getState$(): Observable<T | null> {
     return this._state$
   }
 
-  protected _setState(newStateFn: (state: Readonly<T> | null) => T): void {
-    this._state = this._mergeStates(newStateFn, this._state)
-    this._storesState = StoreStates.normal
-  }
-
   protected _getState(): T | T[] | null {
     return this._state
+  }
+
+  protected _setState(newStateFn: (state: Readonly<T> | null) => T): void {
+    this._state = this._mergeStates(newStateFn, this._state)
+    this._setNormalState()
+  }
+
+  protected _getInitialState(): Readonly<T | T[]> | null {
+    return this._initialState
   }
 
   protected _setInitialState(state: Readonly<T> | null): void {
@@ -121,74 +138,17 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return this.devData
   }
 
-  //#endregion private-methods
+  //#endregion protected-methods
   //#region public-methods
 
-  /**
-   * Use this method to initialize the store.
-   * - Use only if the constructor state's value was null.
-   * - Will throw in development mode if the store is not in loading state
-   * or it was initialized before.
-   * - In production mode, this method will be ignored if the store is not in loading state
-   * or it was initialized before.
-   */
-  public initialize(initialState: T): void | never {
-    if (!this.isLoading || this._initialState || this._state) {
-      if (isDev()) throwError("Can't initialize store that's already been initialized or its not in LOADING state!")
-      return
-    }
-    this._initializeStore(initialState)
-    this._isLoading$.next(false)
+  public initialize(initialState: T): void {
+    if (this._assertInitializable()) this._initializeStore(initialState)
   }
 
-  /**
-   * Use this method to initialize the store with async data.
-   * - Use only if the constructor state's value was null.
-   * - Will throw in development mode if the store is not in loading state
-   * or it was initialized before.
-   * - In production mode, this method will be ignored if the store is not in loading state
-   * or it was initialized before.
-   * - In case of observable, only finite observable value will be used.
-   */
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    const asyncInitPromise = this._createAsyncInitPromiseObj()
-    this._asyncInitPromise = asyncInitPromise
-    asyncInitPromise.promise = new Promise((resolve, reject) => {
-      if (!this.isLoading || this._initialState || this._state) {
-        const errMsg = `Can't initialize store ${this._storeName} that's already been initialized or its not in LOADING state!`
-        if (isDev()) {
-          reject(new Error(errMsg))
-        } else {
-          logError(errMsg)
-          resolve()
-        }
-      }
-      if (isObservable(promiseOrObservable)) {
-        promiseOrObservable = promiseOrObservable.toPromise()
-      }
-      promiseOrObservable.then(r => {
-        if (asyncInitPromise.isCancelled) return
-        if (!this.isLoading || this._initialState || this._state) {
-          if (isDev()) reject('The store was initialized multiple times whiles it was in loading state.')
-        } else {
-          if (isFunction(this['onAsyncInitSuccess'])) {
-            const modifiedResult = this['onAsyncInitSuccess'](r)
-            if (modifiedResult) r = modifiedResult
-          }
-          this._initializeStore(r)
-          this._isLoading$.next(false)
-        }
-      }).catch(e => {
-        if (asyncInitPromise.isCancelled) return
-        if (isFunction(this['onAsyncInitError'])) {
-          e = this['onAsyncInitError'](e)
-        }
-        if (e) reject(e)
-      }).finally(resolve)
-    })
-    return asyncInitPromise.promise
+    return super.initializeAsync(promiseOrObservable)
   }
 
   /**
@@ -210,6 +170,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public update(stateFunction: (state: Readonly<T>) => Partial<T>, updateName?: string): void
   public update(stateOrFunction: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
+    if (this._isPaused) return
     const initialState = this._initialState
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       const errMsg = `Can't update ${this._storeName} while it's in loading state.`
@@ -237,6 +198,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * Overrides the current store's state completely.
    */
   public override(state: T): void {
+    if (this._isPaused) return
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       logError(`Can't override ${this._storeName} while it's in loading state.`)
     } else if (!this._initialState) {
@@ -284,18 +246,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * - Store's state will be set to `null`.
    * - Store's initial state will be set to `null`.
    * - Store's error will be set to `null`.
+   * - Sets _isPaused_ to `false`.
    * - Sets the store to 'Loading...' state.
    * - Clears store's cache storage if any (LocalStorage, SessionStorage, etc.).
    */
   public hardReset(): Promise<this> {
     if (!this._isResettable) {
       const errMsg = `Store: ${this._storeName} is not configured as resettable.`
-      if (isDev()) {
-        return Promise.reject(new Error(errMsg))
-      } else {
-        logError(errMsg)
-        return Promise.resolve(this)
-      }
+      return Promise.reject(new Error(errMsg))
     }
     this._storesState = StoreStates.hardResetting
     if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
@@ -305,12 +263,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       Promise.resolve()
     return new Promise((resolve) => {
       const reset = () => {
+        this.isPaused = false
         this.isLoading = true
         this._state = null
         this._initialState = null
         this.error = null
         if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
+        this._selectScopes.forEach(x => x.wasHardReset = true)
         if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
         resolve(this)
       }
@@ -358,22 +318,33 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         distinctUntilChanged(),
         switchMap(() => this._state$),
       )
-    let wasHardReseted = false
-    return this._state$.asObservable()
-      .pipe(
-        tap(x => {
-          if (!wasHardReseted) wasHardReseted = !x && this.isLoading
-        }),
-        mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
-        filter<T | null, T>((x => !!x) as (value: T | null) => value is T),
-        map<T, T | R>(project || (x => x)),
-        distinctUntilChanged((prev, curr) => {
-          if (wasHardReseted) return false
-          return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-        }),
-        tap(() => wasHardReseted = false),
-        map(x => isObject(x) ? this._clone(x) : x),
-      )
+    const selectContainer: SelectScope = {
+      wasHardReset: false,
+      isDisPosed: false,
+      observable: this._state$.asObservable()
+        .pipe(
+          mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
+          filter<T | null, T>((x => !!x && !this._isPaused) as (value: T | null) => value is T),
+          map<T, T | R>(project || (x => x)),
+          distinctUntilChanged((prev, curr) => {
+            if (selectContainer.wasHardReset) return false
+            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+          }),
+          tap(() => selectContainer.wasHardReset = false),
+          map(x => isObject(x) ? this._clone(x) : x),
+        )
+    }
+    this._selectScopes.push(selectContainer)
+    return selectContainer.observable
+  }
+
+  public disposeSelect(observable: Observable<T>): void {
+    const selectScopes = this._selectScopes
+    const i = selectScopes.findIndex(x => x.observable = observable)
+    if (i != -1) {
+      selectScopes[i].isDisPosed = true
+      selectScopes.splice(i, 1)
+    }
   }
 
   //#endregion public-methods

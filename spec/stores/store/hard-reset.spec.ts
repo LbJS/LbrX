@@ -101,18 +101,9 @@ describe('Store hardReset():', () => {
     expect(asyncStore.state).toBeNull()
   })
 
-  it("should throw if the store is not resettable and it's in development mode.", async () => {
+  it('should throw if the store is not resettable.', async () => {
     expect.assertions(1)
     await expect(notResettableStore.hardReset()).rejects.toBeInstanceOf(Error)
-  })
-
-  it("should log an error if the store is not resettable and it's in production mode.", async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error')
-      .mockImplementationOnce(() => { })
-    LbrXManager.enableProdMode()
-    expect.assertions(2)
-    await expect(notResettableStore.hardReset()).resolves.toBe(notResettableStore)
-    expect(consoleErrorSpy).toBeCalledTimes(1)
   })
 
   it('should distribute hardReset event and then loading event to DevToolsSubjects.', done => {

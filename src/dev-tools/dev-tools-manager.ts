@@ -48,6 +48,10 @@ export class DevToolsManager {
   private _setUserEventsSubscribers(devTools: any): void {
     const devToolsOptions = this.devToolsOptions
     const subs = [
+      DevToolsSubjects.pausedEvent$.subscribe(storeName => {
+        this._appState[storeName] = StoreStates.paused
+        devTools.send({ type: `[${storeName}] - PAUSED` }, this._appState)
+      }),
       DevToolsSubjects.loadingEvent$.subscribe(storeName => {
         this._appState[storeName] = StoreStates.loading
         devTools.send({ type: `[${storeName}] - Loading...` }, this._appState)
@@ -94,8 +98,9 @@ export class DevToolsManager {
         if (!store) return
         const reduxDevToolsStoreValue = reduxDevToolsState[storeName]
         const loadingStoresCache = this._loadingStoresCache
-        if (reduxDevToolsStoreValue === StoreStates.loading ||
-          reduxDevToolsStoreValue === StoreStates.hardResetting
+        if (reduxDevToolsStoreValue === StoreStates.paused
+          || reduxDevToolsStoreValue === StoreStates.loading
+          || reduxDevToolsStoreValue === StoreStates.hardResetting
         ) {
           if (loadingStoresCache[storeName]) return
           loadingStoresCache[storeName] = store.value
