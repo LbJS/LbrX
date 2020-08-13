@@ -60,7 +60,7 @@ describe('Store Config:', () => {
     }).toThrow()
   })
 
-  it('should throw an error if there are two stores with the same name in development mode.', () => {
+  it('should throw an error if there are two stores with the same name.', () => {
     expect(isDev()).toBeTruthy()
     expect(() => {
       createStore({
@@ -72,22 +72,7 @@ describe('Store Config:', () => {
     }).toThrow()
   })
 
-  it('should not throw an error if there are two stores with the same name in production mode, but should console error instead.', () => {
-    const consoleErrorSpy = jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
-    LbrXManager.enableProdMode()
-    expect(isDev()).toBeFalsy()
-    expect(() => {
-      createStore({
-        name: 'TEST-STORE'
-      })
-      createStore({
-        name: 'TEST-STORE'
-      })
-    }).not.toThrow()
-    expect(consoleErrorSpy).toBeCalled()
-  })
-
-  it('should throw an error if there are two stores with the same storage key in development mode.', () => {
+  it('should throw an error if there are two stores with the same storage key.', () => {
     expect(isDev()).toBeTruthy()
     expect(() => {
       createStore({
@@ -101,26 +86,6 @@ describe('Store Config:', () => {
         storageKey: 'TEST-KEY',
       })
     }).toThrow()
-  })
-
-  // tslint:disable-next-line: max-line-length
-  it('should not throw an error if there are two stores with the same storage key in development mode, but should console error instead.', () => {
-    const consoleErrorSpy = jest.spyOn(globalThis.console, 'error').mockImplementation(() => jest.fn())
-    LbrXManager.enableProdMode()
-    expect(isDev()).toBeFalsy()
-    expect(() => {
-      createStore({
-        name: 'TEST-STORE1',
-        storageType: Storages.local,
-        storageKey: 'TEST-KEY',
-      })
-      createStore({
-        name: 'TEST-STORE2',
-        storageType: Storages.local,
-        storageKey: 'TEST-KEY',
-      })
-    }).not.toThrow()
-    expect(consoleErrorSpy).toBeCalled()
   })
 
   it('should have the right configuration base on chosen options. (1st option configuration)', () => {

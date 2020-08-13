@@ -3,6 +3,7 @@ import { DevToolsDataStruct } from './dev-tools-data.struct'
 
 export class DevToolsSubjects {
   public static readonly stores: { [storeName: string]: any } = {}
+  public static readonly pausedEvent$ = new Subject<string>()
   public static readonly loadingEvent$ = new Subject<string>()
   public static readonly initEvent$ = new Subject<DevToolsDataStruct>()
   public static readonly overrideEvent$ = new Subject<DevToolsDataStruct>()

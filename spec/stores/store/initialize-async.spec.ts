@@ -44,32 +44,17 @@ describe('Store initializeAsync():', () => {
     store.initializeAsync(of(initialState))
   })
 
-  it('should throw an error on second initialization in development mode.', async () => {
+  it('should throw an error on second initialization.', async () => {
     store.initializeAsync(of(initialState))
     expect(isDev()).toBeTruthy()
     await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
   })
 
-  it('should throw an error on second initialization with delay in development mode .', async () => {
+  it('should throw an error on second initialization with delay.', async () => {
     store.initializeAsync(of(initialState))
     await timer(100).toPromise()
     expect(isDev()).toBeTruthy()
     await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
-  }, 200)
-
-  it('should not throw an error on second initialization in production mode.', async () => {
-    LbrXManager.enableProdMode()
-    store.initializeAsync(of(initialState))
-    await expect(store.initializeAsync(of(initialState))).resolves.toBeUndefined()
-  })
-
-  it('should not throw an error on second initialization with delay in production mode.', async () => {
-    jest.spyOn(console, 'error')
-      .mockImplementationOnce(() => { })
-    LbrXManager.enableProdMode()
-    store.initializeAsync(of(initialState))
-    await timer(100).toPromise()
-    await expect(store.initializeAsync(of(initialState))).resolves.toBeUndefined()
   }, 200)
 
   it('should reject if an observable throws an error.', async () => {

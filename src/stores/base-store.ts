@@ -1,10 +1,16 @@
-import { BehaviorSubject, Observable, Subscription } from 'rxjs'
+import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { Class, cloneError, cloneObject, compareObjects, deepFreeze, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
+import { SelectScope } from '../types'
+import { Class, cloneError, cloneObject, compareObjects, deepFreeze, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logWarn, newError, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
+
+const onBeforeInit = 'onBeforeInit'
+const onAsyncInitSuccess = 'onAsyncInitSuccess'
+const onAsyncInitError = 'onAsyncInitError'
+const onAfterInit = 'onAfterInit'
 
 export abstract class BaseStore<T extends object, E = any> {
 
@@ -12,26 +18,41 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /**
    * This is a protected property. Proceed with care.
-   * - Used as private.
    */
   protected static _storageKeys: string[] = []
 
   /**
    * This is a protected property. Proceed with care.
-   * - Used as private.
    */
   protected static _storeNames: string[] = []
 
   //#endregion static
-
-  //#region loading-state
-
-  // TODO: add isPausing
+  //#region paused-state
 
   /**
-   * This is a protected property.
-   * We do not recommend overriding this method.
-   * Proceed with care.
+   * This is a protected property. Proceed with care.
+   */
+  protected _isPaused = false
+
+  /**
+   * Paused state will ignore any kind of update operations and potential state distributions via observables.
+   */
+  public get isPaused(): boolean {
+    return this._isPaused
+  }
+  public set isPaused(value: boolean) {
+    this._isPaused = value
+    if (value) {
+      this._storesState = StoreStates.paused
+      if (isDevTools()) DevToolsSubjects.pausedEvent$.next(this._storeName)
+    }
+  }
+
+  //#endregion paused-state
+  //#region loading-state
+
+  /**
+   * This is a protected property. Proceed with care.
    */
   protected readonly _isLoading$ = new BehaviorSubject<boolean>(false)
   /**
@@ -58,9 +79,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region error-api
 
   /**
-   * This is a protected property.
-   * We do not recommend overriding this method.
-   * Proceed with care.
+   * This is a protected property. Proceed with care.
    */
   protected readonly _error$ = new BehaviorSubject<E | null>(null)
   /**
@@ -104,7 +123,6 @@ export abstract class BaseStore<T extends object, E = any> {
    * This is a protected property. Proceed with care.
    */
   protected _storesState$ = new BehaviorSubject<StoreStates>(StoreStates.normal)
-  public storesState$: Observable<StoreStates> = this._storesState$.asObservable().pipe(distinctUntilChanged())
   /**
    * This is a protected property. Proceed with care.
    */
@@ -114,6 +132,8 @@ export abstract class BaseStore<T extends object, E = any> {
   protected set _storesState(value: StoreStates) {
     this._storesState$.next(value)
   }
+
+  public storesState$: Observable<StoreStates> = this._storesState$.asObservable().pipe(distinctUntilChanged())
 
   //#endregion stores-state
   //#region config
@@ -178,7 +198,7 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
 
   //#endregion config
-  //#region private-properties
+  //#region protected-properties
 
   /**
    * This is a protected property. Proceed with care.
@@ -190,28 +210,33 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   protected _stateToStorageSub: Subscription | null = null
 
-  //#endregion private-properties
+  /**
+   * This is a protected property. Proceed with care.
+   */
+  protected _selectScopes: SelectScope[] = []
+
+  //#endregion protected-properties
   //#region constructor
 
   constructor() { }
 
   //#endregion constructor
-  //#region private-methods
+  //#region protected-methods
 
   /**
    * This is a protected method. Proceed with care.
-   * - Used as private.
    */
   protected _main(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions): void {
-    if (isUndefined(initialStateOrNull)) throwError('Initial state cannot be undefined.')
     this._initializeConfig(storeConfig)
-    if (!this.config) throwError(`Store must be decorated with the "@StoreConfig" decorator or store config must supplied via the store's constructor!`)
-    this._validateStoreName(this._storeName)
-    if (this._config.storageType != Storages.none) this._validateStorageKey(this._storageKey, this._storeName)
-    if (isDevTools()) DevToolsSubjects.stores[this._storeName] = this
+    if (!this.config) throwError('Store must be provided with store configuration, either via constructor or via decorator.')
+    const storeName = this._storeName
+    this._validateStoreName(storeName)
+    if (this._config.storageType != Storages.none) this._validateStorageKey(this._storageKey, storeName)
+    if (isUndefined(initialStateOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as initial state.`)
+    if (isDevTools()) DevToolsSubjects.stores[storeName] = this
     if (isNull(initialStateOrNull)) {
       this._isLoading$.next(true)
-      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(storeName)
     } else {
       this._initializeStore(initialStateOrNull)
     }
@@ -219,7 +244,6 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /**
    * This is a protected method. Proceed with care.
-   * - Used as private.
    */
   protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
@@ -268,9 +292,21 @@ export abstract class BaseStore<T extends object, E = any> {
     this._parse = this._config.parse
   }
 
+  public _assertInitializable(outError?: Error): boolean | never {
+    if (!this.isLoading || this._getInitialState() || this._getState()) {
+      const errMsg = `Can't initialize store: "${this._storeName}" because one of the following reasons: 1.) The store has already been initialized. 2.) The store is not in loading state.`
+      if (outError) {
+        if (!outError.message) outError.message = errMsg
+        return false
+      } else {
+        throwError(errMsg)
+      }
+    }
+    return true
+  }
+
   /**
    * This is a protected method. Proceed with care.
-   * - Used as private.
    */
   protected _initializeStore(initialState: T | T[]): void {
     let isStateFromStorage = false
@@ -285,8 +321,8 @@ export abstract class BaseStore<T extends object, E = any> {
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
     }
-    if (isFunction(this['onBeforeInit'])) {
-      const modifiedInitialState: T | T[] | null = this['onBeforeInit'](this._clone(initialState))
+    if (isFunction(this[onBeforeInit])) {
+      const modifiedInitialState: T | T[] | null = this[onBeforeInit](this._clone(initialState))
       if (modifiedInitialState) {
         initialState = this._clone(modifiedInitialState)
         isStateFromStorage = false
@@ -295,10 +331,11 @@ export abstract class BaseStore<T extends object, E = any> {
     initialState = isStateFromStorage ? initialState : this._clone(initialState)
     this._setInitialState(deepFreeze(initialState))
     this._setState(() => this._clone(initialState))
-    if (isFunction(this['onAfterInit'])) {
-      const modifiedState: T | T[] | null = this['onAfterInit'](this._clone(this._getState()))
+    if (isFunction(this[onAfterInit])) {
+      const modifiedState: T | T[] | null = this[onAfterInit](this._clone(this._getState()))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
+    this._isLoading$.next(false)
     if (isDevTools()) DevToolsSubjects.initEvent$.next(this._getDevData())
   }
 
@@ -314,11 +351,10 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   protected _validateStorageKey(storageKey: string, storeName: string): void {
     if (BaseStore._storageKeys.includes(storageKey)) {
-      const errorMsg = `This storage key is not unique: "${storageKey}" from store: "${storeName}"!`
-      isDev() ? throwError(errorMsg) : logError(errorMsg)
-    } else {
-      BaseStore._storageKeys.push(storageKey)
+      const errorMsg = `Storage key: "${storageKey}" in store name: "${storeName}" is not unique.`
+      throwError(errorMsg)
     }
+    BaseStore._storageKeys.push(storageKey)
   }
 
   /**
@@ -326,11 +362,10 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   protected _validateStoreName(storeName: string): void {
     if (BaseStore._storeNames.includes(storeName)) {
-      const errorMsg = `There are multiple stores with the same store name: "${storeName}"!`
-      isDev() ? throwError(errorMsg) : logError(errorMsg)
-    } else {
-      BaseStore._storeNames.push(storeName)
+      const errorMsg = `Store name: "${storeName}" is not unique.`
+      throwError(errorMsg)
     }
+    BaseStore._storeNames.push(storeName)
   }
 
   /**
@@ -343,8 +378,48 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
-  //#endregion private-methods
-  //#region abstract
+  protected _setNormalState(): void {
+    this._storesState = StoreStates.normal
+  }
+
+  //#endregion protected-methods
+  //#region public-methods
+
+  /**
+   * Method for asynchronous initialization.
+   * - In case of an observable, only the finite value will be used.
+   */
+  public initializeAsync(promiseOrObservable: Promise<T | T[]> | Observable<T | T[]>): Promise<void> {
+    const asyncInitPromise = this._createAsyncInitPromiseObj()
+    this._asyncInitPromise = asyncInitPromise
+    asyncInitPromise.promise = new Promise((resolve, reject) => {
+      const error = newError()
+      if (!this._assertInitializable(error)) return reject(error)
+      if (isObservable(promiseOrObservable)) promiseOrObservable = promiseOrObservable.toPromise()
+      promiseOrObservable.then(r => {
+        if (asyncInitPromise.isCancelled) return
+        if (!this._assertInitializable(error)) {
+          return reject(error)
+        } else {
+          if (isFunction(this[onAsyncInitSuccess])) {
+            const modifiedResult = this[onAsyncInitSuccess](r)
+            if (modifiedResult) r = modifiedResult
+          }
+          this._initializeStore(r)
+        }
+      }).catch(e => {
+        if (asyncInitPromise.isCancelled) return
+        if (isFunction(this[onAsyncInitError])) {
+          e = this[onAsyncInitError](e)
+        }
+        if (e) return reject(e)
+      }).finally(resolve)
+    })
+    return asyncInitPromise.promise
+  }
+
+  //#endregion public-methods
+  //#region protected-abstract-methods
 
   /**
    * This is a protected method. Proceed with care.
@@ -353,11 +428,15 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
+  protected abstract _getState(): T | T[] | null
+  /**
+   * This is a protected method. Proceed with care.
+   */
   protected abstract _setState(newStateFna: (state: Readonly<T | T[]> | null) => T | T[]): void
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _getState(): T | T[] | null
+  protected abstract _getInitialState(): Readonly<T | T[]> | null
   /**
    * This is a protected method. Proceed with care.
    */
@@ -367,5 +446,13 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   protected abstract _getDevData(): DevToolsDataStruct
 
-  //#endregion abstract
+  //#endregion protected-abstract-methods
+  //#region public-abstract-methods
+
+  /**
+   * Method used for delayed initialization.
+   */
+  public abstract initialize(initialState: T | T[]): void
+
+  //#endregion public-abstract-methods
 }
