@@ -45,6 +45,10 @@ export class DevToolsManager {
     activateDevToolsPushes()
   }
 
+  public setDevToolsZone(zone: Zone): void {
+    this._zone = zone
+  }
+
   private _setUserEventsSubscribers(devTools: any): void {
     const devToolsOptions = this.devToolsOptions
     const subs = [
@@ -132,9 +136,5 @@ export class DevToolsManager {
       DevToolsSubjects.isLoadingErrorsDisabled = false
       this._setUserEventsSubscribers(this._devTools)
     })
-  }
-
-  public setDevToolsZone(zone: Zone): void {
-    this._zone = zone
   }
 }

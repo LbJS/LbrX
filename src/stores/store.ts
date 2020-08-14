@@ -1,9 +1,9 @@
 import { BehaviorSubject, iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
-import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
+import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
 import { SelectScope } from '../types'
-import { getPromiseState, instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, PromiseStates, simpleCloneObject, throwError } from '../utils'
+import { instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 
@@ -126,6 +126,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     this._setNormalState()
   }
 
+  protected _setNullToState(): void {
+    this._state = null
+  }
+
   protected _getInitialState(): Readonly<T | T[]> | null {
     return this._initialState
   }
@@ -242,47 +246,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   /**
-   * Sets the following:
-   * - Store's state will be set to `null`.
-   * - Store's initial state will be set to `null`.
-   * - Store's error will be set to `null`.
-   * - Sets _isPaused_ to `false`.
-   * - Sets the store to 'Loading...' state.
-   * - Clears store's cache storage if any (LocalStorage, SessionStorage, etc.).
-   */
-  public hardReset(): Promise<this> {
-    if (!this._isResettable) {
-      const errMsg = `Store: ${this._storeName} is not configured as resettable.`
-      return Promise.reject(new Error(errMsg))
-    }
-    this._storesState = StoreStates.hardResetting
-    if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
-    const asyncInitPromise = this._asyncInitPromise
-    const initializeAsyncPromiseState: Promise<void | PromiseStates> = asyncInitPromise.promise ?
-      getPromiseState(asyncInitPromise.promise) :
-      Promise.resolve()
-    return new Promise((resolve) => {
-      const reset = () => {
-        this.isPaused = false
-        this.isLoading = true
-        this._state = null
-        this._initialState = null
-        this.error = null
-        if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
-        if (this._storage) this._storage.removeItem(this._storageKey)
-        this._selectScopes.forEach(x => x.wasHardReset = true)
-        if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
-        resolve(this)
-      }
-      initializeAsyncPromiseState
-        .then(state => {
-          asyncInitPromise.isCancelled = state === PromiseStates.pending
-          reset()
-        }).catch(() => reset())
-    })
-  }
-
-  /**
    * Returns the state as an Observable.
    * @example
    * weatherStore.select$().subscribe(state => {
@@ -339,12 +302,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   }
 
   public disposeSelect(observable: Observable<T>): void {
-    const selectScopes = this._selectScopes
-    const i = selectScopes.findIndex(x => x.observable = observable)
-    if (i != -1) {
-      selectScopes[i].isDisPosed = true
-      selectScopes.splice(i, 1)
-    }
+    super.disposeSelect(observable)
   }
 
   //#endregion public-methods

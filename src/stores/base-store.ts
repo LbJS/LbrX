@@ -3,7 +3,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
 import { SelectScope } from '../types'
-import { Class, cloneError, cloneObject, compareObjects, deepFreeze, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logWarn, newError, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
+import { Class, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logWarn, newError, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
 
@@ -418,6 +418,56 @@ export abstract class BaseStore<T extends object, E = any> {
     return asyncInitPromise.promise
   }
 
+  /**
+   * Sets the following:
+   * - Store's state will be set to `null`.
+   * - Store's initial state will be set to `null`.
+   * - Store's error will be set to `null`.
+   * - Sets _isPaused_ to `false`.
+   * - Sets the store to 'Loading...' state.
+   * - Clears store's cache storage if any (LocalStorage, SessionStorage, etc.).
+   */
+  public hardReset(): Promise<this> {
+    if (!this._isResettable) {
+      const errMsg = `Store: ${this._storeName} is not configured as resettable.`
+      return Promise.reject(new Error(errMsg))
+    }
+    this._storesState = StoreStates.hardResetting
+    if (isDevTools()) DevToolsSubjects.hardResetEvent$.next(this._storeName)
+    const asyncInitPromise = this._asyncInitPromise
+    const initializeAsyncPromiseState: Promise<void | PromiseStates> = asyncInitPromise.promise ?
+      getPromiseState(asyncInitPromise.promise) :
+      Promise.resolve()
+    return new Promise((resolve) => {
+      const reset = () => {
+        this.isPaused = false
+        this.isLoading = true
+        this._setNullToState()
+        this._setInitialState(null)
+        this.error = null
+        if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
+        if (this._storage) this._storage.removeItem(this._storageKey)
+        this._selectScopes.forEach(x => x.wasHardReset = true)
+        if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+        resolve(this)
+      }
+      initializeAsyncPromiseState
+        .then(state => {
+          asyncInitPromise.isCancelled = state === PromiseStates.pending
+          reset()
+        }).catch(() => reset())
+    })
+  }
+
+  public disposeSelect(observable: Observable<T | T[]>): void {
+    const selectScopes = this._selectScopes
+    const i = selectScopes.findIndex(x => x.observable = observable)
+    if (i != -1) {
+      selectScopes[i].isDisPosed = true
+      selectScopes.splice(i, 1)
+    }
+  }
+
   //#endregion public-methods
   //#region protected-abstract-methods
 
@@ -433,6 +483,10 @@ export abstract class BaseStore<T extends object, E = any> {
    * This is a protected method. Proceed with care.
    */
   protected abstract _setState(newStateFna: (state: Readonly<T | T[]> | null) => T | T[]): void
+  /**
+   * This is a protected method. Proceed with care.
+   */
+  protected abstract _setNullToState(): void
   /**
    * This is a protected method. Proceed with care.
    */
