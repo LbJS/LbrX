@@ -9,8 +9,7 @@ import { StoreStates } from './store-states.enum'
 
 export class DevToolsManager {
 
-  private _userEventsSub = new Subscription()
-  private _reduxEventsSub = new Subscription()
+  private _sub = new Subscription()
   private _appState: KeyValue = {}
   private _loadingStoresCache = {}
   private _zone = {
@@ -34,11 +33,10 @@ export class DevToolsManager {
       name: mergedOptions.name
     }
     const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
+    if (this._devTools) this._devTools.unsubscribe()
     this._devTools = devTools
-    this._userEventsSub.unsubscribe()
-    this._reduxEventsSub.unsubscribe()
-    this._userEventsSub = new Subscription()
-    this._reduxEventsSub = new Subscription()
+    this._sub.unsubscribe()
+    this._sub = new Subscription()
     this._appState = {}
     this._setUserEventsSubscribers(devTools)
     this._setDevToolsEventsSubscribers(devTools)
@@ -54,11 +52,11 @@ export class DevToolsManager {
     const subs = [
       DevToolsSubjects.pausedEvent$.subscribe(storeName => {
         this._appState[storeName] = StoreStates.paused
-        devTools.send({ type: `[${storeName}] - PAUSED` }, this._appState)
+        devTools.send({ type: `[${storeName}] - || <PAUSED> ||` }, this._appState)
       }),
       DevToolsSubjects.loadingEvent$.subscribe(storeName => {
         this._appState[storeName] = StoreStates.loading
-        devTools.send({ type: `[${storeName}] - Loading...` }, this._appState)
+        devTools.send({ type: `[${storeName}] - LOADING...` }, this._appState)
       }),
       DevToolsSubjects.initEvent$.subscribe(store => {
         const isLoading = this._appState[store.name] === StoreStates.loading
@@ -87,14 +85,16 @@ export class DevToolsManager {
       }),
       DevToolsSubjects.hardResetEvent$.subscribe(storeName => {
         this._appState[storeName] = StoreStates.hardResetting
-        devTools.send({ type: `[${storeName}] - Hard-Rest` }, this._appState)
+        devTools.send({ type: `[${storeName}] - HARD RESETTING...` }, this._appState)
       }),
     ]
-    subs.forEach(sub => this._userEventsSub.add(sub))
+    subs.forEach(sub => this._sub.add(sub))
   }
 
   private _setDevToolsEventsSubscribers(devTools: any): void {
-    this._reduxEventsSub.add(devTools.subscribe((message: any) => {
+    // console.log(devTools)
+    devTools.subscribe((message: any) => {
+      // console.log(message)
       if (message.type != 'DISPATCH' || !message.state) return
       const reduxDevToolsState = parse<{}>(message.state)
       objectKeys(reduxDevToolsState).forEach((storeName: string) => {
@@ -111,7 +111,7 @@ export class DevToolsManager {
           this._zone.run(() => {
             this._disableNextUpdate()
             store._isLoading$.next(true)
-            store.state = null
+            store._setStateToNull()
           })
         } else {
           this._zone.run(() => {
@@ -122,15 +122,15 @@ export class DevToolsManager {
           if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
         }
       })
-    }))
+    })
   }
 
   // BUG: If the store updates itself asynchronously, this solution won't prevent false updating the store.
   // Should try to hook to stat's index instead of timeout.
   private _disableNextUpdate(): void {
     DevToolsSubjects.isLoadingErrorsDisabled = true
-    this._userEventsSub.unsubscribe()
-    this._userEventsSub = new Subscription()
+    this._sub.unsubscribe()
+    this._sub = new Subscription()
     clearTimeout(this._userEventsDisablerIndex as number)
     this._userEventsDisablerIndex = setTimeout(() => {
       DevToolsSubjects.isLoadingErrorsDisabled = false

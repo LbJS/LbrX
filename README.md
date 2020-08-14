@@ -33,8 +33,6 @@ This is an object oriented State Manager that's build for JavaScript application
 
 - Added support for moment.js.
 - `storeName.select()` is removed. Use: `storeName.select$()`.
-- `storeName.value` is deprecated in favor of `storeName.state`.
-- `storeName.initialValue` is deprecated in favor of `storeName.InitialState`.
 
 ## Dependencies
 

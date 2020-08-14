@@ -43,7 +43,22 @@ class UserStore extends Store<User> implements StoreBeforeInit {
   }
 }
 
+@StoreConfig({
+  name: 'BETTER-LEON-STORE',
+  objectCompareType: ObjectCompareTypes.advanced,
+  isResettable: true,
+  storageType: Storages.session,
+  storageDebounceTime: 500
+})
+class BetterUserStore extends Store<User> {
+
+  constructor() {
+    super(createLeon())
+  }
+}
+
 const userStore = new UserStore()
+const betterUserStore = new BetterUserStore()
 
 userStore
   .select$()
@@ -61,7 +76,7 @@ userStore
 userStore
   .isLoading$.subscribe(value => {
     if (!value) {
-      console.log('From is loading: ', userStore.value)
+      console.log('From is loading: ', userStore.state)
     }
   })
 
@@ -112,3 +127,8 @@ setTimeout(() => {
 setTimeout(() => {
   userStore.isLoading = false
 }, 700)
+
+
+setTimeout(() => {
+  userStore.isPaused = true
+}, 800)

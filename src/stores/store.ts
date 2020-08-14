@@ -57,26 +57,19 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * @deprecated
    */
   public get value(): T | null {
-    const state = this._state$.value
-    return isNull(state) ? null : this._clone(state)
+    return this.state
   }
 
   /**
    * This is a protected property. Proceed with care.
    */
-  protected _initialState: Readonly<T> | null = null
-  /**
-   * Returns the initial store's state.
-   */
-  public get initialState(): Readonly<T> | null {
-    return this._initialState
-  }
+  protected _initialValue: Readonly<T> | null = null
 
   /**
-   * @deprecated
+   * Returns the initial store's value.
    */
   public get initialValue(): Readonly<T> | null {
-    return this._initialState
+    return this._initialValue
   }
 
   //#endregion state-properties
@@ -95,19 +88,19 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   /**
    * Synchronous initialization.
    */
-  constructor(initialState: T, storeConfig?: StoreConfigOptions)
+  constructor(initialValue: T, storeConfig?: StoreConfigOptions)
   /**
    * Asynchronous or delayed initialization.
    * The store will be set into loading state till initialization.
    */
-  constructor(initialState: null, storeConfig?: StoreConfigOptions)
+  constructor(initialValue: null, storeConfig?: StoreConfigOptions)
   /**
    * Dynamic initialization.
    */
-  constructor(initialState: T | null, storeConfig?: StoreConfigOptions)
-  constructor(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions) {
+  constructor(initialValue: T | null, storeConfig?: StoreConfigOptions)
+  constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
     super()
-    this._main(initialStateOrNull, storeConfig)
+    this._main(initialValueOrNull, storeConfig)
   }
 
   //#endregion constructor
@@ -126,16 +119,16 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     this._setNormalState()
   }
 
-  protected _setNullToState(): void {
+  protected _setStateToNull(): void {
     this._state = null
   }
 
   protected _getInitialState(): Readonly<T | T[]> | null {
-    return this._initialState
+    return this._initialValue
   }
 
-  protected _setInitialState(state: Readonly<T> | null): void {
-    this._initialState = state
+  protected _setInitialValue(state: Readonly<T> | null): void {
+    this._initialValue = state
   }
 
   protected _getDevData(): DevToolsDataStruct {
@@ -174,8 +167,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public update(stateFunction: (state: Readonly<T>) => Partial<T>, updateName?: string): void
   public update(stateOrFunction: ((state: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
-    if (this._isPaused) return
-    const initialState = this._initialState
+    if (this.isPaused) return
+    const initialState = this._initialValue
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       const errMsg = `Can't update ${this._storeName} while it's in loading state.`
       isDev() ? throwError(errMsg) : logError(errMsg)
@@ -202,14 +195,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * Overrides the current store's state completely.
    */
   public override(state: T): void {
-    if (this._isPaused) return
+    if (this.isPaused) return
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       logError(`Can't override ${this._storeName} while it's in loading state.`)
-    } else if (!this._initialState) {
+    } else if (!this._initialValue) {
       const errMsg = `Store: ${this._storeName} can't be overridden while the initial state is null.`
       isDev() ? throwError(errMsg) : logError(errMsg)
     } else {
-      if (!this._isSimpleCloning) state = instanceHandler(this._initialState, this._clone(state))
+      if (!this._isSimpleCloning) state = instanceHandler(this._initialValue, this._clone(state))
       let modifiedState: T | void
       if (isFunction(this['onOverride'])) {
         modifiedState = this['onOverride'](this._clone(state), this._state)
@@ -225,7 +218,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    * Resets the store's state to it's initial state.
    */
   public reset(): void | never {
-    const initialState = this._initialState
+    const initialState = this._initialValue
     if (this.isLoading && !DevToolsSubjects.isLoadingErrorsDisabled) {
       const errMsg = `Can't reset ${this._storeName} while it's in loading state.`
       isDev() ? throwError(errMsg) : logError(errMsg)
@@ -287,7 +280,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
       observable: this._state$.asObservable()
         .pipe(
           mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
-          filter<T | null, T>((x => !!x && !this._isPaused) as (value: T | null) => value is T),
+          filter<T | null, T>((x => !!x && !this.isPaused) as (value: T | null) => value is T),
           map<T, T | R>(project || (x => x)),
           distinctUntilChanged((prev, curr) => {
             if (selectContainer.wasHardReset) return false

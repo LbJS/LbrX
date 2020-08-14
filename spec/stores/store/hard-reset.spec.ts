@@ -51,9 +51,9 @@ describe('Store hardReset():', () => {
   })
 
   it("should set the store's initial value to null.", async () => {
-    expect(store.initialState).not.toBeNull()
+    expect(store.initialValue).not.toBeNull()
     await store.hardReset()
-    expect(store.initialState).toBeNull()
+    expect(store.initialValue).toBeNull()
   })
 
   it('should set the loading state to true.', async () => {

@@ -70,7 +70,7 @@ describe('Store reset():', () => {
   })
 
   it("should throw if there is no initial state and it's development mode.", () => {
-    (store as any)._initialState = null
+    (store as any)._initialValue = null
     expect(() => {
       store.reset()
     }).toThrow()
@@ -81,7 +81,7 @@ describe('Store reset():', () => {
       .mockImplementationOnce(() => { })
     LbrXManager.enableProdMode()
     store.update(createStateA());
-    (store as any)._initialState = null
+    (store as any)._initialValue = null
     expect(() => {
       store.reset()
     }).not.toThrow()
@@ -92,7 +92,7 @@ describe('Store reset():', () => {
   it("should reset the store's state to its initial value with different reference.", () => {
     store.update(createStateA())
     store.reset()
-    expect(store.state).not.toBe(store.initialState)
+    expect(store.state).not.toBe(store.initialValue)
   })
 
   it('should distribute reset event to DevToolsSubjects.', async done => {
