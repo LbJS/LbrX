@@ -32,16 +32,18 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected property. Proceed with care.
    */
-  protected _isPaused = false
+  protected _isPaused$ = new BehaviorSubject(false)
+
+  public isPaused$: Observable<boolean> = this._isPaused$.asObservable().pipe(distinctUntilChanged())
 
   /**
    * Paused state will ignore any kind of update operations and potential state distributions via observables.
    */
   public get isPaused(): boolean {
-    return this._isPaused
+    return this._isPaused$.value
   }
   public set isPaused(value: boolean) {
-    this._isPaused = value
+    this._isPaused$.next(value)
     if (value) {
       this._storesState = StoreStates.paused
       if (isDevTools()) DevToolsSubjects.pausedEvent$.next(this._storeName)
@@ -54,7 +56,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected property. Proceed with care.
    */
-  protected readonly _isLoading$ = new BehaviorSubject<boolean>(false)
+  protected readonly _isLoading$ = new BehaviorSubject(false)
   /**
    * Weather or not the store is in it's loading state.
    * - If the initial value at the constructor is null,
@@ -68,7 +70,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * @set Sets store's loading state.
    */
   public get isLoading(): boolean {
-    return this._isLoading$.getValue()
+    return this._isLoading$.value
   }
   public set isLoading(value: boolean) {
     this._isLoading$.next(value)
@@ -329,7 +331,7 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     }
     initialState = isStateFromStorage ? initialState : this._clone(initialState)
-    this._setInitialState(deepFreeze(initialState))
+    this._setInitialValue(deepFreeze(initialState))
     this._setState(() => this._clone(initialState))
     if (isFunction(this[onAfterInit])) {
       const modifiedState: T | T[] | null = this[onAfterInit](this._clone(this._getState()))
@@ -442,8 +444,8 @@ export abstract class BaseStore<T extends object, E = any> {
       const reset = () => {
         this.isPaused = false
         this.isLoading = true
-        this._setNullToState()
-        this._setInitialState(null)
+        this._setStateToNull()
+        this._setInitialValue(null)
         this.error = null
         if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
@@ -486,7 +488,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _setNullToState(): void
+  protected abstract _setStateToNull(): void
   /**
    * This is a protected method. Proceed with care.
    */
@@ -494,7 +496,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _setInitialState(state: Readonly<T | T[]> | null): void
+  protected abstract _setInitialValue(state: Readonly<T | T[]> | null): void
   /**
    * This is a protected method. Proceed with care.
    */

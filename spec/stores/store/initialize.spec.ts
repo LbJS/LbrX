@@ -29,7 +29,7 @@ describe('Store initialize(): ', () => {
   })
 
   it("should set the initial value to store's initial value property.", () => {
-    expect(store.state).toStrictEqual(store.initialState)
+    expect(store.state).toStrictEqual(store.initialValue)
   })
 
   it('should return the initial state from observable.', done => {

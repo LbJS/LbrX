@@ -11,7 +11,7 @@ describe('Helper Function - isPromise():', () => {
   })
 
   it('should return true for rejected Promise.', () => {
-    expect(isPromise(Promise.reject())).toBeTruthy()
+    expect(isPromise(Promise.reject().catch(() => { }))).toBeTruthy()
   })
 
   it('should return false for Promise type.', () => {
