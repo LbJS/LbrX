@@ -1,4 +1,5 @@
 export * from '../dev-tools/dev-tools-options.interface'
+export * from '../states'
 export * from '../stores/config/global-store-config-options.interface'
 export * from '../stores/config/object-compare-types.enum'
 export * from '../stores/config/storages.enum'

@@ -2,7 +2,7 @@ import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { Clone, Compare, Parse, SelectScope, Stringify } from '../types'
+import { Clone, Compare, Parse, QueryScope, Stringify } from '../types'
 import { Class, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logWarn, newError, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
@@ -166,7 +166,7 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _stateToStorageSub: Subscription | null = null
 
   /** @internal */
-  protected _selectScopes: SelectScope[] = []
+  protected _queryScopes: QueryScope[] = []
 
   //#endregion protected-properties
   //#region constructor
@@ -179,7 +179,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected _main(initialStateOrNull: T | T[] | null, storeConfig?: StoreConfigOptions): void {
+  protected _main(initialStateOrNull: T | null, storeConfig?: StoreConfigOptions): void {
     this._initializeConfig(storeConfig)
     if (!this.config) throwError('Store must be provided with store configuration, either via constructor or via decorator.')
     const storeName = this._storeName
@@ -260,11 +260,11 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected _initializeStore(initialState: T | T[]): void {
+  protected _initializeStore(initialState: T): void {
     let isStateFromStorage = false
     const storage = this._storage
     if (storage) {
-      const storedState: T | T[] | null = this._parse(storage.getItem(this._storageKey))
+      const storedState: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedState) {
         initialState = this._isSimpleCloning ? storedState : instanceHandler(initialState, storedState)
         isStateFromStorage = true
@@ -274,7 +274,7 @@ export abstract class BaseStore<T extends object, E = any> {
         .subscribe(state => storage.setItem(this._storageKey, this._stringify(state)))
     }
     if (isFunction(this[onBeforeInit])) {
-      const modifiedInitialState: T | T[] | null = this[onBeforeInit](this._clone(initialState))
+      const modifiedInitialState: T | null = this[onBeforeInit](this._clone(initialState))
       if (modifiedInitialState) {
         initialState = this._clone(modifiedInitialState)
         isStateFromStorage = false
@@ -284,7 +284,7 @@ export abstract class BaseStore<T extends object, E = any> {
     this._setInitialValue(deepFreeze(initialState))
     this._setState(() => this._clone(initialState))
     if (isFunction(this[onAfterInit])) {
-      const modifiedState: T | T[] | null = this[onAfterInit](this._clone(this._getState()))
+      const modifiedState: T | null = this[onAfterInit](this._clone(this._getState()))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
     this.isLoading = false
@@ -341,7 +341,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * Method for asynchronous initialization.
    * - In case of an observable, only the finite value will be used.
    */
-  public initializeAsync(promiseOrObservable: Promise<T | T[]> | Observable<T | T[]>): Promise<void> {
+  public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
     const asyncInitPromise = this._createAsyncInitPromiseObj()
     this._asyncInitPromise = asyncInitPromise
     asyncInitPromise.promise = new Promise((resolve, reject) => {
@@ -397,7 +397,7 @@ export abstract class BaseStore<T extends object, E = any> {
         this.error = null
         this._setStateToNull()
         this._setInitialValue(null)
-        this._selectScopes.forEach(x => x.wasHardReset = true)
+        this._queryScopes.forEach(x => x.wasHardReset = true)
         this.isPaused = false
         this.isLoading = true
         resolve(this)
@@ -410,8 +410,8 @@ export abstract class BaseStore<T extends object, E = any> {
     })
   }
 
-  public disposeSelect(observable: Observable<T | T[]>): void {
-    const selectScopes = this._selectScopes
+  public disposeQueryScope(observable: Observable<T>): void {
+    const selectScopes = this._queryScopes
     const i = selectScopes.findIndex(x => x.observable = observable)
     if (i != -1) {
       selectScopes[i].isDisPosed = true
@@ -425,15 +425,15 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _getState$(): Observable<T | T[] | null>
+  protected abstract _getState$(): Observable<T | null>
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _getState(): T | T[] | null
+  protected abstract _getState(): T | null
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _setState(newStateFna: (state: Readonly<T | T[]> | null) => T | T[]): void
+  protected abstract _setState(newStateFna: (state: Readonly<T> | null) => T): void
   /**
    * This is a protected method. Proceed with care.
    */
@@ -441,11 +441,11 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _getInitialState(): Readonly<T | T[]> | null
+  protected abstract _getInitialState(): Readonly<T> | null
   /**
    * This is a protected method. Proceed with care.
    */
-  protected abstract _setInitialValue(state: Readonly<T | T[]> | null): void
+  protected abstract _setInitialValue(state: Readonly<T> | null): void
   /**
    * This is a protected method. Proceed with care.
    */
@@ -457,7 +457,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * Method used for delayed initialization.
    */
-  public abstract initialize(initialState: T | T[]): void
+  public abstract initialize(initialState: T): void
 
   //#endregion public-abstract-methods
 }
