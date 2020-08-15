@@ -32,7 +32,7 @@ describe('Store Is Loading State', () => {
     const nextValues = [false, true, true, false, false]
     const actualValues: boolean[] = []
     store.isLoading$.subscribe(value => actualValues.push(value))
-    nextValues.forEach(value => store.isLoading = value)
+    nextValues.forEach(value => (store as any)._setState({ isLoading: value }))
     await Promise.resolve()
     expect(actualValues).toStrictEqual(expectedValues)
   })

@@ -6,4 +6,5 @@ export const enum StateTags {
   loading = 'LOADING',
   hardResetting = 'HARD RESETTING',
   error = 'ERROR',
+  destroyed = 'DESTROYED',
 }

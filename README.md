@@ -19,7 +19,6 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] NgZone Support
 - [x] ES5 support
 - [x] Multi platform support, including Node.JS
-- [x] Global and single Store Error api
 - [ ] Full spec coverage of the above - wip
 - [ ] LbrX utility functions available for import
 - [ ] Store pause api
@@ -33,6 +32,7 @@ This is an object oriented State Manager that's build for JavaScript application
 
 - Added support for moment.js.
 - `storeName.select()` is removed. Use: `storeName.select$()`.
+- Global error store has bee removed.
 
 ## Dependencies
 

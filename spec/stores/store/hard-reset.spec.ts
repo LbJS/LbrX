@@ -80,11 +80,11 @@ describe('Store hardReset():', () => {
 
   it('should unsubscribe from state to storage subscription.', async () => {
     storeWithLocalStorage = StoresFactory.createStore(createInitialState(), STORE_WITH_LOCAL_STORAGE_CONFIG)
-    assertNotNullable(storeWithLocalStorage['_stateToStorageSub'])
-    expect(storeWithLocalStorage['_stateToStorageSub']).toBeInstanceOf(Subscription)
-    expect(storeWithLocalStorage['_stateToStorageSub'].closed).toBeFalsy()
+    assertNotNullable(storeWithLocalStorage['_valueToStorageSub'])
+    expect(storeWithLocalStorage['_valueToStorageSub']).toBeInstanceOf(Subscription)
+    expect(storeWithLocalStorage['_valueToStorageSub'].closed).toBeFalsy()
     await storeWithLocalStorage.hardReset()
-    expect(storeWithLocalStorage['_stateToStorageSub'].closed).toBeTruthy()
+    expect(storeWithLocalStorage['_valueToStorageSub'].closed).toBeTruthy()
   })
 
   it("should return store's instance on resolve.", async () => {
@@ -104,20 +104,5 @@ describe('Store hardReset():', () => {
   it('should throw if the store is not resettable.', async () => {
     expect.assertions(1)
     await expect(notResettableStore.hardReset()).rejects.toBeInstanceOf(Error)
-  })
-
-  it('should distribute hardReset event and then loading event to DevToolsSubjects.', done => {
-    LbrXManager.initializeDevTools()
-    let waHardResetEvent = false
-    DevToolsSubjects.hardResetEvent$.subscribe(eventData => {
-      waHardResetEvent = true
-      expect(eventData).toBe(store.config.name)
-    })
-    DevToolsSubjects.loadingEvent$.subscribe(eventData => {
-      expect(waHardResetEvent).toBeTruthy()
-      expect(eventData).toBe(store.config.name)
-      done()
-    })
-    store.hardReset()
   })
 })
