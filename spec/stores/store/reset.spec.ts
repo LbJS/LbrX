@@ -28,7 +28,7 @@ describe('Store reset():', () => {
   it("should reset the store's state to its initial value.", () => {
     store.update(createStateA())
     store.reset()
-    expect(store.state).toStrictEqual(createInitialState())
+    expect(store.value).toStrictEqual(createInitialState())
   })
 
   it('should throw if the store is in loading state and in development mode.', () => {
@@ -48,7 +48,7 @@ describe('Store reset():', () => {
       store.reset()
     }).not.toThrow()
     expect(consoleErrorSpy).toBeCalledTimes(1)
-    expect(store.state).toStrictEqual(createStateA())
+    expect(store.value).toStrictEqual(createStateA())
   })
 
   it("should throw if the store is not resettable and it's development mode.", () => {
@@ -66,7 +66,7 @@ describe('Store reset():', () => {
       notResettableStore.reset()
     }).not.toThrow()
     expect(consoleErrorSpy).toBeCalledTimes(1)
-    expect(notResettableStore.state).toStrictEqual(createStateA())
+    expect(notResettableStore.value).toStrictEqual(createStateA())
   })
 
   it("should throw if there is no initial state and it's development mode.", () => {
@@ -86,13 +86,13 @@ describe('Store reset():', () => {
       store.reset()
     }).not.toThrow()
     expect(consoleErrorSpy).toBeCalledTimes(1)
-    expect(store.state).toStrictEqual(createStateA())
+    expect(store.value).toStrictEqual(createStateA())
   })
 
   it("should reset the store's state to its initial value with different reference.", () => {
     store.update(createStateA())
     store.reset()
-    expect(store.state).not.toBe(store.initialValue)
+    expect(store.value).not.toBe(store.initialValue)
   })
 
   it('should distribute reset event to DevToolsSubjects.', async done => {

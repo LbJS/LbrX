@@ -18,12 +18,12 @@ describe('Store initializeAsync():', () => {
   jest.retryTimes(5)
   it('should get todo item from promise ajax call.', async () => {
     await store.initializeAsync(geTodoItem())
-    expect(store.state).toStrictEqual(expectedTodoItem)
+    expect(store.value).toStrictEqual(expectedTodoItem)
   })
 
   jest.retryTimes(5)
   it('should get todo item from observable ajax call.', async () => {
     await store.initializeAsync(from(geTodoItem()))
-    expect(store.state).toStrictEqual(expectedTodoItem)
+    expect(store.value).toStrictEqual(expectedTodoItem)
   })
 })

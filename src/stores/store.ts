@@ -31,13 +31,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
   //#region state-properties
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _state$ = new BehaviorSubject<T | null>(null)
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected get _state(): Readonly<T> | null {
     return this._state$.value
   }
@@ -48,21 +44,12 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   /**
    * Returns the current store's state.
    */
-  public get state(): T | null {
+  public get value(): T | null {
     const state = this._state$.value
     return isNull(state) ? null : this._clone(state)
   }
 
-  /**
-   * @deprecated
-   */
-  public get value(): T | null {
-    return this.state
-  }
-
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _initialValue: Readonly<T> | null = null
 
   /**
@@ -75,9 +62,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
   //#endregion state-properties
   //#region private properties
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected get devData(): DevToolsDataStruct {
     return { name: this._storeName, state: this._state ? simpleCloneObject(this._state) : {} }
   }

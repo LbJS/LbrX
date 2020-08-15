@@ -76,7 +76,7 @@ userStore
 userStore
   .isLoading$.subscribe(value => {
     if (!value) {
-      console.log('From is loading: ', userStore.state)
+      console.log('From is loading: ', userStore.value)
     }
   })
 
