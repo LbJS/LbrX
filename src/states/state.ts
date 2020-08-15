@@ -1,10 +1,9 @@
-import { StateTags } from './state-tags.enum'
 
 export interface State<T extends object, E = any> {
-  value: T
+  value: Readonly<T> | null
   isPaused: boolean
   isLoading: boolean
   isHardResettings: boolean
-  error: E
-  tag: StateTags
+  isDestroyed: boolean
+  error: E | null
 }
