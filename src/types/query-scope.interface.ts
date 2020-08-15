@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-export interface SelectScope {
+export interface QueryScope {
   wasHardReset: boolean,
   isDisPosed: boolean,
   observable: Observable<any>

@@ -2,7 +2,7 @@ import { BehaviorSubject, iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { SelectScope } from '../types'
+import { QueryScope } from '../types'
 import { instanceHandler, isFunction, isNull, isObject, logError, mergeObjects, objectAssign, simpleCloneObject, throwError } from '../utils'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
@@ -95,7 +95,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     return this._state$
   }
 
-  protected _getState(): T | T[] | null {
+  protected _getState(): T | null {
     return this._state
   }
 
@@ -108,7 +108,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
     this._state = null
   }
 
-  protected _getInitialState(): Readonly<T | T[]> | null {
+  protected _getInitialState(): Readonly<T> | null {
     return this._initialValue
   }
 
@@ -259,7 +259,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
         distinctUntilChanged(),
         switchMap(() => this._state$),
       )
-    const selectContainer: SelectScope = {
+    const queryScope: QueryScope = {
       wasHardReset: false,
       isDisPosed: false,
       observable: this._state$.asObservable()
@@ -268,19 +268,19 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
           filter<T | null, T>((x => !!x && !this.isPaused) as (value: T | null) => value is T),
           map<T, T | R>(project || (x => x)),
           distinctUntilChanged((prev, curr) => {
-            if (selectContainer.wasHardReset) return false
+            if (queryScope.wasHardReset) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
           }),
-          tap(() => selectContainer.wasHardReset = false),
+          tap(() => queryScope.wasHardReset = false),
           map(x => isObject(x) ? this._clone(x) : x),
         )
     }
-    this._selectScopes.push(selectContainer)
-    return selectContainer.observable
+    this._queryScopes.push(queryScope)
+    return queryScope.observable
   }
 
-  public disposeSelect(observable: Observable<T>): void {
-    super.disposeSelect(observable)
+  public disposeQueryScope(observable: Observable<T>): void {
+    super.disposeQueryScope(observable)
   }
 
   //#endregion public-methods
