@@ -2,7 +2,7 @@ import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { DevToolsDataStruct, DevToolsSubjects, StoreStates } from '../dev-tools'
 import { isDev, isDevTools } from '../mode'
-import { SelectScope } from '../types'
+import { Clone, Compare, Parse, SelectScope, Stringify } from '../types'
 import { Class, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isEmpty, isError, isFunction, isNull, isObject, isUndefined, logWarn, newError, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../utils'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { LbrxErrorStore } from './lbrx-error-store'
@@ -16,22 +16,16 @@ export abstract class BaseStore<T extends object, E = any> {
 
   //#region static
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected static _storageKeys: string[] = []
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected static _storeNames: string[] = []
 
   //#endregion static
   //#region paused-state
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _isPaused$ = new BehaviorSubject(false)
 
   public isPaused$: Observable<boolean> = this._isPaused$.asObservable().pipe(distinctUntilChanged())
@@ -53,9 +47,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion paused-state
   //#region loading-state
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected readonly _isLoading$ = new BehaviorSubject(false)
   /**
    * Weather or not the store is in it's loading state.
@@ -65,24 +57,21 @@ export abstract class BaseStore<T extends object, E = any> {
    * - While the store is in loading state, no values will be emitted to state's subscribers.
    */
   public isLoading$: Observable<boolean> = this._isLoading$.asObservable().pipe(distinctUntilChanged())
-  /**
-   * @get Returns store's loading state.
-   * @set Sets store's loading state.
-   */
   public get isLoading(): boolean {
     return this._isLoading$.value
   }
   public set isLoading(value: boolean) {
     this._isLoading$.next(value)
-    this._storesState = StoreStates.loading
+    if (value) {
+      this._storesState = StoreStates.loading
+      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+    }
   }
 
   //#endregion loading-state
   //#region error-api
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected readonly _error$ = new BehaviorSubject<E | null>(null)
   /**
    * Store's error state.
@@ -121,13 +110,9 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion error-api
   //#region stores-state
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _storesState$ = new BehaviorSubject<StoreStates>(StoreStates.normal)
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected get _storesState(): StoreStates {
     return this._storesState$.value
   }
@@ -140,9 +125,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion stores-state
   //#region config
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _config!: StoreConfigInfo
   /**
    * Returns store's active configuration.
@@ -150,71 +133,39 @@ export abstract class BaseStore<T extends object, E = any> {
   public get config(): StoreConfigInfo {
     return this._config
   }
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _storeName!: string
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _isResettable!: boolean
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _isSimpleCloning!: boolean
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _objectCompareType!: ObjectCompareTypes
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _storage!: Storage | null
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _storageDebounce!: number
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _storageKey!: string
-  /**
-   * This is a protected property. Proceed with care.
-   */
-  protected _clone!: <R extends object | null>(obj: R) => R
-  /**
-   * This is a protected property. Proceed with care.
-   */
-  protected _compare!: <R extends object>(objA: R, pbjB: R) => boolean
-  /**
-   * This is a protected property. Proceed with care.
-   */
-  protected _stringify!: (
-    value: any,
-    replacer?: (this: any, key: string, value: any) => any | (number | string)[] | null,
-    space?: string | number
-  ) => string
-  /**
-   * This is a protected property. Proceed with care.
-   */
-  protected _parse!: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => T
+  /** @internal */
+  protected _clone!: Clone
+  /** @internal */
+  protected _compare!: Compare
+  /** @internal */
+  protected _stringify!: Stringify
+  /** @internal */
+  protected _parse!: Parse
 
   //#endregion config
   //#region protected-properties
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _asyncInitPromise = this._createAsyncInitPromiseObj()
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _stateToStorageSub: Subscription | null = null
 
-  /**
-   * This is a protected property. Proceed with care.
-   */
+  /** @internal */
   protected _selectScopes: SelectScope[] = []
 
   //#endregion protected-properties
@@ -237,8 +188,7 @@ export abstract class BaseStore<T extends object, E = any> {
     if (isUndefined(initialStateOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as initial state.`)
     if (isDevTools()) DevToolsSubjects.stores[storeName] = this
     if (isNull(initialStateOrNull)) {
-      this._isLoading$.next(true)
-      if (isDevTools()) DevToolsSubjects.loadingEvent$.next(storeName)
+      this.isLoading = true
     } else {
       this._initializeStore(initialStateOrNull)
     }
@@ -337,7 +287,7 @@ export abstract class BaseStore<T extends object, E = any> {
       const modifiedState: T | T[] | null = this[onAfterInit](this._clone(this._getState()))
       if (modifiedState) this._setState(() => this._clone(modifiedState))
     }
-    this._isLoading$.next(false)
+    this.isLoading = false
     if (isDevTools()) DevToolsSubjects.initEvent$.next(this._getDevData())
   }
 
@@ -442,15 +392,14 @@ export abstract class BaseStore<T extends object, E = any> {
       Promise.resolve()
     return new Promise((resolve) => {
       const reset = () => {
-        this.isPaused = false
-        this.isLoading = true
-        this._setStateToNull()
-        this._setInitialValue(null)
-        this.error = null
         if (this._stateToStorageSub) this._stateToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
+        this.error = null
+        this._setStateToNull()
+        this._setInitialValue(null)
         this._selectScopes.forEach(x => x.wasHardReset = true)
-        if (isDevTools()) DevToolsSubjects.loadingEvent$.next(this._storeName)
+        this.isPaused = false
+        this.isLoading = true
         resolve(this)
       }
       initializeAsyncPromiseState

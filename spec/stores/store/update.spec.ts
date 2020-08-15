@@ -25,16 +25,16 @@ describe('Store update():', () => {
   })
 
   it("should update the store's state.", () => {
-    expect(store.state).toStrictEqual(createInitialState())
+    expect(store.value).toStrictEqual(createInitialState())
     store.update(partialState)
     const expectedState = createInitialState()
     expectedState.stringValue = partialState.stringValue!
-    expect(store.state).toStrictEqual(expectedState)
+    expect(store.value).toStrictEqual(expectedState)
   })
 
   it("should throw if the state's value is `null`.", () => {
     (store as any)._state = null
-    expect(store.state).toBeNull()
+    expect(store.value).toBeNull()
     expect(() => {
       store.update(partialState)
     }).toThrow()
@@ -45,7 +45,7 @@ describe('Store update():', () => {
     expect(() => {
       store.update(partialState)
     }).toThrow()
-    expect(store.state).toStrictEqual(createInitialState())
+    expect(store.value).toStrictEqual(createInitialState())
   })
 
   it("should log an error if the store is in 'LOADING' state and it's in production mode.", () => {
@@ -57,7 +57,7 @@ describe('Store update():', () => {
       store.update(partialState)
     }).not.toThrow()
     expect(consoleErrorSpy).toBeCalledTimes(1)
-    expect(store.state).toStrictEqual(createInitialState())
+    expect(store.value).toStrictEqual(createInitialState())
   })
 
   it("should throw if the store wasn't initialized and it's in development mode.", () => {
@@ -65,7 +65,7 @@ describe('Store update():', () => {
     expect(() => {
       asyncStore.update(partialState)
     }).toThrow()
-    expect(asyncStore.state).toBeNull()
+    expect(asyncStore.value).toBeNull()
   })
 
   it("should log an error if the store wasn't initialized and it's in production mode.", () => {
@@ -77,7 +77,7 @@ describe('Store update():', () => {
       asyncStore.update(partialState)
     }).not.toThrow()
     expect(consoleErrorSpy).toBeCalledTimes(1)
-    expect(asyncStore.state).toBeNull()
+    expect(asyncStore.value).toBeNull()
   })
 
   it('should distribute update event to DevToolsSubjects.', async done => {

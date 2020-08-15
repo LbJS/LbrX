@@ -1,8 +1,12 @@
 export * from './class'
+export * from './clone'
+export * from './compare'
 export * from './constructable'
 export * from './constructable-error'
 export * from './key-value'
 export * from './moment-like'
+export * from './parse'
 export * from './select-scope'
+export * from './stringify'
 export * from './zone'
 

@@ -4,46 +4,46 @@ import { Store, StoreConfig, StoreConfigOptions } from 'lbrx'
 export class StoresFactory {
 
   public static createStore<T extends object, E = any>(
-    initialState: T | null
+    initialValue: T | null
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     storeName: string
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     options: StoreConfigOptions
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     withHooks: false
   ): Store<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     storeName: string,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     storeName: string,
     withHooks: false
   ): Store<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     options: StoreConfigOptions,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     options: StoreConfigOptions,
     withHooks: false
   ): Store<T, E>
   public static createStore<T extends object, E = any>(
-    initialState: T | null,
+    initialValue: T | null,
     storeNameOrWithHooksOrOptions?: string | boolean | StoreConfigOptions,
     withHooks?: boolean,
   ): Store<T, E> & AllStoreHooks<T, E> | Store<T, E> {
@@ -57,7 +57,7 @@ export class StoresFactory {
       @StoreConfig(options)
       class TestStore extends Store<T, E> implements AllStoreHooks<T, E> {
         constructor() {
-          super(initialState)
+          super(initialValue)
         }
         onBeforeInit(nextState: T): void | T { }
         onAfterInit(currState: T): void | T { }
@@ -72,17 +72,17 @@ export class StoresFactory {
       @StoreConfig(options)
       class TestStore extends Store<T, E> {
         constructor() {
-          super(initialState)
+          super(initialValue)
         }
       }
       return new TestStore()
     }
   }
 
-  public static createStoreWithNoConfig<T extends object, E = any>(initialState: T | null): Store<T, E> {
+  public static createStoreWithNoConfig<T extends object, E = any>(initialValue: T | null): Store<T, E> {
     class TestStore extends Store<T, E> {
       constructor() {
-        super(initialState)
+        super(initialValue)
       }
     }
     return new TestStore()

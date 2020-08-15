@@ -51,10 +51,10 @@ describe('Store onOverride():', () => {
       return nextState
     })
     store.override(localStateA)
-    expect(store.state).not.toStrictEqual(localStateA)
+    expect(store.value).not.toStrictEqual(localStateA)
     assertNotNullable(localStateA.dateValue)
     localStateA.dateValue.setFullYear(1900)
-    expect(store.state).toStrictEqual(localStateA)
+    expect(store.value).toStrictEqual(localStateA)
   })
 
   it('should supply a readonly current state.', done => {
@@ -75,7 +75,7 @@ describe('Store onOverride():', () => {
       nextState.stringValue = 'some new value'
     })
     store.override(stateA)
-    expect(store.state).toStrictEqual(stateA)
+    expect(store.value).toStrictEqual(stateA)
     jest.resetAllMocks()
     let tmpState: TestSubject | null = null
     onOverrideSpy.mockImplementation((nextState: TestSubject): TestSubject => {
@@ -87,6 +87,6 @@ describe('Store onOverride():', () => {
     assertNotNullable(tmpState!.dateValue)
     tmpState!.dateValue.setFullYear(1900)
     tmpState!.stringValue = 'some new value'
-    expect(store.state).toStrictEqual(stateA)
+    expect(store.value).toStrictEqual(stateA)
   })
 })

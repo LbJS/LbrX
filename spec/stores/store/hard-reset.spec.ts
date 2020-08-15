@@ -45,9 +45,9 @@ describe('Store hardReset():', () => {
   })
 
   it("should set the store's state value to null.", async () => {
-    expect(store.state).not.toBeNull()
+    expect(store.value).not.toBeNull()
     await store.hardReset()
-    expect(store.state).toBeNull()
+    expect(store.value).toBeNull()
   })
 
   it("should set the store's initial value to null.", async () => {
@@ -98,7 +98,7 @@ describe('Store hardReset():', () => {
     asyncStore.initializeAsync(testSubjectPromise)
     await asyncStore.hardReset()
     await timer(500).toPromise()
-    expect(asyncStore.state).toBeNull()
+    expect(asyncStore.value).toBeNull()
   })
 
   it('should throw if the store is not resettable.', async () => {

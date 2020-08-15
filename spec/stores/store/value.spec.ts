@@ -1,7 +1,7 @@
 import { assertNotNullable } from 'helpers/functions'
 import { Store, TestSubject, TestSubjectFactory } from 'provider'
 
-describe('Store state:', () => {
+describe('Store value:', () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject>
@@ -16,9 +16,9 @@ describe('Store state:', () => {
   })
 
   it('should disconnect reference.', () => {
-    const value = store.state
+    const value = store.value
     assertNotNullable(value)
     value.booleanValue = !value.booleanValue
-    expect(store.state).toStrictEqual(initialState)
+    expect(store.value).toStrictEqual(initialState)
   })
 })

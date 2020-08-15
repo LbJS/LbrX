@@ -23,17 +23,17 @@ describe('Store initializeAsync():', () => {
   })
 
   it('should have null as an initial value.', () => {
-    expect(store.state).toBeNull()
+    expect(store.value).toBeNull()
   })
 
   it('should set the initial value after async initialization with observable.', async () => {
     await store.initializeAsync(of(initialState))
-    expect(store.state).toStrictEqual(pureInitialState)
+    expect(store.value).toStrictEqual(pureInitialState)
   })
 
   it('should set the initial value after async initialization with promise.', async () => {
     await store.initializeAsync(Promise.resolve(initialState))
-    expect(store.state).toStrictEqual(pureInitialState)
+    expect(store.value).toStrictEqual(pureInitialState)
   })
 
   it('should return the initial state from observable after async initialization.', done => {
@@ -65,7 +65,7 @@ describe('Store initializeAsync():', () => {
   it('should have value after loading is finished.', done => {
     store.isLoading$.subscribe(value => {
       if (!value) {
-        expect(store.state).toStrictEqual(pureInitialState)
+        expect(store.value).toStrictEqual(pureInitialState)
         done()
       }
     })

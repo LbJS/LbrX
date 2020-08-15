@@ -25,11 +25,11 @@ describe('Store initialize(): ', () => {
   })
 
   it('should set the initial value as the first state.', () => {
-    expect(store.state).toStrictEqual(pureInitialState)
+    expect(store.value).toStrictEqual(pureInitialState)
   })
 
   it("should set the initial value to store's initial value property.", () => {
-    expect(store.state).toStrictEqual(store.initialValue)
+    expect(store.value).toStrictEqual(store.initialValue)
   })
 
   it('should return the initial state from observable.', done => {
@@ -40,12 +40,12 @@ describe('Store initialize(): ', () => {
   }, 100)
 
   it('should have null as an initial value.', () => {
-    expect(loadingStore.state).toBeNull()
+    expect(loadingStore.value).toBeNull()
   })
 
   it('should set the initial value after initialization.', () => {
     loadingStore.initialize(initialState)
-    expect(loadingStore.state).toStrictEqual(pureInitialState)
+    expect(loadingStore.value).toStrictEqual(pureInitialState)
   })
 
   it('should return the initial state from observable after initialization.', done => {
@@ -67,7 +67,7 @@ describe('Store initialize(): ', () => {
   it('should have value after loading is finished.', done => {
     loadingStore.isLoading$.subscribe(value => {
       if (!value) {
-        expect(loadingStore.state).toStrictEqual(pureInitialState)
+        expect(loadingStore.value).toStrictEqual(pureInitialState)
         done()
       }
     })
