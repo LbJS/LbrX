@@ -427,12 +427,6 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion state-methods
   //#region update-methods
 
-  protected _assertUpdatable(condition: any): asserts condition {
-    if (!condition || this.isLoading) {
-      throwError(`Store name: "${this._storeName}" can't be updated or overridden before it was initialized.`)
-    }
-  }
-
   /**
    * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
    * - If you want to override the current store's state, use the `override` method.
@@ -454,7 +448,7 @@ export abstract class BaseStore<T extends object, E = any> {
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
-      this._assertUpdatable(value && this._initialValue)
+      this._assert(value && this._initialValue && !this.isLoading, "can't be updated before it was initialized.")
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
       if (!this._isSimpleCloning) newValue = instanceHandler(this._initialValue, newValue)
@@ -471,7 +465,7 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public override(value: T): void {
     if (this.isPaused) return
-    this._assertUpdatable(this._initialValue)
+    this._assert(this._initialValue && !this.isLoading, "can't be overridden before it was initialized.")
     if (!this._isSimpleCloning) value = instanceHandler(this._initialValue, this._clone(value))
     let modifiedValue: T | void
     if (isFunction(this[onOverride])) {
@@ -491,7 +485,8 @@ export abstract class BaseStore<T extends object, E = any> {
   public reset(): void | never {
     this._setState(value => {
       const initialValue = this._initialValue
-      this._assertUpdatable(value && initialValue && this._isResettable)
+      this._assert(value && initialValue && !this.isLoading, "can't be reseted before it was initialized.")
+      this._assert(this._isResettable, 'is not configured as resettable.')
       let modifiedInitialValue: T | void
       if (isFunction(this[onReset])) modifiedInitialValue = this[onReset](this._clone(initialValue), value)
       return this._clone(modifiedInitialValue || initialValue)
@@ -509,7 +504,7 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public hardReset(): Promise<this> {
     if (!this._isResettable) {
-      const errMsg = `Store: ${this._storeName} is not configured as resettable.`
+      const errMsg = `Store name: ${this._storeName} is not configured as resettable.`
       return Promise.reject(new Error(errMsg))
     }
     this._setState({ isHardResettings: true })
@@ -550,4 +545,14 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   //#endregion reset-dispose-destroy-methods
+  //#region helper-methods
+
+  protected _assert(condition: any, errMsg: string): asserts condition {
+    if (!condition) {
+      const errMsgPrefix = `Store name: "${this._storeName}" `
+      throwError(`${errMsgPrefix}${errMsg}`)
+    }
+  }
+
+  //#endregion helper-methods
 }
