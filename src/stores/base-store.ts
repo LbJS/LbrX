@@ -66,7 +66,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _state$ = new BehaviorSubject(this._state)
+  protected readonly _state$ = new BehaviorSubject(this._state)
 
   /**
    * @get Returns the state.
@@ -81,7 +81,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _value$ = new BehaviorSubject(this._value)
+  protected readonly _value$ = new BehaviorSubject(this._value)
 
   /**
    * @get Returns state's value.
@@ -91,11 +91,11 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _isLoading$ = new BehaviorSubject(this._state.isLoading)
+  protected readonly _isLoading$ = new BehaviorSubject(this._state.isLoading)
   /**
    * Store's loading state observable.
    */
-  public isLoading$: Observable<boolean> = this._isLoading$.asObservable().pipe(distinctUntilChanged())
+  public readonly isLoading$: Observable<boolean> = this._isLoading$.asObservable().pipe(distinctUntilChanged())
 
   /**
    * @get Returns whether ot not the store is in loading state.
@@ -105,7 +105,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _isPaused$ = new BehaviorSubject(this._state.isPaused)
+  protected readonly _isPaused$ = new BehaviorSubject(this._state.isPaused)
 
   public isPaused$: Observable<boolean> = this._isPaused$.asObservable().pipe(distinctUntilChanged())
 
@@ -147,11 +147,11 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region error-api
 
   /** @internal */
-  protected _error$ = new BehaviorSubject<E | null>(this._state.error)
+  protected readonly _error$ = new BehaviorSubject<E | null>(this._state.error)
   /**
    * Store's error state.
    */
-  public error$: Observable<E | null> =
+  public readonly error$: Observable<E | null> =
     this._error$.asObservable()
       .pipe(
         map(x => isError(x) ? cloneError(x) : isObject(x) ? cloneObject(x) : x),
@@ -181,7 +181,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region config
 
   /** @internal */
-  protected _config!: StoreConfigInfo
+  protected readonly _config: StoreConfigInfo
 
   /**
    * @get Returns store's configuration.
@@ -191,37 +191,37 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _storeName!: string
+  protected readonly _storeName: string
 
   /** @internal */
-  protected _isResettable!: boolean
+  protected readonly _isResettable: boolean
 
   /** @internal */
-  protected _isSimpleCloning!: boolean
+  protected readonly _isSimpleCloning: boolean
 
   /** @internal */
-  protected _objectCompareType!: ObjectCompareTypes
+  protected readonly _objectCompareType: ObjectCompareTypes
 
   /** @internal */
-  protected _storage!: Storage | null
+  protected readonly _storage: Storage | null
 
   /** @internal */
-  protected _storageDebounce!: number
+  protected readonly _storageDebounce: number
 
   /** @internal */
-  protected _storageKey!: string
+  protected readonly _storageKey: string
 
   /** @internal */
-  protected _clone!: Clone
+  protected readonly _clone: Clone
 
   /** @internal */
-  protected _compare!: Compare
+  protected readonly _compare: Compare
 
   /** @internal */
-  protected _stringify!: Stringify
+  protected readonly _stringify: Stringify
 
   /** @internal */
-  protected _parse!: Parse
+  protected readonly _parse: Parse
 
   //#endregion config
   //#region helper
@@ -233,39 +233,13 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _asyncInitPromiseScope: PromiseScope | null = null
 
   /** @internal */
-  protected _queryScopes: QueryScope[] = []
+  protected readonly _queryScopes: QueryScope[] = []
 
   //#endregion helpers
   //#region constructor
 
-  constructor() { }
-
-  //#endregion constructor
-  //#region initialization-methods
-
-  /** @internal */
-  protected _main(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions): void {
-    this._initializeConfig(storeConfig)
-    if (!this.config) throwError(`Store must be ${providedWith} store configuration via decorator or via constructor.`)
-    const storeName = this._storeName
-    this._assertStoreNameValid(storeName)
-    BaseStore._storeNames.push(storeName)
-    if (this._config.storageType != Storages.none) {
-      const storageKey = this._storageKey
-      this._assertStorageKeyValid(this._storageKey, storeName)
-      BaseStore._storageKeys.push(storageKey)
-    }
-    if (isUndefined(initialValueOrNull)) throwError(`${getStoreNameMsg(storeName)} was ${providedWith} "undefined" as initial state.`)
-    DevToolsAdapter.stores[storeName] = this
-    if (isNull(initialValueOrNull)) {
-      this._setState({ isLoading: true })
-    } else {
-      this._initializeStore(initialValueOrNull)
-    }
-  }
-
-  /** @internal */
-  protected _initializeConfig(storeConfig?: StoreConfigOptions): void {
+  constructor(storeConfig: StoreConfigOptions | undefined) {
+    //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
@@ -311,6 +285,30 @@ export abstract class BaseStore<T extends object, E = any> {
     this._storageKey = this._config.storageKey
     this._stringify = this._config.stringify
     this._parse = this._config.parse
+    //#endregion configuration-initialization
+  }
+
+  //#endregion constructor
+  //#region initialization-methods
+
+  /** @internal */
+  protected _main(initialValueOrNull: T | null): void {
+    if (!this.config) throwError(`Store must be ${providedWith} store configuration via decorator or via constructor.`)
+    const storeName = this._storeName
+    this._assertStoreNameValid(storeName)
+    BaseStore._storeNames.push(storeName)
+    if (this._config.storageType != Storages.none) {
+      const storageKey = this._storageKey
+      this._assertStorageKeyValid(this._storageKey, storeName)
+      BaseStore._storageKeys.push(storageKey)
+    }
+    if (isUndefined(initialValueOrNull)) throwError(`${getStoreNameMsg(storeName)} was ${providedWith} "undefined" as initial state.`)
+    DevToolsAdapter.stores[storeName] = this
+    if (isNull(initialValueOrNull)) {
+      this._setState({ isLoading: true })
+    } else {
+      this._initializeStore(initialValueOrNull)
+    }
   }
 
   /** @internal */
