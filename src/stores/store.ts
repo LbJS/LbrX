@@ -43,8 +43,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   constructor(initialValue: T | null, storeConfig?: StoreConfigOptions)
   constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
-    super()
-    this._main(initialValueOrNull, storeConfig)
+    super(storeConfig)
+    this._main(initialValueOrNull)
   }
 
   //#endregion constructor
