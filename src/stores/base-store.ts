@@ -86,7 +86,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * @get Returns state's value.
    */
-  public get value(): Readonly<T> | null {
+  public get value(): T | null {
     return this._clone(this._value)
   }
 
