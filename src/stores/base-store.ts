@@ -303,7 +303,7 @@ export abstract class BaseStore<T extends object, E = any> {
       BaseStore._storageKeys.push(storageKey)
     }
     if (isUndefined(initialValueOrNull)) throwError(`${getStoreNameMsg(storeName)} was ${providedWith} "undefined" as initial state.`)
-    DevToolsAdapter.stores[storeName] = this
+    DevToolsAdapter.stores.storeName = this
     if (isNull(initialValueOrNull)) {
       this._setState({ isLoading: true })
     } else {
@@ -325,7 +325,7 @@ export abstract class BaseStore<T extends object, E = any> {
     }
   }
 
-  public _assertInitializable(reject?: (reason: any) => void): boolean | never {
+  protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
     if (this.isLoading && !this._initialValue && !this._value) return true
     const errMsg = `${getStoreNameMsg(this._storeName)} has already been initialized. You can hard reset the store if you want to reinitialize it.`
     if (!reject) throwError(errMsg)
@@ -414,6 +414,7 @@ export abstract class BaseStore<T extends object, E = any> {
     fnOrState: ((stateValue: Readonly<T> | null) => T) | Partial<State<T, E>>,
     partialState?: Partial<State<T, E>> & Partial<UpdateName>
   ): void {
+    if (this._state.isDestroyed) return
     if (isFunction(fnOrState)) {
       const value = isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
       partialState = objectAssign({ value }, partialState || null)
@@ -548,9 +549,39 @@ export abstract class BaseStore<T extends object, E = any> {
     const queryScopes = this._queryScopes
     const i = queryScopes.findIndex(x => x.observable = observable)
     if (i != -1) {
-      queryScopes[i].isDisPosed = true
+      queryScopes[i].isDisposed = true
       queryScopes.splice(i, 1)
     }
+  }
+
+  public destroy(): Promise<void> {
+    const asyncInitPromiseScope = this._asyncInitPromiseScope
+    const initializeAsyncPromiseState: Promise<void | PromiseStates> =
+      asyncInitPromiseScope && asyncInitPromiseScope.promise ?
+        getPromiseState(asyncInitPromiseScope.promise) :
+        Promise.resolve()
+    return new Promise((resolve) => {
+      const reset = () => {
+        delete DevToolsAdapter.stores.storeName
+        if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
+        if (this._storage) this._storage.removeItem(this._storageKey)
+        this._queryScopes.forEach(x => x.isDisposed = true)
+        this._initialValue = null
+        this._setState({
+          value: null,
+          error: null,
+          isPaused: false,
+          isHardResettings: false,
+          isLoading: false,
+          isDestroyed: true,
+        })
+        resolve()
+      }
+      initializeAsyncPromiseState.then(state => {
+        if (asyncInitPromiseScope) asyncInitPromiseScope.isCancelled = state === PromiseStates.pending
+        reset()
+      }).catch(() => reset())
+    })
   }
 
   //#endregion reset-dispose-destroy-methods

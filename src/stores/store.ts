@@ -68,7 +68,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    *     }
    *  });
    */
-  public select$<R>(project: (value: T) => R): Observable<R>
+  public select$<R>(project: (value: Readonly<T>) => T | R): Observable<R>
   /**
    * Returns the state's value or the extracted partial value as an Observable based on the provided projection method if it is provided.
    * - This overload provides you with a more dynamic approach compare to other overloads.
@@ -78,22 +78,24 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    *   return weatherStore.select$(optionalProjection);
    * }
    */
-  public select$<R>(project?: (value: T) => R): Observable<T | R>
-  public select$<R>(project?: (value: T) => R): Observable<T | R> {
+  public select$<R>(project?: (value: Readonly<T>) => T | R): Observable<T | R>
+  public select$<R>(project?: (value: Readonly<T>) => T | R): Observable<T | R> {
     const tillLoaded$ = this._isLoading$.asObservable()
       .pipe(
         filter(x => !x),
         distinctUntilChanged(),
         switchMap(() => this._value$),
       )
+    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => !!value
     const queryScope: QueryScope = {
       wasHardReset: false,
-      isDisPosed: false,
+      isDisposed: false,
       observable: this._value$.asObservable()
         .pipe(
           mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
-          filter<T | null, T>((x => !!x && !this.isPaused) as (value: T | null) => value is T),
-          map<T, T | R>(project || (x => x)),
+          filter(() => !this.isPaused && !queryScope.isDisposed),
+          filter(filterPredicate),
+          map(project || (x => x)),
           distinctUntilChanged((prev, curr) => {
             if (queryScope.wasHardReset) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr

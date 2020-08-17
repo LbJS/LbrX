@@ -121,14 +121,5 @@ setTimeout(async () => {
 }, 600)
 
 setTimeout(() => {
-  userStore.isLoading = false
-}, 650)
-
-setTimeout(() => {
-  userStore.isLoading = false
-}, 700)
-
-
-setTimeout(() => {
   userStore.isPaused = true
 }, 800)
