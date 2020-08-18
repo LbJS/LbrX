@@ -19,20 +19,23 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] NgZone Support
 - [x] ES5 support
 - [x] Multi platform support, including Node.JS
-- [ ] Full spec coverage of the above - wip
-- [ ] LbrX utility functions available for import
-- [ ] Store pause api
+- [x] LbrX utility functions available for import
+- [x] Store pause api
+- [x] Store destroy api
 - [ ] Methods override in store config, like cloneObject, compareObjects and more...
+- [ ] Full spec coverage of the above - wip
 - [ ] **List Store**
-- [ ] Playground (Todo list)
+- [ ] Playground
 - [ ] Full spec coverage of the above
 - [ ] Full documentation
 
 ## Important Notice
 
 - Added support for moment.js.
+- LbrX utility functions and types are now available via `import { ... } from 'lbrx/utils'`.
 - `storeName.select()` is removed. Use: `storeName.select$()`.
 - Global error store has bee removed.
+- Hook's interfaces have been removed. Now you can just override the methods in the inheritor class.
 
 ## Dependencies
 
