@@ -46,7 +46,7 @@ export class StoresFactory {
     initialValue: T | null,
     storeNameOrWithHooksOrOptions?: string | boolean | StoreConfigOptions,
     withHooks?: boolean,
-  ): Store<T, E> & AllStoreHooks<T, E> | Store<T, E> {
+  ): Store<T, E> | Store<T, E> & AllStoreHooks<T, E> {
     const storeName = typeof storeNameOrWithHooksOrOptions == 'string' ? storeNameOrWithHooksOrOptions : 'TEST-STORE'
     const options: StoreConfigOptions = typeof storeNameOrWithHooksOrOptions == 'object' && storeNameOrWithHooksOrOptions ?
       storeNameOrWithHooksOrOptions : { name: storeName }
@@ -55,7 +55,7 @@ export class StoresFactory {
         storeNameOrWithHooksOrOptions : false
     if (withHooks) {
       @StoreConfig(options)
-      class TestStore extends Store<T, E> implements AllStoreHooks<T, E> {
+      class TestStore extends Store<T, E> {
         constructor() {
           super(initialValue)
         }

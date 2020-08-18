@@ -1,2 +1,2 @@
-export * from './all-store-hooks'
+export * from './all-store-hooks.interface'
 

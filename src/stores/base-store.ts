@@ -7,14 +7,6 @@ import { capFirstLetter, Class, Clone, cloneError, cloneObject, Compare, compare
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 
 //#region constant-strings
-const onBeforeInit = 'onBeforeInit'
-const onAsyncInitSuccess = 'onAsyncInitSuccess'
-const onAsyncInitError = 'onAsyncInitError'
-const onAfterInit = 'onAfterInit'
-const onUpdate = 'onUpdate'
-const onOverride = 'onOverride'
-const onReset = 'onReset'
-
 const customStorageApiImplementation = 'custom storage api implementation'
 const providedWith = 'provided with'
 const setToCustom = 'set to "custom"'
@@ -347,8 +339,8 @@ export abstract class BaseStore<T extends object, E = any> {
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(value => storage.setItem(this._storageKey, this._stringify(value)))
     }
-    if (isFunction(this[onBeforeInit])) {
-      const modifiedInitialValue: T | null = this[onBeforeInit](this._clone(initialValue))
+    if (isFunction(this.onBeforeInit)) {
+      const modifiedInitialValue: T | void = this.onBeforeInit(this._clone(initialValue))
       if (modifiedInitialValue) {
         initialValue = this._clone(modifiedInitialValue)
         isValueFromStorage = false
@@ -357,8 +349,9 @@ export abstract class BaseStore<T extends object, E = any> {
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     this._initialValue = deepFreeze(initialValue)
     this._setState(() => this._clone(initialValue), { isLoading: false })
-    if (isFunction(this[onAfterInit])) {
-      const modifiedValue: T | null = this[onAfterInit](this._clone(this._value))
+    this._assert(this._value, 'state could not be set durning initialization.')
+    if (isFunction(this.onAfterInit)) {
+      const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
       if (modifiedValue) this._setState(() => this._clone(modifiedValue))
     }
   }
@@ -385,15 +378,15 @@ export abstract class BaseStore<T extends object, E = any> {
       promiseOrObservable.then(r => {
         if (asyncInitPromiseScope.isCancelled) return
         if (!this._assertInitializable(reject)) return
-        if (isFunction(this[onAsyncInitSuccess])) {
-          const modifiedResult = this[onAsyncInitSuccess](r)
+        if (isFunction(this.onAsyncInitSuccess)) {
+          const modifiedResult = this.onAsyncInitSuccess(r)
           if (modifiedResult) r = modifiedResult
         }
         this._initializeStore(r)
       }).catch(e => {
         if (asyncInitPromiseScope.isCancelled) return
-        if (isFunction(this[onAsyncInitError])) {
-          e = this[onAsyncInitError](e)
+        if (isFunction(this.onAsyncInitError)) {
+          e = this.onAsyncInitError(e)
         }
         if (e) return reject(e)
       }).finally(resolve)
@@ -462,8 +455,8 @@ export abstract class BaseStore<T extends object, E = any> {
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
       if (!this._isSimpleCloning) newValue = instanceHandler(this._initialValue, newValue)
-      if (isFunction(this[onUpdate])) {
-        const newModifiedValue: T | void = this[onUpdate](this._clone(newValue), value)
+      if (isFunction(this.onUpdate)) {
+        const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
         if (newModifiedValue) newValue = this._clone(newModifiedValue)
       }
       return newValue
@@ -475,11 +468,11 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public override(value: T): void {
     if (this.isPaused) return
-    this._assert(this._initialValue && !this.isLoading, `${cantBe} overridden ${beforeItWasInitialized}`)
+    this._assert(this._value && this._initialValue && !this.isLoading, `${cantBe} overridden ${beforeItWasInitialized}`)
     if (!this._isSimpleCloning) value = instanceHandler(this._initialValue, this._clone(value))
     let modifiedValue: T | void
-    if (isFunction(this[onOverride])) {
-      modifiedValue = this[onOverride](this._clone(value), this._value)
+    if (isFunction(this.onOverride)) {
+      modifiedValue = this.onOverride(this._clone(value), this._value)
       if (modifiedValue) value = this._clone(modifiedValue)
     }
     const isCloned = !this._isSimpleCloning || !!modifiedValue
@@ -498,7 +491,7 @@ export abstract class BaseStore<T extends object, E = any> {
       this._assert(value && initialValue && !this.isLoading, `${cantBe} reseted ${beforeItWasInitialized}`)
       this._assert(this._isResettable, isNotConfiguredAsResettable)
       let modifiedInitialValue: T | void
-      if (isFunction(this[onReset])) modifiedInitialValue = this[onReset](this._clone(initialValue), value)
+      if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
       return this._clone(modifiedInitialValue || initialValue)
     }, { updateName: 'Reset' })
   }
@@ -592,4 +585,58 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   //#endregion helper-methods
+  //#region hooks
+
+  /**
+   * @virtual Override to use `onBeforeInit` hook.
+   * - Will be called before the store has completed the initialization.
+   * - Allows state's value modification before the initialization is complete.
+   */
+  protected onBeforeInit?(nextState: T): void | T
+
+  /**
+   * @virtual Override to use `onAfterInit` hook.
+   * - Will be called once the store has completed initialization.
+   * - Allows state's value modification after initialization.
+   */
+  protected onAfterInit?(currState: T): void | T
+
+  /**
+   * @virtual Override to use `onAsyncInitError` hook.
+   * - Will be called if there is an error during async initialization.
+   * - Allows error manipulation.
+   * - If the method returns an error, it will bubble via promise rejection.
+   * - If method returns void, the error will will not bubble further.
+   */
+  protected onAsyncInitError?(error: E): void | E
+
+  /**
+   * @virtual Override to use `onAsyncInitSuccess` hook.
+   * - Will be called once data is received during async initialization.
+   * - Allows data manipulations like mapping and etc.
+   */
+  protected onAsyncInitSuccess?(result: T): void | T
+
+  /**
+   * @virtual Override to use `onUpdate` hook.
+   * - Will be called after the update method has merged the changes with the given state and just before this state is set.
+   * - Allows future state modification.
+   */
+  protected onUpdate?(nextState: T, currState: Readonly<T>): void | T
+
+  /**
+   * @virtual Override to use `onOverride` hook.
+   * - Will be called after the override method and just before the new state is set.
+   * - Allows future state modification.
+   */
+  protected onOverride?(nextState: T, prevState: Readonly<T>): void | T
+
+  /**
+   * @virtual Override to use `onReset` hook.
+   * - Will be called after the reset method and just before the new state is set.
+   * - Allows future state modification.
+   */
+  protected onReset?(nextState: T, currState: Readonly<T>): void | T
+
+  //#endregion hooks
 }
