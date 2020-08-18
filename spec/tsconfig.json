@@ -13,9 +13,6 @@
       "lbrx/dev-tools": [
         "../src/dev-tools",
       ],
-      "lbrx/hooks": [
-        "../src/hooks",
-      ],
       "lbrx/helpers": [
         "../src/helpers",
       ],

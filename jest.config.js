@@ -16,7 +16,6 @@ module.exports = {
     "^lbrx/utils$": "<rootDir>/src/utils.ts",
     "^lbrx/helpers$": "<rootDir>/src/helpers",
     "^lbrx/mode$": "<rootDir>/src/mode",
-    "^lbrx/hooks$": "<rootDir>/src/hooks",
     "^lbrx/types$": "<rootDir>/src/types",
     "^lbrx/dev-tools$": "<rootDir>/src/dev-tools",
     "^lbrx/stores/config$": "<rootDir>/src/stores/config",

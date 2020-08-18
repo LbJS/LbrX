@@ -1,15 +1,15 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { assertNotNullable } from 'helpers/functions'
 import { TestSubject } from 'helpers/test-subjects'
+import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
-import { StoreOnOverride } from 'lbrx/hooks'
 
 describe('Store onOverride():', () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
   const stateA = createStateA()
-  let store: Store<TestSubject> & StoreOnOverride<TestSubject>
+  let store: Store<TestSubject> & AllStoreHooks<TestSubject>
   let onOverrideSpy: jest.SpyInstance<void | TestSubject, [TestSubject, Readonly<TestSubject>]>
 
   beforeEach(async () => {

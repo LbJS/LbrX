@@ -1,12 +1,12 @@
 import { StoresFactory as StoresFactory_type } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
+import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
-import { StoreOnAsyncInitError } from 'lbrx/hooks'
 
 describe('Store onAsyncInitSuccess():', () => {
 
   let StoresFactory: typeof StoresFactory_type
-  let store: Store<TestSubject> & StoreOnAsyncInitError
+  let store: Store<TestSubject> & AllStoreHooks<TestSubject>
   let onAsyncInitErrorSpy: jest.SpyInstance<void | Error, [Error]>
 
   beforeEach(async () => {

@@ -1,15 +1,15 @@
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers/factories'
 import { assertNotNullable } from 'helpers/functions'
 import { TestSubject } from 'helpers/test-subjects'
+import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
-import { StoreAfterInit } from 'lbrx/hooks'
 
 describe('Store onAfterInit():', () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const initialState = createInitialState()
   let StoresFactory: typeof StoresFactory_type
-  let store: Store<TestSubject> & StoreAfterInit<TestSubject>
+  let store: Store<TestSubject> & AllStoreHooks<TestSubject>
   let onAfterInitSpy: jest.SpyInstance<void | TestSubject, [TestSubject]>
 
   beforeEach(async () => {
