@@ -1,6 +1,7 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
-import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
+import { Store } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { of, throwError, timer } from 'rxjs'
 
 describe('Store initializeAsync():', () => {

@@ -2,9 +2,10 @@ import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers
 import { assertNotNullable } from 'helpers/functions'
 import MockBuilder from 'helpers/mock-builder'
 import { TestSubject } from 'helpers/test-subjects'
-import { LbrXManager as LbrXManager_type, Storages, Store } from 'lbrx'
-import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/dev-tools'
-import { getDefaultStoreConfig } from 'lbrx/stores/config'
+import { Storages, Store } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
+import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
+import { getDefaultStoreConfig } from 'lbrx/internal/stores/config'
 import { Subscription as Subscription_type, timer } from 'rxjs'
 import { map } from 'rxjs/operators'
 

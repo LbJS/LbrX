@@ -23,6 +23,7 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Store pause api
 - [x] Store destroy api
 - [ ] Methods override in store config, like cloneObject, compareObjects and more...
+- [ ] Select with string literals
 - [ ] Full spec coverage of the above - wip
 - [ ] **List Store**
 - [ ] Playground
@@ -36,6 +37,8 @@ This is an object oriented State Manager that's build for JavaScript application
 - `storeName.select()` is removed. Use: `storeName.select$()`.
 - Global error store has bee removed.
 - Hook's interfaces have been removed. Now you can just override the methods in the inheritor class.
+- `LbrXManager` should now be imported from `lbrx/core`.
+- `DevtoolsOptions` should now be imported from `lbrx/dev-tools`.
 
 ## Dependencies
 

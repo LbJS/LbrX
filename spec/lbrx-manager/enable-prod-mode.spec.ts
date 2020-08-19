@@ -1,4 +1,4 @@
-import { LbrXManager as LbrXManager_type } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 
 describe('LbrXManager enableProdMode():', () => {
 

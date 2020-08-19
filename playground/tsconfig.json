@@ -8,9 +8,17 @@
         "../src",
         "../src/*"
       ],
-      "lbrx/hooks": [
-        "../src/hooks",
-        "../src/hooks/*"
+      "lbrx/core": [
+        "../src/core",
+        "../src/core/*"
+      ],
+      "lbrx/dev-tools": [
+        "../src/dev-tools",
+        "../src/dev-tools/*"
+      ],
+      "lbrx/utils": [
+        "../src/utils",
+        "../src/utils/*"
       ],
     }
   },
