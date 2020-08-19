@@ -1,5 +1,6 @@
-import { LbrXManager as LbrXManager_type, ObjectCompareTypes, Storages } from 'lbrx'
-import { GlobalStoreConfigOptions } from 'lbrx/stores/config'
+import { ObjectCompareTypes, Storages } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
+import { GlobalStoreConfigOptions } from 'lbrx/internal/stores/config'
 
 describe('LbrXManager setGlobalStoreConfig():', () => {
 

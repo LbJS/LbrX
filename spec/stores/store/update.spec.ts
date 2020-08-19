@@ -1,7 +1,8 @@
 import { TestSubjectFactory } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
-import { LbrXManager as LbrXManager_type, Store } from 'lbrx'
-import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/dev-tools'
+import { Store } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
+import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
 
 
 describe('Store update():', () => {

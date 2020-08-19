@@ -7,23 +7,32 @@
       "lbrx": [
         "../src",
       ],
+      "lbrx/core": [
+        "../src/core",
+      ],
       "lbrx/utils": [
         "../src/utils",
       ],
       "lbrx/dev-tools": [
         "../src/dev-tools",
       ],
-      "lbrx/helpers": [
-        "../src/helpers",
+      "lbrx/internal/core": [
+        "../src/internal/core",
       ],
-      "lbrx/mode": [
-        "../src/mode",
+      "lbrx/internal/dev-tools": [
+        "../src/internal/dev-tools",
       ],
-      "lbrx/types": [
-        "../src/types",
+      "lbrx/internal/helpers": [
+        "../src/internal/helpers",
       ],
-      "lbrx/stores/config": [
-        "../src/stores/config",
+      "lbrx/internal/types": [
+        "../src/internal/types",
+      ],
+      "lbrx/internal/stores": [
+        "../src/internal/stores",
+      ],
+      "lbrx/internal/stores/config": [
+        "../src/internal/stores/config",
       ],
       "helpers": [
         "helpers"

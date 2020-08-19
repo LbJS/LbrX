@@ -1,7 +1,9 @@
-import { DevToolsManager, DevtoolsOptions } from '../dev-tools'
-import { enableProdMode } from '../mode'
-import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../stores/config'
-import { logError, Zone } from '../utils'
+import { DevtoolsOptions } from '../dev-tools'
+import { enableProdMode } from '../internal/core/lbrx-mode'
+import { DevToolsManager } from '../internal/dev-tools'
+import { logError } from '../internal/helpers'
+import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../internal/stores/config'
+import { ZoneLike } from '../internal/types'
 
 /**
  * LbrX static class.
@@ -50,7 +52,7 @@ export class LbrXManager {
    * LbrXManager.setDevToolsZone(someZoneHandler)
    */
   static setDevToolsZone(
-    zone: Zone
+    zone: ZoneLike
   ): typeof LbrXManager {
     if (!LbrXManager._devToolsManager) {
       logError('DevTools must be initialized before setting DevTools Zone.')

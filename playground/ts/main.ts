@@ -1,5 +1,5 @@
-import { LbrXManager, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
-import { StoreBeforeInit } from 'lbrx/hooks'
+import { ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
+import { LbrXManager } from 'lbrx/core'
 import { of } from 'rxjs'
 
 const PROD_MODE = false
@@ -32,7 +32,7 @@ function createLeon(): User {
   storageType: Storages.session,
   storageDebounceTime: 500
 })
-class UserStore extends Store<User> implements StoreBeforeInit {
+class UserStore extends Store<User> {
 
   constructor() {
     super(createLeon())

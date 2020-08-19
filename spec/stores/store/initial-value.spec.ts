@@ -1,5 +1,5 @@
 import { assertNotNullable } from 'helpers/functions'
-import { LbrXManager as LbrXManager_type } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { Store, TestSubject, TestSubjectFactory } from 'provider'
 
 
