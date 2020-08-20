@@ -1,4 +1,3 @@
-export * from '../helpers/accessories/clone.type'
 export * from './class'
 export * from './constructable-error.interface'
 export * from './constructable.interface'
