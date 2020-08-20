@@ -1,4 +1,4 @@
-import { PromiseScope } from './promise-scope.type'
+import { PromiseScope } from './promise-scope.interface'
 
 export function createPromiseScope(): PromiseScope {
   return {
