@@ -2,8 +2,8 @@ import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev } from '../core'
 import { DevToolsAdapter, isDevTools } from '../dev-tools'
-import { capFirstLetter, cloneError, cloneObject, Compare, compareObjects, createPromiseScope, deepFreeze, getPromiseState, instanceHandler, isError, isFunction, isNull, isObject, isUndefined, logWarn, mergeObjects, newError, objectAssign, Parse, PromiseScope, PromiseStates, QueryScope, simpleCloneObject, simpleCompareObjects, State, StateTags, Stringify, throwError, UpdateName } from '../helpers'
-import { Class, Clone } from '../types'
+import { capFirstLetter, Clone, cloneError, cloneObject, Compare, compareObjects, createPromiseScope, deepFreeze, getPromiseState, instanceHandler, isError, isFunction, isNull, isObject, isUndefined, logWarn, mergeObjects, newError, objectAssign, Parse, PromiseScope, PromiseStates, QueryScope, simpleCloneObject, simpleCompareObjects, State, StateActionRenamble as ActionName, StateTags, Stringify, throwError } from '../helpers'
+import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 
 //#region constant-strings
@@ -402,29 +402,49 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _setState(newStateValueFn: (stateValue: Readonly<T> | null) => T): void
   protected _setState(
     newStateValueFn: (stateValue: Readonly<T> | null) => T,
-    partialState: Partial<State<T, E>> & Partial<UpdateName>): void
+    partialState: Partial<State<T, E>> & Partial<ActionName>): void
   protected _setState(
     fnOrState: ((stateValue: Readonly<T> | null) => T) | Partial<State<T, E>>,
-    partialState?: Partial<State<T, E>> & Partial<UpdateName>
+    partialState?: Partial<State<T, E>> & Partial<ActionName>
   ): void {
     if (this._state.isDestroyed) return
     if (isFunction(fnOrState)) {
-      const value = isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
-      partialState = objectAssign({ value }, partialState || null)
+      fnOrState = {
+        value: isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
+      }
     }
-    let updateName: string | undefined
-    if (partialState && partialState.updateName) {
-      updateName = partialState.updateName
-      delete partialState.updateName
+    let actionName: string | undefined
+    if (partialState && !isUndefined(partialState.actionName)) {
+      actionName = partialState.actionName
+      delete partialState.actionName
     }
-    this._state = objectAssign(this._state, partialState || fnOrState)
+    this._state = objectAssign(this._state, fnOrState, partialState || null)
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
         state: simpleCloneObject(this._state),
-        updateName,
+        actionName
       })
     }
+
+    // if (this._state.isDestroyed) return
+    // if (isFunction(fnOrState)) {
+    //   const value = isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
+    //   partialState = objectAssign({ value }, partialState || null)
+    // }
+    // let actionName: string | undefined
+    // if (partialState && partialState.actionName) {
+    //   actionName = partialState.actionName
+    //   delete partialState.actionName
+    // }
+    // this._state = objectAssign(this._state, partialState || fnOrState)
+    // if (isDevTools()) {
+    //   DevToolsAdapter.stateChange$.next({
+    //     storeName: this._storeName,
+    //     state: simpleCloneObject(this._state),
+    //     actionName
+    //   })
+    // }
   }
 
   //#endregion state-methods
@@ -436,7 +456,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * @example
    *  weatherStore.update({ isWindy: true });
    */
-  public update(value: Partial<T>, updateName?: string): void
+  public update(value: Partial<T>, actionName?: string): void
   /**
    * Updates the store's state using a function that will be called by the store.
    * The function will be provided with the current state as a parameter and it must return a new partial state.
@@ -447,8 +467,8 @@ export abstract class BaseStore<T extends object, E = any> {
    *    isSunny: !state.isRaining
    * }));
    */
-  public update(valueFunction: (value: Readonly<T>) => Partial<T>, updateName?: string): void
-  public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, updateName?: string): void {
+  public update(valueFunction: (value: Readonly<T>) => Partial<T>, actionName?: string): void
+  public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
       this._assert(value && this._initialValue && !this.isLoading, `${cantBe} updated ${beforeItWasInitialized}`)
@@ -460,13 +480,13 @@ export abstract class BaseStore<T extends object, E = any> {
         if (newModifiedValue) newValue = this._clone(newModifiedValue)
       }
       return newValue
-    }, { updateName: updateName || 'Update' })
+    }, { actionName })
   }
 
   /**
    * Overrides the current state's value completely.
    */
-  public override(value: T): void {
+  public override(value: T, actionName?: string): void {
     if (this.isPaused) return
     this._assert(this._value && this._initialValue && !this.isLoading, `${cantBe} overridden ${beforeItWasInitialized}`)
     if (!this._isSimpleCloning) value = instanceHandler(this._initialValue, this._clone(value))
@@ -476,7 +496,7 @@ export abstract class BaseStore<T extends object, E = any> {
       if (modifiedValue) value = this._clone(modifiedValue)
     }
     const isCloned = !this._isSimpleCloning || !!modifiedValue
-    this._setState(() => isCloned ? value : this._clone(value), { updateName: 'Override' })
+    this._setState(() => isCloned ? value : this._clone(value), { actionName })
   }
 
   //#endregion update-methods
@@ -485,7 +505,7 @@ export abstract class BaseStore<T extends object, E = any> {
   /**
    * Resets the state's value to it's initial value.
    */
-  public reset(): void | never {
+  public reset(actionName?: string): void | never {
     this._setState(value => {
       const initialValue = this._initialValue
       this._assert(value && initialValue && !this.isLoading, `${cantBe} reseted ${beforeItWasInitialized}`)
@@ -493,7 +513,7 @@ export abstract class BaseStore<T extends object, E = any> {
       let modifiedInitialValue: T | void
       if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
       return this._clone(modifiedInitialValue || initialValue)
-    }, { updateName: 'Reset' })
+    }, { actionName })
   }
 
   /**

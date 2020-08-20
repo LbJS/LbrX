@@ -2,5 +2,5 @@
 export interface StateChangeInfo {
   storeName: string,
   state: {}
-  updateName?: string
+  actionName?: string
 }
