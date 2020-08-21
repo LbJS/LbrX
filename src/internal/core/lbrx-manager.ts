@@ -1,10 +1,10 @@
-import { DevtoolsOptions } from '../dev-tools'
-import { enableStackTracingErrors } from '../internal/core'
-import { enableProdMode } from '../internal/core/lbrx-mode'
-import { DevToolsManager } from '../internal/dev-tools'
-import { logError } from '../internal/helpers'
-import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../internal/stores/config'
-import { ZoneLike } from '../internal/types'
+import { DevtoolsOptions } from '../../dev-tools'
+import { DevToolsManager } from '../dev-tools'
+import { logError } from '../helpers'
+import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../stores/config'
+import { ZoneLike } from '../types'
+import { enableProdMode } from './lbrx-mode'
+import { enableStackTracingErrors } from './stack-tracing-errors'
 
 /**
  * LbrX static class.

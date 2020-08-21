@@ -1,2 +1,2 @@
-export * from './dev-tools-options.interface'
+export { DevtoolsOptions } from '../internal/dev-tools/config'
 

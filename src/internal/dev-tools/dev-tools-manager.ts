@@ -4,9 +4,17 @@ import { isDev } from '../core'
 import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from '../helpers'
 import { KeyValue, ZoneLike } from '../types'
 import { getDefaultDevToolsConfig } from './default-dev-tools-config'
+import { DevToolsAdapter } from './dev-tools-adapter'
 import { activateDevToolsStream } from './dev-tools-mode'
 import { DevToolsSubjects } from './dev-tools-subjects'
+import { ReduxDevToolsExtension } from './redux-dev-tools-extension.interface'
 import { StoreStates } from './store-states.enum'
+
+declare global {
+  interface Window {
+    __REDUX_DEVTOOLS_EXTENSION__: ReduxDevToolsExtension
+  }
+}
 
 export class DevToolsManager {
 
@@ -25,15 +33,13 @@ export class DevToolsManager {
 
   // TODO: Handle late initialization, when one or more stores already exist.
   public initialize(): void {
-    if (!isDev() || !isBrowser() || !(window as any).__REDUX_DEVTOOLS_EXTENSION__) return
-    (window as any).$$stores = DevToolsSubjects.stores
-    const devToolsOptions = this.devToolsOptions
-    const mergedOptions = objectAssign(getDefaultDevToolsConfig(), devToolsOptions)
-    this.devToolsOptions = mergedOptions
-    const reduxDevToolsOptions = {
-      name: mergedOptions.name
+    if (!isDev() || !isBrowser() || !window.__REDUX_DEVTOOLS_EXTENSION__) return
+    (window as any).$$LbrX = {
+      $$stores: DevToolsAdapter.stores,
+      $$state: DevToolsAdapter.state,
     }
-    const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
+    this.devToolsOptions = objectAssign(getDefaultDevToolsConfig(), this.devToolsOptions)
+    const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(this.devToolsOptions)
     if (this._devTools) this._devTools.unsubscribe()
     this._devTools = devTools
     this._sub.unsubscribe()
@@ -47,6 +53,10 @@ export class DevToolsManager {
   public setDevToolsZone(zone: ZoneLike): void {
     this._zone = zone
   }
+
+  // private _setSubscribers(reduxMonitor: any): void {
+
+  // }
 
   private _setUserEventsSubscribers(devTools: any): void {
     const devToolsOptions = this.devToolsOptions

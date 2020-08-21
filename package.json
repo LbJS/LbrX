@@ -40,6 +40,7 @@
     "rxjs": "^6.5.4"
   },
   "devDependencies": {
+    "@rollup/plugin-multi-entry": "^4.0.0",
     "@rollup/plugin-typescript": "^4.1.2",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.0",
