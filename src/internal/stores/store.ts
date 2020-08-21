@@ -1,8 +1,9 @@
 import { iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
-import { isObject, QueryScope } from '../helpers'
+import { isObject } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
+import { QueryScope } from './store-accessories'
 
 /**
  * @example
