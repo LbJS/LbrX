@@ -1,2 +1,2 @@
-export * from './lbrx-manager'
+export { LbrXManager } from '../internal/core'
 

@@ -1,3 +1,4 @@
+import multi from '@rollup/plugin-multi-entry'
 import fs from 'fs'
 import path from 'path'
 
@@ -6,7 +7,12 @@ import path from 'path'
  */
 export function getRollupBaseOptions() {
   return {
-    input: 'src/index.ts',
+    input: [
+      'src/index.ts',
+      'src/core/index.ts',
+      'src/dev-tools/index.ts',
+      'src/utils/index.ts'
+    ],
     output: {
       sourcemap: true,
       sourcemapPathTransform: (str) => str.substring(3),
@@ -15,17 +21,20 @@ export function getRollupBaseOptions() {
       'rxjs',
       'rxjs/operators'
     ],
-    plugins: [{
-      name: 'rollup-plugin-min-js-empty-line-top',
-      writeBundle: options => {
-        const fileName = options.file
-        if (!fileName || !fileName.endsWith('min.js')) return
-        const filePath = path.resolve(__dirname, '../', fileName)
-        let fileStr = fs.readFileSync(filePath, { encoding: 'utf-8' })
-        fileStr = '\n' + fileStr
-        fs.writeFileSync(filePath, fileStr, { encoding: 'utf-8' })
-      }
-    }]
+    plugins: [
+      multi({ entryFileName: 'index.js' }),
+      {
+        name: 'rollup-plugin-min-js-empty-line-top',
+        writeBundle: options => {
+          const fileName = options.file
+          if (!fileName || !fileName.endsWith('min.js')) return
+          const filePath = path.resolve(__dirname, '../', fileName)
+          let fileStr = fs.readFileSync(filePath, { encoding: 'utf-8' })
+          fileStr = '\n' + fileStr
+          fs.writeFileSync(filePath, fileStr, { encoding: 'utf-8' })
+        }
+      },
+    ]
   }
 }
 
