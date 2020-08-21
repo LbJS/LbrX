@@ -1,4 +1,5 @@
 import { DevtoolsOptions } from '../dev-tools'
+import { enableStackTracingErrors } from '../internal/core'
 import { enableProdMode } from '../internal/core/lbrx-mode'
 import { DevToolsManager } from '../internal/dev-tools'
 import { logError } from '../internal/helpers'
@@ -17,7 +18,7 @@ export class LbrXManager {
    * Enabling production mode will improve performance and
    * will log errors instead of throwing them.
    */
-  static enableProdMode(): typeof LbrXManager {
+  public static enableProdMode(): typeof LbrXManager {
     enableProdMode()
     return LbrXManager
   }
@@ -25,7 +26,7 @@ export class LbrXManager {
   /**
    * Initializes Redux DevTools.
    */
-  static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): typeof LbrXManager {
+  public static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): typeof LbrXManager {
     LbrXManager._devToolsManager = new DevToolsManager(devToolsOptions)
     LbrXManager._devToolsManager.initialize()
     return LbrXManager
@@ -34,7 +35,7 @@ export class LbrXManager {
   /**
    * Sets global store configuration for all stores.
    */
-  static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
+  public static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
     setGlobalStoreConfig(options)
     return LbrXManager
   }
@@ -51,7 +52,7 @@ export class LbrXManager {
    * `Other:`
    * LbrXManager.setDevToolsZone(someZoneHandler)
    */
-  static setDevToolsZone(
+  public static setDevToolsZone(
     zone: ZoneLike
   ): typeof LbrXManager {
     if (!LbrXManager._devToolsManager) {
@@ -59,6 +60,14 @@ export class LbrXManager {
     } else {
       LbrXManager._devToolsManager.setDevToolsZone(zone)
     }
+    return LbrXManager
+  }
+
+  /**
+   * Enables stack-tracing errors.
+   */
+  public static enableStackTracingErrors(): typeof LbrXManager {
+    enableStackTracingErrors()
     return LbrXManager
   }
 

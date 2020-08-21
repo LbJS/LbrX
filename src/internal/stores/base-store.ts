@@ -1,10 +1,12 @@
-import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs'
+import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
-import { isDev } from '../core'
+import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools } from '../dev-tools'
-import { capFirstLetter, Clone, cloneError, cloneObject, Compare, compareObjects, createPromiseScope, deepFreeze, getPromiseState, instanceHandler, isError, isFunction, isNull, isObject, isUndefined, logWarn, mergeObjects, newError, objectAssign, Parse, PromiseScope, PromiseStates, QueryScope, simpleCloneObject, simpleCompareObjects, State, StateActionRenamble as ActionName, StateTags, Stringify, throwError } from '../helpers'
+import { capFirstLetter, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
+import { Actions, Clone, Compare, createPromiseScope, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
+import { StoreTags } from './store-accessories/store-related/store-tags.enum'
 
 //#region constant-strings
 const customStorageApiImplementation = 'custom storage api implementation'
@@ -35,7 +37,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region state
 
   /** @internal */
-  protected _stateObj: State<T, E> = {
+  protected _stateField: State<T, E> = {
     value: null,
     isPaused: false,
     isLoading: false,
@@ -46,10 +48,13 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /** @internal */
   protected get _state(): State<T, E> {
-    return this._stateObj
+    return this._stateField
   }
   protected set _state(value: State<T, E>) {
-    this._stateObj = value
+    if (isStackTracingErrors() && isDev() && !isCalledBy('_setState', 0)) {
+      logError(`${getStoreNameMsg(this._storeName)} has called "_state" setter not from "_setState" method.`)
+    }
+    this._stateField = value
     this._state$.next(value)
     this._isLoading$.next(value.isLoading)
     this._isPaused$.next(value.isPaused)
@@ -108,21 +113,21 @@ export abstract class BaseStore<T extends object, E = any> {
     return this._state.isPaused
   }
   public set isPaused(value: boolean) {
-    this._setState({ isPaused: value })
+    this._setState({ isPaused: value }, Actions.paused)
   }
 
   /**
-   * @get Returns string literal that represents the state's tag.
+   * @get Returns string literal that represents the store's tag.
    */
-  public get stateTag(): StateTags {
+  public get storeTag(): StoreTags {
     const state = this._state
-    if (state.isHardResettings) return StateTags.hardResetting
-    if (state.isLoading) return StateTags.loading
-    if (state.isPaused) return StateTags.paused
-    if (state.isDestroyed) return StateTags.destroyed
-    if (state.value) return StateTags.active
-    if (state.error) return StateTags.error
-    return StateTags.resolving
+    if (state.isHardResettings) return StoreTags.hardResetting
+    if (state.isLoading) return StoreTags.loading
+    if (state.isPaused) return StoreTags.paused
+    if (state.isDestroyed) return StoreTags.destroyed
+    if (state.value) return StoreTags.active
+    if (state.error) return StoreTags.error
+    return StoreTags.resolving
   }
 
   /** @internal */
@@ -166,7 +171,7 @@ export abstract class BaseStore<T extends object, E = any> {
     } else if (isObject(value)) {
       value = cloneObject(value)
     }
-    this._setState({ error: value })
+    this._setState({ error: value }, Actions.error)
   }
 
   //#endregion error-api
@@ -297,9 +302,9 @@ export abstract class BaseStore<T extends object, E = any> {
     if (isUndefined(initialValueOrNull)) throwError(`${getStoreNameMsg(storeName)} was ${providedWith} "undefined" as initial state.`)
     DevToolsAdapter.stores.storeName = this
     if (isNull(initialValueOrNull)) {
-      this._setState({ isLoading: true })
+      this._setState({ isLoading: true }, Actions.loading)
     } else {
-      this._initializeStore(initialValueOrNull)
+      this._initializeStore(initialValueOrNull, false)
     }
   }
 
@@ -326,7 +331,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   /** @internal */
-  protected _initializeStore(initialValue: T): void {
+  protected _initializeStore(initialValue: T, isAsync: boolean): void {
     let isValueFromStorage = false
     const storage = this._storage
     if (storage) {
@@ -348,11 +353,11 @@ export abstract class BaseStore<T extends object, E = any> {
     }
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     this._initialValue = deepFreeze(initialValue)
-    this._setState(() => this._clone(initialValue), { isLoading: false })
+    this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     this._assert(this._value, 'state could not be set durning initialization.')
     if (isFunction(this.onAfterInit)) {
       const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
-      if (modifiedValue) this._setState(() => this._clone(modifiedValue))
+      if (modifiedValue) this._setState(() => this._clone(modifiedValue), Actions.afterInitUpdate)
     }
   }
 
@@ -360,7 +365,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * Method used for delayed initialization.
    */
   public initialize(initialValue: T): void {
-    if (this._assertInitializable()) this._initializeStore(initialValue)
+    if (this._assertInitializable()) this._initializeStore(initialValue, false)
   }
 
   /**
@@ -382,7 +387,7 @@ export abstract class BaseStore<T extends object, E = any> {
           const modifiedResult = this.onAsyncInitSuccess(r)
           if (modifiedResult) r = modifiedResult
         }
-        this._initializeStore(r)
+        this._initializeStore(r, true)
       }).catch(e => {
         if (asyncInitPromiseScope.isCancelled) return
         if (isFunction(this.onAsyncInitError)) {
@@ -398,53 +403,26 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region state-methods
 
   /** @internal */
-  protected _setState(partialState: Partial<State<T, E>>): void
-  protected _setState(newStateValueFn: (stateValue: Readonly<T> | null) => T): void
   protected _setState(
-    newStateValueFn: (stateValue: Readonly<T> | null) => T,
-    partialState: Partial<State<T, E>> & Partial<ActionName>): void
-  protected _setState(
-    fnOrState: ((stateValue: Readonly<T> | null) => T) | Partial<State<T, E>>,
-    partialState?: Partial<State<T, E>> & Partial<ActionName>
+    valueFnOrState: ((stateValue: Readonly<T> | null) => T) | Partial<State<T, E>>,
+    actionName: string | Actions,
+    stateExtension?: Partial<State<T, E>>
   ): void {
     if (this._state.isDestroyed) return
-    if (isFunction(fnOrState)) {
-      fnOrState = {
-        value: isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
+    if (isFunction(valueFnOrState)) {
+      valueFnOrState = {
+        value: isDev() ? deepFreeze(valueFnOrState(this._value)) : valueFnOrState(this._value)
       }
     }
-    let actionName: string | undefined
-    if (partialState && !isUndefined(partialState.actionName)) {
-      actionName = partialState.actionName
-      delete partialState.actionName
-    }
-    this._state = objectAssign(this._state, fnOrState, partialState || null)
+    this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
+    DevToolsAdapter.state[this._storeName] = this._state
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
-        state: simpleCloneObject(this._state),
+        state: this._state,
         actionName
       })
     }
-
-    // if (this._state.isDestroyed) return
-    // if (isFunction(fnOrState)) {
-    //   const value = isDev() ? deepFreeze(fnOrState(this._value)) : fnOrState(this._value)
-    //   partialState = objectAssign({ value }, partialState || null)
-    // }
-    // let actionName: string | undefined
-    // if (partialState && partialState.actionName) {
-    //   actionName = partialState.actionName
-    //   delete partialState.actionName
-    // }
-    // this._state = objectAssign(this._state, partialState || fnOrState)
-    // if (isDevTools()) {
-    //   DevToolsAdapter.stateChange$.next({
-    //     storeName: this._storeName,
-    //     state: simpleCloneObject(this._state),
-    //     actionName
-    //   })
-    // }
   }
 
   //#endregion state-methods
@@ -480,7 +458,7 @@ export abstract class BaseStore<T extends object, E = any> {
         if (newModifiedValue) newValue = this._clone(newModifiedValue)
       }
       return newValue
-    }, { actionName })
+    }, actionName || Actions.update)
   }
 
   /**
@@ -496,7 +474,7 @@ export abstract class BaseStore<T extends object, E = any> {
       if (modifiedValue) value = this._clone(modifiedValue)
     }
     const isCloned = !this._isSimpleCloning || !!modifiedValue
-    this._setState(() => isCloned ? value : this._clone(value), { actionName })
+    this._setState(() => isCloned ? value : this._clone(value), actionName || Actions.override)
   }
 
   //#endregion update-methods
@@ -513,7 +491,7 @@ export abstract class BaseStore<T extends object, E = any> {
       let modifiedInitialValue: T | void
       if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
       return this._clone(modifiedInitialValue || initialValue)
-    }, { actionName })
+    }, actionName || Actions.reset)
   }
 
   /**
@@ -530,7 +508,7 @@ export abstract class BaseStore<T extends object, E = any> {
       const errMsg = `${getStoreNameMsg(this._storeName)} ${isNotConfiguredAsResettable}.`
       return Promise.reject(new Error(errMsg))
     }
-    this._setState({ isHardResettings: true })
+    this._setState({ isHardResettings: true }, Actions.hardResetting)
     const asyncInitPromiseScope = this._asyncInitPromiseScope
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
       asyncInitPromiseScope && asyncInitPromiseScope.promise ?
@@ -548,7 +526,7 @@ export abstract class BaseStore<T extends object, E = any> {
           isPaused: false,
           isHardResettings: false,
           isLoading: true,
-        })
+        }, Actions.loading)
         resolve(this)
       }
       initializeAsyncPromiseState.then(state => {
@@ -580,6 +558,11 @@ export abstract class BaseStore<T extends object, E = any> {
         if (this._storage) this._storage.removeItem(this._storageKey)
         this._queryScopes.forEach(x => x.isDisposed = true)
         this._initialValue = null
+        for (const key in this) {
+          if (!this.hasOwnProperty(key)) continue
+          const prop = this[key]
+          if (prop instanceof Subject) prop.complete()
+        }
         this._setState({
           value: null,
           error: null,
@@ -587,7 +570,7 @@ export abstract class BaseStore<T extends object, E = any> {
           isHardResettings: false,
           isLoading: false,
           isDestroyed: true,
-        })
+        }, Actions.destroy)
         resolve()
       }
       initializeAsyncPromiseState.then(state => {

@@ -1,5 +1,5 @@
 
-export const enum StateTags {
+export const enum StoreTags {
   resolving = 'RESOLVING',
   active = 'ACTIVE',
   paused = 'PAUSED',
