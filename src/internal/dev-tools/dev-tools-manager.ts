@@ -1,8 +1,9 @@
 import { Subscription } from 'rxjs'
 import { DevtoolsOptions } from '../../dev-tools'
 import { isDev } from '../core'
-import { countObjectChanges, instanceHandler, isBrowser, objectAssign, objectKeys, parse } from '../helpers'
-import { KeyValue, ZoneLike } from '../types'
+import { countObjectChanges, filterObject, instanceHandler, isBrowser, mergeObjects, objectKeys, parse } from '../helpers'
+import { KeyOf, KeyValue, ZoneLike } from '../types'
+import { ReduxDevToolsOptions } from './config'
 import { getDefaultDevToolsConfig } from './default-dev-tools-config'
 import { DevToolsAdapter } from './dev-tools-adapter'
 import { activateDevToolsStream } from './dev-tools-mode'
@@ -26,6 +27,7 @@ export class DevToolsManager {
   }
   private _userEventsDisablerIndex: number | null = null
   private _devTools: any
+  private _reduxDevToolsOptionsKeys: KeyOf<ReduxDevToolsOptions>[] = ['name']
 
   constructor(
     private devToolsOptions: Partial<DevtoolsOptions> = {}
@@ -38,8 +40,9 @@ export class DevToolsManager {
       $$stores: DevToolsAdapter.stores,
       $$state: DevToolsAdapter.state,
     }
-    this.devToolsOptions = objectAssign(getDefaultDevToolsConfig(), this.devToolsOptions)
-    const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect(this.devToolsOptions)
+    this.devToolsOptions = mergeObjects(getDefaultDevToolsConfig(), this.devToolsOptions)
+    const reduxDevToolsOptions = filterObject(this.devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys)
+    const devTools = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
     if (this._devTools) this._devTools.unsubscribe()
     this._devTools = devTools
     this._sub.unsubscribe()
