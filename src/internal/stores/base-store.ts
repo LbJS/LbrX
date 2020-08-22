@@ -2,26 +2,11 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools } from '../dev-tools'
-import { capFirstLetter, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, Compare, createPromiseScope, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
 import { StoreTags } from './store-accessories/store-related/store-tags.enum'
-
-//#region constant-strings
-const customStorageApiImplementation = 'custom storage api implementation'
-const providedWith = 'provided with'
-const setToCustom = 'set to "custom"'
-const isNotUnique = 'is not unique'
-const isNotConfiguredAsResettable = 'is not configured as resettable'
-const cantBe = "can't be"
-const beforeItWasInitialized = 'before it was initialized'
-
-function getStoreNameMsg(storeName: string, isFirstLetterCap: boolean = true): string {
-  const msg = `store: "${storeName}"`
-  return isFirstLetterCap ? capFirstLetter(msg) : msg
-}
-//#endregion constant-strings
 
 export abstract class BaseStore<T extends object, E = any> {
 
@@ -52,7 +37,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
   protected set _state(value: State<T, E>) {
     if (isStackTracingErrors() && isDev() && !isCalledBy('_setState', 0)) {
-      logError(`${getStoreNameMsg(this._storeName)} has called "_state" setter not from "_setState" method.`)
+      logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     this._stateField = value
     this._state$.next(value)
@@ -256,12 +241,12 @@ export abstract class BaseStore<T extends object, E = any> {
     const storeName = this._storeName
     if (this._config.storageType != Storages.custom) {
       if (this._config.customStorageApi) {
-        logWarn(`${getStoreNameMsg(storeName)} is provided with ${customStorageApiImplementation} while storage type is ${setToCustom}. ${capFirstLetter(customStorageApiImplementation)} is ignored.`)
+        logWarn(`Store: "${storeName}" was provided with custom storage api implementation but storage type was not set to custom. Therefore custom storage api implementation will be ignored.`)
       }
       this._config.customStorageApi = null
     }
     if (this._config.storageType == Storages.custom && !this._config.customStorageApi) {
-      logWarn(`${getStoreNameMsg(storeName)} has storage type ${setToCustom} but non ${customStorageApiImplementation} was provided. Custom storage type configuration is ignored.`)
+      logWarn(`Store: "${storeName}" has storage type set to custom but no custom storage api implementation was provided. Therefore storage type will be set to none.`)
       this._config.storageType = Storages.none
     }
     this._storage = (() => {
@@ -290,7 +275,7 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /** @internal */
   protected _main(initialValueOrNull: T | null): void {
-    if (!this.config) throwError(`Store must be ${providedWith} store configuration via decorator or via constructor.`)
+    if (!this.config) throwError('Store must be provided with store configuration via decorator or via constructor.')
     const storeName = this._storeName
     this._assertStoreNameValid(storeName)
     BaseStore._storeNames.push(storeName)
@@ -299,7 +284,7 @@ export abstract class BaseStore<T extends object, E = any> {
       this._assertStorageKeyValid(this._storageKey, storeName)
       BaseStore._storageKeys.push(storageKey)
     }
-    if (isUndefined(initialValueOrNull)) throwError(`${getStoreNameMsg(storeName)} was ${providedWith} "undefined" as initial state.`)
+    if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as initial state.`)
     DevToolsAdapter.stores.storeName = this
     if (isNull(initialValueOrNull)) {
       this._setState({ isLoading: true }, Actions.loading)
@@ -311,20 +296,20 @@ export abstract class BaseStore<T extends object, E = any> {
   /** @internal */
   protected _assertStoreNameValid(storeName: string): void {
     if (BaseStore._storeNames.includes(storeName)) {
-      throwError(`Store name: "${storeName}"  ${isNotUnique}.`)
+      throwError(`Store name: "${storeName}"  is not unique.`)
     }
   }
 
   /** @internal */
   protected _assertStorageKeyValid(storageKey: string, storeName: string): void {
     if (BaseStore._storageKeys.includes(storageKey)) {
-      throwError(`Storage key: "${storageKey}" in ${getStoreNameMsg(storeName, false)} ${isNotUnique}.`)
+      throwError(`Storage key: "${storageKey}" in store: "${storeName}" is not unique.`)
     }
   }
 
   protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
     if (this.isLoading && !this._initialValue && !this._value) return true
-    const errMsg = `${getStoreNameMsg(this._storeName)} has already been initialized. You can hard reset the store if you want to reinitialize it.`
+    const errMsg = `Store: "${this._storeName}" has already been initialized. You can hard reset the store if you want to reinitialize it.`
     if (!reject) throwError(errMsg)
     reject(newError(errMsg))
     return false
@@ -354,7 +339,7 @@ export abstract class BaseStore<T extends object, E = any> {
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     this._initialValue = deepFreeze(initialValue)
     this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
-    this._assert(this._value, 'state could not be set durning initialization.')
+    assert(this._value, `Store: "${this._storeName}" state could not be set durning initialization.`)
     if (isFunction(this.onAfterInit)) {
       const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
       if (modifiedValue) this._setState(() => this._clone(modifiedValue), Actions.afterInitUpdate)
@@ -449,7 +434,7 @@ export abstract class BaseStore<T extends object, E = any> {
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
-      this._assert(value && this._initialValue && !this.isLoading, `${cantBe} updated ${beforeItWasInitialized}`)
+      assert(value && this._initialValue && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
       if (!this._isSimpleCloning) newValue = instanceHandler(this._initialValue, newValue)
@@ -466,7 +451,8 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public override(value: T, actionName?: string): void {
     if (this.isPaused) return
-    this._assert(this._value && this._initialValue && !this.isLoading, `${cantBe} overridden ${beforeItWasInitialized}`)
+    assert(this._value && this._initialValue && !this.isLoading,
+      `Store: "${this._storeName}" can't be overridden before it was initialized`)
     if (!this._isSimpleCloning) value = instanceHandler(this._initialValue, this._clone(value))
     let modifiedValue: T | void
     if (isFunction(this.onOverride)) {
@@ -486,8 +472,8 @@ export abstract class BaseStore<T extends object, E = any> {
   public reset(actionName?: string): void | never {
     this._setState(value => {
       const initialValue = this._initialValue
-      this._assert(value && initialValue && !this.isLoading, `${cantBe} reseted ${beforeItWasInitialized}`)
-      this._assert(this._isResettable, isNotConfiguredAsResettable)
+      assert(value && initialValue && !this.isLoading, `Store: "${this._storeName}" can't be reseted before it was initialized`)
+      assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
       let modifiedInitialValue: T | void
       if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
       return this._clone(modifiedInitialValue || initialValue)
@@ -505,8 +491,7 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public hardReset(): Promise<this> {
     if (!this._isResettable) {
-      const errMsg = `${getStoreNameMsg(this._storeName)} ${isNotConfiguredAsResettable}.`
-      return Promise.reject(new Error(errMsg))
+      return Promise.reject(new Error(`Store: "${this._storeName}" is not configured as resettable.`))
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
     const asyncInitPromiseScope = this._asyncInitPromiseScope
@@ -581,13 +566,6 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   //#endregion reset-dispose-destroy-methods
-  //#region helper-methods
-
-  protected _assert(condition: any, errMsg: string): asserts condition {
-    if (!condition) throwError(`${getStoreNameMsg(this._storeName)} ${errMsg}.`)
-  }
-
-  //#endregion helper-methods
   //#region hooks
 
   /**
