@@ -1,3 +1,4 @@
+export * from './assert'
 export * from './cap-first-letter'
 export * from './clone-error'
 export * from './clone-object'
