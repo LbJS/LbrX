@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, Compare, createPromiseScope, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
+import { Actions, Clone, Compare, createPromiseScope, Freeze, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
 import { StoreTags } from './store-accessories/store-related/store-tags.enum'
 
 export abstract class BaseStore<T extends object, E = any> {
@@ -200,6 +200,9 @@ export abstract class BaseStore<T extends object, E = any> {
   protected readonly _compare: Compare
 
   /** @internal */
+  protected readonly _freeze: Freeze
+
+  /** @internal */
   protected readonly _stringify: Stringify
 
   /** @internal */
@@ -225,11 +228,13 @@ export abstract class BaseStore<T extends object, E = any> {
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
     delete this.constructor[STORE_CONFIG_KEY]
-    this._storeName = this._config.name
-    this._isResettable = this._config.isResettable
-    this._isSimpleCloning = this._config.isSimpleCloning
-    this._clone = this._isSimpleCloning ? simpleCloneObject : cloneObject
-    this._objectCompareType = this._config.objectCompareType
+    const config = this._config
+    this._storeName = config.name
+    this._isResettable = config.isResettable
+    this._isSimpleCloning = config.isSimpleCloning
+    this._clone = !config.isImmutable ? x => x : this._isSimpleCloning ? simpleCloneObject : cloneObject
+    this._freeze = config.isImmutable ? deepFreeze : x => x
+    this._objectCompareType = config.objectCompareType
     this._compare = (() => {
       switch (this._objectCompareType) {
         case ObjectCompareTypes.advanced: return compareObjects
@@ -237,36 +242,36 @@ export abstract class BaseStore<T extends object, E = any> {
         case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
       }
     })()
-    this._config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
+    config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
     const storeName = this._storeName
-    if (this._config.storageType != Storages.custom) {
-      if (this._config.customStorageApi) {
+    if (config.storageType != Storages.custom) {
+      if (config.customStorageApi) {
         logWarn(`Store: "${storeName}" was provided with custom storage api implementation but storage type was not set to custom. Therefore custom storage api implementation will be ignored.`)
       }
-      this._config.customStorageApi = null
+      config.customStorageApi = null
     }
-    if (this._config.storageType == Storages.custom && !this._config.customStorageApi) {
+    if (config.storageType == Storages.custom && !this._config.customStorageApi) {
       logWarn(`Store: "${storeName}" has storage type set to custom but no custom storage api implementation was provided. Therefore storage type will be set to none.`)
-      this._config.storageType = Storages.none
+      config.storageType = Storages.none
     }
     this._storage = (() => {
-      switch (this._config.storageType) {
+      switch (config.storageType) {
         case Storages.none: return null
         case Storages.local: return localStorage
         case Storages.session: return sessionStorage
         case Storages.custom: return this._config.customStorageApi
       }
     })()
-    this._config.storageTypeName = [
+    config.storageTypeName = [
       'None',
       'Local-Storage',
       'Session-Storage',
       'Custom',
-    ][this._config.storageType]
-    this._storageDebounce = this._config.storageDebounceTime
-    this._storageKey = this._config.storageKey
-    this._stringify = this._config.stringify
-    this._parse = this._config.parse
+    ][config.storageType]
+    this._storageDebounce = config.storageDebounceTime
+    this._storageKey = config.storageKey
+    this._stringify = config.stringify
+    this._parse = config.parse
     //#endregion configuration-initialization
   }
 
@@ -337,7 +342,7 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     }
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
-    this._initialValue = deepFreeze(initialValue)
+    this._initialValue = this._freeze(initialValue)
     this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" state could not be set durning initialization.`)
     if (isFunction(this.onAfterInit)) {
@@ -396,7 +401,7 @@ export abstract class BaseStore<T extends object, E = any> {
     if (this._state.isDestroyed) return
     if (isFunction(valueFnOrState)) {
       valueFnOrState = {
-        value: isDev() ? deepFreeze(valueFnOrState(this._value)) : valueFnOrState(this._value)
+        value: this._freeze(valueFnOrState(this._value))
       }
     }
     this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)

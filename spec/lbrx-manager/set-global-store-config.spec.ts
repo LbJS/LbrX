@@ -40,6 +40,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       storageDebounceTime: 500,
       storageType: Storages.local,
       customStorageApi: null,
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -58,6 +59,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       storageDebounceTime: 2000,
       storageType: Storages.none,
       customStorageApi: null,
+      isImmutable: true,
       stringify,
       parse,
     }

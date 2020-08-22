@@ -3,7 +3,7 @@ import { GlobalStoreConfigOptions } from './global-store-config-options.interfac
 import { ObjectCompareTypes } from './object-compare-types.enum'
 import { Storages } from './storages.enum'
 
-export function getDefaultStoreConfig(): Required<GlobalStoreConfigOptions> {
+export function getDefaultGlobalStoreConfig(): Required<GlobalStoreConfigOptions> {
   return {
     isResettable: true,
     storageType: Storages.none,
@@ -11,6 +11,7 @@ export function getDefaultStoreConfig(): Required<GlobalStoreConfigOptions> {
     customStorageApi: null,
     objectCompareType: ObjectCompareTypes.advanced,
     isSimpleCloning: false,
+    isImmutable: true,
     stringify,
     parse,
   }

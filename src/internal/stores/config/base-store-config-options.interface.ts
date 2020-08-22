@@ -43,6 +43,15 @@ export interface BaseStoreConfigOptions {
    */
   isSimpleCloning?: boolean
   /**
+   * Defines whether or not the store's state in immutable.
+   * - Disabling immutability will skip all state's cloning and freezing.
+   * - Disabling immutability will increase performance.
+   * - Disabling immutability will increase the risk of bugs caused by the nature of JavaScript's mutable objects.
+   * @default
+   * isImmutable = true
+   */
+  isImmutable?: boolean
+  /**
    * Define a custom serialization function if you need custom logic.
    * Currently it's in use for storing and retrieving data from browser's storage.
    * @default

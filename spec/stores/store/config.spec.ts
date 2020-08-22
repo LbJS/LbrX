@@ -49,6 +49,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE',
       objectCompareTypeName: 'Advanced',
       storageTypeName: 'None',
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -110,6 +111,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE-KEY',
       objectCompareTypeName: 'Reference',
       storageTypeName: 'Local-Storage',
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -137,6 +139,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE-KEY',
       objectCompareTypeName: 'Simple',
       storageTypeName: 'Session-Storage',
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -160,6 +163,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE',
       objectCompareTypeName: 'Advanced',
       storageTypeName: 'Custom',
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -184,6 +188,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE',
       objectCompareTypeName: 'Advanced',
       storageTypeName: 'Local-Storage',
+      isImmutable: true,
       stringify,
       parse,
     }
@@ -209,6 +214,7 @@ describe('Store Config:', () => {
       storageKey: 'TEST-STORE',
       objectCompareTypeName: 'Advanced',
       storageTypeName: 'None',
+      isImmutable: true,
       stringify,
       parse,
     }
