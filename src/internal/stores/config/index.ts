@@ -1,3 +1,4 @@
+export * from './base-store-config-options.interface'
 export * from './default-global-store-config'
 export * from './global-store-config'
 export * from './global-store-config-options.interface'
