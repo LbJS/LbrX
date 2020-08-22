@@ -4,7 +4,7 @@ import { isObject } from './is-object'
 import { throwError } from './throw-error'
 
 function dateThrow(this: Date): never {
-  throwError(`This date: "${this.toLocaleString()}" is read only.`)
+  throwError(`This date: "${this.toLocaleString()}" is read only.`) // TODO: check if strict before throw and make better error msg
 }
 
 export function deepFreeze<T extends object>(object: T): Readonly<T> {
