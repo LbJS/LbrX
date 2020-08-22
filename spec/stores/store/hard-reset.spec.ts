@@ -5,7 +5,7 @@ import { TestSubject } from 'helpers/test-subjects'
 import { Storages, Store } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
-import { getDefaultStoreConfig } from 'lbrx/internal/stores/config'
+import { getDefaultGlobalStoreConfig } from 'lbrx/internal/stores/config'
 import { Subscription as Subscription_type, timer } from 'rxjs'
 import { map } from 'rxjs/operators'
 
@@ -77,7 +77,7 @@ describe('Store hardReset():', () => {
     expect(localStorage.getItem(storageKey)).toBe(JSON.stringify(createInitialState()))
     await storeWithLocalStorage.hardReset()
     expect(localStorage.getItem(storageKey)).toBeNull()
-  }, getDefaultStoreConfig().storageDebounceTime)
+  }, getDefaultGlobalStoreConfig().storageDebounceTime)
 
   it('should unsubscribe from state to storage subscription.', async () => {
     storeWithLocalStorage = StoresFactory.createStore(createInitialState(), STORE_WITH_LOCAL_STORAGE_CONFIG)
