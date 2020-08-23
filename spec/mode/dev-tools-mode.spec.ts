@@ -1,12 +1,12 @@
 
 describe('Dev Tools Mode:', () => {
 
-  let activateDevToolsPushes: () => void
+  let activateStreamToDevTools: () => void
   let isDevTools: () => boolean
 
   beforeEach(async () => {
     const providerModule = await import('provider')
-    activateDevToolsPushes = providerModule.activateDevToolsStream
+    activateStreamToDevTools = providerModule.activateStreamToDevTools
     isDevTools = providerModule.isDevTools
   })
 
@@ -19,7 +19,7 @@ describe('Dev Tools Mode:', () => {
   })
 
   it('should activated after enabling pushes.', () => {
-    activateDevToolsPushes()
+    activateStreamToDevTools()
     expect(isDevTools()).toBeTruthy()
   })
 })

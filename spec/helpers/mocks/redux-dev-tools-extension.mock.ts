@@ -1,6 +1,7 @@
 
 export function mockReduxDevToolsExtension(): void {
   const devTools = {
+    init: () => { },
     send: () => { },
     subscribe: () => { },
   }
