@@ -5,6 +5,6 @@ export function isDevTools(): boolean {
   return isDevToolsMode
 }
 
-export function activateDevToolsStream(): void {
+export function activateStreamToDevTools(): void {
   isDevToolsMode = true
 }

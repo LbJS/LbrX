@@ -79,7 +79,6 @@ userStore
       console.log('From is loading: ', userStore.value)
     }
   })
-
 setTimeout(() => {
   userStore.update({
     firstName: 'Some other name',

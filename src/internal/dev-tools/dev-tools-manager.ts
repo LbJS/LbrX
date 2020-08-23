@@ -1,15 +1,14 @@
 import { Subscription } from 'rxjs'
-import { DevtoolsOptions } from '../../dev-tools'
 import { isDev } from '../core'
-import { countObjectChanges, filterObject, instanceHandler, isBrowser, mergeObjects, objectKeys, parse } from '../helpers'
+import { countObjectChanges, filterObject, instanceHandler, isBrowser, logWarn, mergeObjects, objectKeys, parse, simpleCloneObject } from '../helpers'
+import { Actions, BaseStore } from '../stores'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
-import { ReduxDevToolsOptions } from './config'
+import { DevtoolsOptions, ReduxDevToolsOptions } from './config'
 import { getDefaultDevToolsConfig } from './default-dev-tools-config'
 import { DevToolsAdapter } from './dev-tools-adapter'
-import { activateDevToolsStream } from './dev-tools-mode'
-import { DevToolsSubjects } from './dev-tools-subjects'
+import { activateStreamToDevTools } from './dev-tools-mode'
 import { ReduxDevToolsExtension } from './redux-dev-tools-extension.interface'
-import { StoreStates } from './store-states.enum'
+import { ReduxDevToolsMonitor } from './redux-dev-tools-monitor.interface'
 
 declare global {
   interface Window {
@@ -19,136 +18,72 @@ declare global {
 
 export class DevToolsManager {
 
+  private static _wasInitialized = false
+
   private _sub = new Subscription()
-  private _appState: KeyValue = {}
-  private _loadingStoresCache = {}
+  private _state: KeyValue = {}
+  private _storeLastAction: KeyValue<string, Actions | string> = {}
   private _zone = {
     run: (f: any) => f()
   }
-  private _userEventsDisablerIndex: number | null = null
-  private _devTools: any
+  private _reduxMonitor: ReduxDevToolsMonitor | null = null
   private _reduxDevToolsOptionsKeys: KeyOf<ReduxDevToolsOptions>[] = ['name']
+  private _devToolsOptions: Partial<DevtoolsOptions>
 
   constructor(
-    private devToolsOptions: Partial<DevtoolsOptions> = {}
-  ) { }
+    devToolsOptions: Partial<DevtoolsOptions> = {}
+  ) {
+    this._devToolsOptions = mergeObjects(getDefaultDevToolsConfig(), devToolsOptions)
+  }
 
-  // TODO: Handle late initialization, when one or more stores already exist.
   public initialize(): void {
-    if (!isDev() || !isBrowser() || !window.__REDUX_DEVTOOLS_EXTENSION__) return
+    if (!isDev() || !isBrowser() || !window.__REDUX_DEVTOOLS_EXTENSION__ || DevToolsManager._wasInitialized) return
+    if (objectKeys(DevToolsAdapter.stores).length) {
+      logWarn('DevToolsManager was initialized after one or more stores were created.')
+    }
     (window as any).$$LbrX = {
       $$stores: DevToolsAdapter.stores,
       $$state: DevToolsAdapter.state,
+      $$values: DevToolsAdapter.values,
     }
-    this.devToolsOptions = mergeObjects(getDefaultDevToolsConfig(), this.devToolsOptions)
-    const reduxDevToolsOptions = filterObject(this.devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys)
-    const devTools = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
-    if (this._devTools) this._devTools.unsubscribe()
-    this._devTools = devTools
-    this._sub.unsubscribe()
-    this._sub = new Subscription()
-    this._appState = {}
-    this._setUserEventsSubscribers(devTools)
-    this._setDevToolsEventsSubscribers(devTools)
-    activateDevToolsStream()
+    const reduxDevToolsOptions = filterObject(this._devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys)
+    this._reduxMonitor = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
+    this._reduxMonitor.init(this._state)
+    this._setSubscribers(this._reduxMonitor)
+    activateStreamToDevTools()
+    DevToolsManager._wasInitialized = true
   }
 
   public setDevToolsZone(zone: ZoneLike): void {
     this._zone = zone
   }
 
-  // private _setSubscribers(reduxMonitor: any): void {
-
-  // }
-
-  private _setUserEventsSubscribers(devTools: any): void {
-    const devToolsOptions = this.devToolsOptions
-    const subs = [
-      DevToolsSubjects.pausedEvent$.subscribe(storeName => {
-        this._appState[storeName] = StoreStates.paused
-        devTools.send({ type: `[${storeName}] - || <PAUSED> ||` }, this._appState)
-      }),
-      DevToolsSubjects.loadingEvent$.subscribe(storeName => {
-        this._appState[storeName] = StoreStates.loading
-        devTools.send({ type: `[${storeName}] - LOADING...` }, this._appState)
-      }),
-      DevToolsSubjects.initEvent$.subscribe(store => {
-        const isLoading = this._appState[store.name] === StoreStates.loading
-        const suffixText = isLoading ? ' (async)' : ''
-        this._appState[store.name] = store.state
-        devTools.send({ type: `[${store.name}] - @@INIT${suffixText}` }, this._appState)
-      }),
-      DevToolsSubjects.updateEvent$.subscribe(store => {
-        const changes = countObjectChanges(this._appState[store.name], store.state)
-        if (!devToolsOptions.logEqualStates && !changes) return
-        this._appState[store.name] = store.state
-        const updateName = store.updateName ? store.updateName : 'Update Store'
-        devTools.send({ type: `[${store.name}] - ${updateName} (${changes} changes)` }, this._appState)
-      }),
-      DevToolsSubjects.overrideEvent$.subscribe(store => {
-        const changes = countObjectChanges(this._appState[store.name], store.state)
-        if (!devToolsOptions.logEqualStates && !changes) return
-        this._appState[store.name] = store.state
-        devTools.send({ type: `[${store.name}] - Override Store (${changes} changes)` }, this._appState)
-      }),
-      DevToolsSubjects.resetEvent$.subscribe(store => {
-        const changes = countObjectChanges(this._appState[store.name], store.state)
-        if (!devToolsOptions.logEqualStates && !changes) return
-        this._appState[store.name] = store.state
-        devTools.send({ type: `[${store.name}] - Reset (${changes} changes)` }, this._appState)
-      }),
-      DevToolsSubjects.hardResetEvent$.subscribe(storeName => {
-        this._appState[storeName] = StoreStates.hardResetting
-        devTools.send({ type: `[${storeName}] - HARD RESETTING...` }, this._appState)
-      }),
-    ]
-    subs.forEach(sub => this._sub.add(sub))
-  }
-
-  private _setDevToolsEventsSubscribers(devTools: any): void {
-    // console.log(devTools)
-    devTools.subscribe((message: any) => {
-      // console.log(message)
+  private _setSubscribers(reduxMonitor: ReduxDevToolsMonitor): void {
+    const options = this._devToolsOptions
+    this._sub.add(DevToolsAdapter.stateChange$.subscribe(x => {
+      const clonedState = simpleCloneObject(x.state)
+      const numOfChanges = countObjectChanges(this._state[x.storeName], clonedState)
+      if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
+      this._state[x.storeName] = clonedState
+      this._storeLastAction[x.storeName] = x.actionName
+      reduxMonitor.send(`[${x.storeName}] - ${x.actionName}`, this._state)
+    }))
+    reduxMonitor.subscribe((message: KeyValue) => {
       if (message.type != 'DISPATCH' || !message.state) return
-      const reduxDevToolsState = parse<{}>(message.state)
+      const reduxDevToolsState = parse<object>(message.state)
       objectKeys(reduxDevToolsState).forEach((storeName: string) => {
-        const store: any = DevToolsSubjects.stores[storeName]
+        const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
         if (!store) return
-        const reduxDevToolsStoreValue = reduxDevToolsState[storeName]
-        const loadingStoresCache = this._loadingStoresCache
-        if (reduxDevToolsStoreValue === StoreStates.paused
-          || reduxDevToolsStoreValue === StoreStates.loading
-          || reduxDevToolsStoreValue === StoreStates.hardResetting
-        ) {
-          if (loadingStoresCache[storeName]) return
-          loadingStoresCache[storeName] = store.value
-          this._zone.run(() => {
-            this._disableNextUpdate()
-            store._isLoading$.next(true)
-            store._setStateToNull()
-          })
-        } else {
-          this._zone.run(() => {
-            this._disableNextUpdate()
-            store._setState(() => instanceHandler(store._initialValue || loadingStoresCache[storeName], reduxDevToolsStoreValue))
-            if (store.isLoading) store._isLoading$.next(false)
-          })
-          if (loadingStoresCache[storeName]) delete loadingStoresCache[storeName]
-        }
+        const reduxDevToolsStoreState = reduxDevToolsState[storeName]
+        this._state[storeName] = reduxDevToolsStoreState
+        this._zone.run(() => {
+          this._setState(store, reduxDevToolsStoreState)
+        })
       })
     })
   }
 
-  // BUG: If the store updates itself asynchronously, this solution won't prevent false updating the store.
-  // Should try to hook to stat's index instead of timeout.
-  private _disableNextUpdate(): void {
-    DevToolsSubjects.isLoadingErrorsDisabled = true
-    this._sub.unsubscribe()
-    this._sub = new Subscription()
-    clearTimeout(this._userEventsDisablerIndex as number)
-    this._userEventsDisablerIndex = setTimeout(() => {
-      DevToolsSubjects.isLoadingErrorsDisabled = false
-      this._setUserEventsSubscribers(this._devTools)
-    })
+  private _setState(store: BaseStore<any> | any, state: any): void {
+    store._state = (store._initialValue && !store._isSimpleCloning) ? instanceHandler(store._initialValue, state) : state
   }
 }

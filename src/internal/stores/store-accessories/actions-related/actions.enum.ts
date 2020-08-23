@@ -5,7 +5,7 @@ export const enum Actions {
   afterInitUpdate = 'After Init Update',
   paused = '|| <PAUSED> ||',
   loading = 'LOADING...',
-  hardResetting = 'HARD RESETTING!!!',
+  hardResetting = 'HARD RESETTING !!!',
   update = 'Update',
   override = 'Override',
   reset = 'Reset',
