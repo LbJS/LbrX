@@ -40,6 +40,8 @@ export abstract class BaseStore<T extends object, E = any> {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     this._stateField = value
+    DevToolsAdapter.state[this._storeName] = value
+    DevToolsAdapter.values[this._storeName] = value.value
     this._state$.next(value)
     this._isLoading$.next(value.isLoading)
     this._isPaused$.next(value.isPaused)
@@ -290,7 +292,7 @@ export abstract class BaseStore<T extends object, E = any> {
       BaseStore._storageKeys.push(storageKey)
     }
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as initial state.`)
-    DevToolsAdapter.stores.storeName = this
+    DevToolsAdapter.stores[storeName] = this
     if (isNull(initialValueOrNull)) {
       this._setState({ isLoading: true }, Actions.loading)
     } else {
@@ -405,7 +407,6 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     }
     this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
-    DevToolsAdapter.state[this._storeName] = this._state
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
@@ -542,8 +543,11 @@ export abstract class BaseStore<T extends object, E = any> {
         getPromiseState(asyncInitPromiseScope.promise) :
         Promise.resolve()
     return new Promise((resolve) => {
-      const reset = () => {
-        delete DevToolsAdapter.stores.storeName
+      const destroy = () => {
+        const storeName = this._storeName
+        delete DevToolsAdapter.stores[storeName]
+        delete DevToolsAdapter.state[storeName]
+        delete DevToolsAdapter.values[storeName]
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
         this._queryScopes.forEach(x => x.isDisposed = true)
@@ -565,8 +569,8 @@ export abstract class BaseStore<T extends object, E = any> {
       }
       initializeAsyncPromiseState.then(state => {
         if (asyncInitPromiseScope) asyncInitPromiseScope.isCancelled = state === PromiseStates.pending
-        reset()
-      }).catch(() => reset())
+        destroy()
+      }).catch(() => destroy())
     })
   }
 
