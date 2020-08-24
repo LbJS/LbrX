@@ -4,7 +4,7 @@ import { of } from 'rxjs'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
-LbrXManager.initializeDevTools()
+LbrXManager.initializeDevTools({ displayValueAsState: true })
 
 class Address {
   place: string | null = null
@@ -122,3 +122,17 @@ setTimeout(async () => {
 setTimeout(() => {
   userStore.isPaused = true
 }, 800)
+
+setTimeout(() => {
+  userStore.isPaused = false
+}, 850)
+
+setTimeout(() => {
+  userStore.override({
+    firstName: 'Some other name1',
+    lastName: 'My second lastName1',
+    address: {
+      place: 'Some other place1'
+    }
+  })
+}, 5000)

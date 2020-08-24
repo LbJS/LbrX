@@ -1,9 +1,15 @@
 
 export interface ReduxDevToolsOptions {
   /**
-   * The main store name that will be displayed at Redux DevTools.
+   * The instance name to be shown on the Redux DevTools Monitor.
    * @default
    * name = 'LBRX-STORE'
    */
-  name: string,
+  name: string
+  /**
+   * Maximum allowed actions to be stored in the history tree in Redux DevTools Monitor.
+   * @default
+   * maxAge = 50
+   */
+  maxAge: number
 }

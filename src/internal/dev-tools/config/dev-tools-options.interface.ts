@@ -5,9 +5,16 @@ import { ReduxDevToolsOptions } from './redux-dev-tools-options.interface'
  */
 export interface DevtoolsOptions extends ReduxDevToolsOptions {
   /**
-   * Either log or not to Redux DevTools if states are equal.
+   * Either or not the Redux DevTools Monitor should log equal states.
+   * - If the states are equal but the actions are different, the state will be logged even though it wasn't change.
    * @default
    * logEqualStates = false
    */
-  logEqualStates: boolean,
+  logEqualStates: boolean
+  /**
+   * Shows state's value instead of the whole state in Redux DevTools Monitor.
+   * @default
+   * displayValueAsState = false
+   */
+  displayValueAsState: boolean
 }

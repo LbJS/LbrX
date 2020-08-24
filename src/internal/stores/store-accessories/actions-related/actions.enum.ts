@@ -4,6 +4,7 @@ export const enum Actions {
   initAsync = '@@INIT (async)',
   afterInitUpdate = 'After Init Update',
   paused = '|| <PAUSED> ||',
+  unpause = '>> UNPAUSE >>',
   loading = 'LOADING...',
   hardResetting = 'HARD RESETTING !!!',
   update = 'Update',
