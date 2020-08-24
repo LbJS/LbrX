@@ -1,4 +1,3 @@
-export * from './default-dev-tools-config'
 export * from './dev-tools-adapter'
 export * from './dev-tools-manager'
 export * from './dev-tools-mode'

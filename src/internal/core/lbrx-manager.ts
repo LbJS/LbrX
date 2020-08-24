@@ -1,5 +1,5 @@
-import { DevtoolsOptions } from '../../dev-tools'
 import { DevToolsManager } from '../dev-tools'
+import { DevtoolsOptions } from '../dev-tools/config'
 import { logError } from '../helpers'
 import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../stores/config'
 import { ZoneLike } from '../types'

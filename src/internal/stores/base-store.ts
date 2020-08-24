@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, Compare, createPromiseScope, Freeze, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
+import { Actions, Clone, Compare, createPromiseScope, Freeze, getDefaultState, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
 import { StoreTags } from './store-accessories/store-related/store-tags.enum'
 
 export abstract class BaseStore<T extends object, E = any> {
@@ -22,14 +22,7 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region state
 
   /** @internal */
-  protected _stateField: State<T, E> = {
-    value: null,
-    isPaused: false,
-    isLoading: false,
-    isHardResettings: false,
-    isDestroyed: false,
-    error: null,
-  }
+  protected _stateField: State<T, E> = getDefaultState()
 
   /** @internal */
   protected get _state(): State<T, E> {
@@ -100,7 +93,7 @@ export abstract class BaseStore<T extends object, E = any> {
     return this._state.isPaused
   }
   public set isPaused(value: boolean) {
-    this._setState({ isPaused: value }, Actions.paused)
+    this._setState({ isPaused: value }, value ? Actions.paused : Actions.unpause)
   }
 
   /**
