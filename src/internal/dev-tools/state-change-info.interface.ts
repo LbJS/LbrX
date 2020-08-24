@@ -1,7 +1,7 @@
-import { Actions } from '../stores'
+import { Actions, State } from '../stores'
 
 export interface StateChangeInfo {
   storeName: string,
-  state: {}
+  state: State<any>
   actionName: string | Actions
 }

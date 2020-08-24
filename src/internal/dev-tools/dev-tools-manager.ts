@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs'
 import { isDev } from '../core'
-import { countObjectChanges, filterObject, instanceHandler, isBrowser, logWarn, mergeObjects, objectKeys, parse, simpleCloneObject } from '../helpers'
+import { countObjectChanges, filterObject, instanceHandler, isBrowser, isError, isObject, isString, logWarn, mergeObjects, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
 import { Actions, BaseStore } from '../stores'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
 import { DevtoolsOptions, ReduxDevToolsOptions } from './config'
@@ -61,6 +61,13 @@ export class DevToolsManager {
   private _setSubscribers(reduxMonitor: ReduxDevToolsMonitor): void {
     const options = this._devToolsOptions
     this._sub.add(DevToolsAdapter.stateChange$.subscribe(x => {
+      if (x.state.error && x.state.error != DevToolsAdapter.stores[x.storeName].state.error) {
+        const error: string | Error | object = x.state.error
+        if (isError(error) && error.message) reduxMonitor.error(error.message)
+        else if (isString(error)) reduxMonitor.error(error)
+        else if (isObject(error)) reduxMonitor.error(stringify(error))
+        else reduxMonitor.error(`Store: "${x.storeName}" had an error.`)
+      }
       const clonedState = simpleCloneObject(x.state)
       const numOfChanges = countObjectChanges(this._state[x.storeName], clonedState)
       if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
@@ -69,17 +76,28 @@ export class DevToolsManager {
       reduxMonitor.send(`[${x.storeName}] - ${x.actionName}`, this._state)
     }))
     reduxMonitor.subscribe((message: KeyValue) => {
-      if (message.type != 'DISPATCH' || !message.state) return
-      const reduxDevToolsState = parse<object>(message.state)
-      objectKeys(reduxDevToolsState).forEach((storeName: string) => {
-        const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
-        if (!store) return
-        const reduxDevToolsStoreState = reduxDevToolsState[storeName]
-        this._state[storeName] = reduxDevToolsStoreState
-        this._zone.run(() => {
-          this._setState(store, reduxDevToolsStoreState)
+      // console.log(message)
+      if (message.type != 'DISPATCH') return
+      const payloadType = message.payload.type
+      // const test: any = parse<object>(message.state)
+      // console.log(test)
+      // test.skippedActionIds.push(message.payload.id)
+      if (payloadType == 'COMMIT') {
+        reduxMonitor.init(this._state)
+      } else if (!message.state) {
+        return
+      } else if (payloadType == 'JUMP_TO_STATE') {
+        const reduxDevToolsState = parse<object>(message.state)
+        objectKeys(reduxDevToolsState).forEach((storeName: string) => {
+          const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
+          if (!store) return
+          const reduxDevToolsStoreState = reduxDevToolsState[storeName]
+          this._state[storeName] = reduxDevToolsStoreState
+          this._zone.run(() => {
+            this._setState(store, reduxDevToolsStoreState)
+          })
         })
-      })
+      }
     })
   }
 
