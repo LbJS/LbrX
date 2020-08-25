@@ -4,6 +4,5 @@ export interface State<T extends object, E = any> {
   isPaused: boolean
   isLoading: boolean
   isHardResettings: boolean
-  isDestroyed: boolean
   error: E | null
 }

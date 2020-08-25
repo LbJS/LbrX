@@ -101,10 +101,10 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public get storeTag(): StoreTags {
     const state = this._state
+    if (this.isDestroyed) return StoreTags.destroyed
     if (state.isHardResettings) return StoreTags.hardResetting
     if (state.isLoading) return StoreTags.loading
     if (state.isPaused) return StoreTags.paused
-    if (state.isDestroyed) return StoreTags.destroyed
     if (state.value) return StoreTags.active
     if (state.error) return StoreTags.error
     return StoreTags.resolving
@@ -152,6 +152,14 @@ export abstract class BaseStore<T extends object, E = any> {
       value = cloneObject(value)
     }
     this._setState({ error: value }, Actions.error)
+  }
+
+  private _isDestroyed = false
+  /**
+   * @get Returns whether  or not the store is destroyed.
+   */
+  public get isDestroyed(): boolean {
+    return this._isDestroyed
   }
 
   //#endregion error-api
@@ -393,7 +401,7 @@ export abstract class BaseStore<T extends object, E = any> {
     actionName: string | Actions,
     stateExtension?: Partial<State<T, E>>
   ): void {
-    if (this._state.isDestroyed) return
+    if (this.isDestroyed) return
     if (isFunction(valueFnOrState)) {
       valueFnOrState = {
         value: this._freeze(valueFnOrState(this._value))
@@ -556,8 +564,8 @@ export abstract class BaseStore<T extends object, E = any> {
           isPaused: false,
           isHardResettings: false,
           isLoading: false,
-          isDestroyed: true,
         }, Actions.destroy)
+        this._isDestroyed = true
         resolve()
       }
       initializeAsyncPromiseState.then(state => {

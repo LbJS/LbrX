@@ -6,7 +6,6 @@ export function getDefaultState<T extends object>(): State<T> {
     isPaused: false,
     isLoading: false,
     isHardResettings: false,
-    isDestroyed: false,
     error: null,
   }
 }
