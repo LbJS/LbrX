@@ -70,7 +70,6 @@ export class DevToolsManager {
         isPaused: state.isPaused,
         isLoading: state.isLoading,
         isHardResettings: state.isHardResettings,
-        isDestroyed: state.isDestroyed,
         error: cloneError(state.error)
       }
     })
@@ -98,7 +97,7 @@ export class DevToolsManager {
       if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
       this._state[x.storeName] = clonedState
       this._storeLastAction[x.storeName] = x.actionName
-      reduxMonitor.send(`[${x.storeName}] - ${x.actionName}`, this._state)
+      reduxMonitor.send(`${x.storeName} - ${x.actionName}`, this._state)
       if (options.displayValueAsState) this._addPartialStatesToHistory()
     }))
     reduxMonitor.subscribe((message: KeyValue) => {
