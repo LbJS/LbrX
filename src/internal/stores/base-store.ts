@@ -33,7 +33,7 @@ export abstract class BaseStore<T extends object, E = any> {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     this._stateField = value
-    DevToolsAdapter.state[this._storeName] = value
+    DevToolsAdapter.states[this._storeName] = value
     DevToolsAdapter.values[this._storeName] = value.value
     this._state$.next(value)
     this._isLoading$.next(value.isLoading)
@@ -548,7 +548,7 @@ export abstract class BaseStore<T extends object, E = any> {
       const destroy = () => {
         const storeName = this._storeName
         delete DevToolsAdapter.stores[storeName]
-        delete DevToolsAdapter.state[storeName]
+        delete DevToolsAdapter.states[storeName]
         delete DevToolsAdapter.values[storeName]
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)

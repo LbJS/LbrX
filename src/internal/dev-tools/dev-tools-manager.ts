@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs'
 import { isDev } from '../core'
-import { cloneError, countObjectChanges, filterObject, instanceHandler, isBrowser, isError, isObject, isString, logWarn, mergeObjects, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
+import { cloneError, countObjectChanges, filterObject, instanceHandler, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
 import { Actions, BaseStore, getDefaultState, State } from '../stores'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
 import { DevtoolsOptions, getDefaultDevToolsConfig, ReduxDevToolsOptions } from './config'
@@ -45,13 +45,13 @@ export class DevToolsManager {
     }
     (window as any).$$LbrX = {
       $$stores: DevToolsAdapter.stores,
-      $$state: DevToolsAdapter.state,
+      $$states: DevToolsAdapter.states,
       $$values: DevToolsAdapter.values,
     }
     const reduxDevToolsOptions = filterObject(this._devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys)
     this._reduxMonitor = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
     if (this._devToolsOptions.displayValueAsState) this._addPartialStatesToHistory()
-    this._state = simpleCloneObject(this._devToolsOptions.displayValueAsState ? DevToolsAdapter.values : DevToolsAdapter.state)
+    this._state = simpleCloneObject(this._devToolsOptions.displayValueAsState ? DevToolsAdapter.values : DevToolsAdapter.states)
     this._reduxMonitor.init(this._state)
     this._setSubscribers(this._reduxMonitor)
     activateStreamToDevTools()
@@ -64,10 +64,10 @@ export class DevToolsManager {
 
   private _addPartialStatesToHistory(): void {
     const partialStateHistory = this._partialStateHistory
-    objectKeys(DevToolsAdapter.state).forEach(key => {
+    objectKeys(DevToolsAdapter.states).forEach(key => {
       const history = partialStateHistory.history
       if (!history[key]) history[key] = []
-      const state = DevToolsAdapter.state[key]
+      const state = DevToolsAdapter.states[key]
       history[key][partialStateHistory.historyLength] = {
         isPaused: state.isPaused,
         isLoading: state.isLoading,
@@ -102,7 +102,12 @@ export class DevToolsManager {
       if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
       this._state[x.storeName] = clonedState
       this._storeLastAction[x.storeName] = x.actionName
-      reduxMonitor.send(`${x.storeName} - ${x.actionName}`, this._state)
+      let state: KeyValue | void
+      if (options.showStackTrace && this._state[x.storeName]) {
+        state = simpleCloneObject(this._state)
+        state[x.storeName]['action-stack-trace'] = newError().stack
+      }
+      reduxMonitor.send(`${x.storeName} - ${x.actionName}`, state || this._state)
       if (options.displayValueAsState) this._addPartialStatesToHistory()
     }))
     reduxMonitor.subscribe((message: KeyValue) => {
