@@ -106,7 +106,6 @@ export class DevToolsManager {
       if (options.displayValueAsState) this._addPartialStatesToHistory()
     }))
     reduxMonitor.subscribe((message: KeyValue) => {
-      console.log(message)
       if (message.type != 'DISPATCH') return
       const payload: KeyValue = message.payload
       const payloadType: string = payload.type
@@ -140,24 +139,6 @@ export class DevToolsManager {
         })
       } else if (payloadType == 'TOGGLE_ACTION') {
         reduxMonitor.error('"skip" option is not supported.')
-        // const monitorState: KeyValue = parse(message.state)
-        // const skippedActionIds: number[] = monitorState.skippedActionIds
-        // const stagedActionIds: number[] = monitorState.stagedActionIds
-        // console.log(monitorState)
-        // skippedActionIds.includes(payload.id) ?
-        //   monitorState.skippedActionIds = skippedActionIds.filter(x => x != payload.id) :
-        //   skippedActionIds.push(payload.id)
-        // const computedStates: { state: KeyValue }[] = monitorState.computedStates
-        // computedStates[1].state['LEON-STORE'] = null
-        // monitorState.computedStates = computedStates.reduce((accumulator, currentValue, index) => {
-        //   const currentValueId = stagedActionIds[index]
-        //   if (skippedActionIds.includes(currentValueId)) return accumulator
-
-        // })
-        // reduxMonitor.send(null!, monitorState)
-        // const test: any = parse<object>(message.state)
-        // console.log(test)
-        // test.skippedActionIds.push(message.payload.id)
       }
     })
   }
