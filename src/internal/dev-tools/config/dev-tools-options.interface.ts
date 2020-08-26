@@ -17,4 +17,10 @@ export interface DevtoolsOptions extends ReduxDevToolsOptions {
    * displayValueAsState = false
    */
   displayValueAsState: boolean
+  /**
+   * Show stack trace in Redux DevTools Monitor along with the state.
+   * @default
+   * showStackTrace = false
+   */
+  showStackTrace: boolean
 }
