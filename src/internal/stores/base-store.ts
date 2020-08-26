@@ -477,6 +477,7 @@ export abstract class BaseStore<T extends object, E = any> {
    * Resets the state's value to it's initial value.
    */
   public reset(actionName?: string): void | never {
+    if (this.isPaused) return
     this._setState(value => {
       const initialValue = this._initialValue
       assert(value && initialValue && !this.isLoading, `Store: "${this._storeName}" can't be reseted before it was initialized`)

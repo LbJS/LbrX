@@ -30,6 +30,7 @@ export class DevToolsManager {
   private _devToolsOptions: DevtoolsOptions
   private _partialStateHistory: { historyLength: number, history: KeyValue<string, Partial<State<any>>[]> } =
     { historyLength: 0, history: {} }
+  private _pauseRecording = false
 
   constructor(
     devToolsOptions: Partial<DevtoolsOptions> = {}
@@ -64,9 +65,10 @@ export class DevToolsManager {
   private _addPartialStatesToHistory(): void {
     const partialStateHistory = this._partialStateHistory
     objectKeys(DevToolsAdapter.state).forEach(key => {
-      if (!partialStateHistory.history[key]) partialStateHistory.history[key] = []
+      const history = partialStateHistory.history
+      if (!history[key]) history[key] = []
       const state = DevToolsAdapter.state[key]
-      partialStateHistory.history[key][partialStateHistory.historyLength] = {
+      history[key][partialStateHistory.historyLength] = {
         isPaused: state.isPaused,
         isLoading: state.isLoading,
         isHardResettings: state.isHardResettings,
@@ -75,9 +77,11 @@ export class DevToolsManager {
     })
     partialStateHistory.historyLength++
     if (partialStateHistory.historyLength > this._devToolsOptions.maxAge) {
-      const indexToSetToNull = partialStateHistory.historyLength - this._devToolsOptions.maxAge - 1
+      const indexToSetToNull = partialStateHistory.historyLength - this._devToolsOptions.maxAge
       objectKeys(partialStateHistory.history).forEach(key => {
-        partialStateHistory.history[key][indexToSetToNull] = null!
+        const stateArr = partialStateHistory.history[key]
+        stateArr[0] = stateArr[indexToSetToNull]
+        stateArr[indexToSetToNull] = null!
       })
     }
   }
@@ -85,6 +89,7 @@ export class DevToolsManager {
   private _setSubscribers(reduxMonitor: ReduxDevToolsMonitor): void {
     const options = this._devToolsOptions
     this._sub.add(DevToolsAdapter.stateChange$.subscribe(x => {
+      if (this._pauseRecording) return
       if (x.state.error && x.state.error != DevToolsAdapter.stores[x.storeName].state.error) {
         const error: string | Error | object = x.state.error
         if (isError(error) && error.message && !error['toJSON']) reduxMonitor.error(error.message)
@@ -103,16 +108,15 @@ export class DevToolsManager {
     reduxMonitor.subscribe((message: KeyValue) => {
       console.log(message)
       if (message.type != 'DISPATCH') return
-      const payloadType = message.payload.type
-      // const test: any = parse<object>(message.state)
-      // console.log(test)
-      // test.skippedActionIds.push(message.payload.id)
+      const payload: KeyValue = message.payload
+      const payloadType: string = payload.type
       if (payloadType == 'COMMIT') {
         reduxMonitor.init(this._state)
-        if (this._devToolsOptions.displayValueAsState) {
-          this._partialStateHistory = { historyLength: 0, history: {} }
-          this._addPartialStatesToHistory()
-        }
+        if (!this._devToolsOptions.displayValueAsState) return
+        this._partialStateHistory = { historyLength: 0, history: {} }
+        this._addPartialStatesToHistory()
+      } else if (payloadType == 'PAUSE_RECORDING') {
+        this._pauseRecording = payload.status
       } else if (!message.state) {
         return
       } else if (payloadType == 'JUMP_TO_STATE' || payloadType == 'JUMP_TO_ACTION') {
@@ -121,24 +125,39 @@ export class DevToolsManager {
         objectKeys(DevToolsAdapter.stores).forEach((storeName: string) => {
           const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
           if (!store) return
-          const didStoreExisted = reduxStoreNames.includes(storeName)
           const getReduxDevToolsState = () => {
-            let reduxDevToolsStoreState: State<any> | {} = reduxDevToolsState[storeName]
+            const reduxDevToolsStoreState: State<any> | {} = reduxDevToolsState[storeName]
             this._state[storeName] = reduxDevToolsStoreState
-            if (options.displayValueAsState) {
-              const partialStateHistory = this._partialStateHistory
-              let partialState = partialStateHistory.history[storeName][message.payload.actionId]
-              if (!partialState && !message.payload.actionId) {
-                partialState = partialStateHistory.history[storeName][partialStateHistory.historyLength - options.maxAge]
-              }
-              reduxDevToolsStoreState = mergeObjects({ value: reduxDevToolsStoreState } as State<any>, partialState)
-            }
-            return reduxDevToolsStoreState
+            if (!options.displayValueAsState) return reduxDevToolsStoreState
+            const partialStateHistory = this._partialStateHistory
+            const partialState = partialStateHistory.history[storeName][payload.actionId]
+            return mergeObjects({ value: reduxDevToolsStoreState } as State<any>, partialState)
           }
+          const didStoreExisted = reduxStoreNames.includes(storeName)
           this._zone.run(() => {
             this._setState(store, didStoreExisted ? getReduxDevToolsState() : getDefaultState())
           })
         })
+      } else if (payloadType == 'TOGGLE_ACTION') {
+        reduxMonitor.error('"skip" option is not supported.')
+        // const monitorState: KeyValue = parse(message.state)
+        // const skippedActionIds: number[] = monitorState.skippedActionIds
+        // const stagedActionIds: number[] = monitorState.stagedActionIds
+        // console.log(monitorState)
+        // skippedActionIds.includes(payload.id) ?
+        //   monitorState.skippedActionIds = skippedActionIds.filter(x => x != payload.id) :
+        //   skippedActionIds.push(payload.id)
+        // const computedStates: { state: KeyValue }[] = monitorState.computedStates
+        // computedStates[1].state['LEON-STORE'] = null
+        // monitorState.computedStates = computedStates.reduce((accumulator, currentValue, index) => {
+        //   const currentValueId = stagedActionIds[index]
+        //   if (skippedActionIds.includes(currentValueId)) return accumulator
+
+        // })
+        // reduxMonitor.send(null!, monitorState)
+        // const test: any = parse<object>(message.state)
+        // console.log(test)
+        // test.skippedActionIds.push(message.payload.id)
       }
     })
   }
