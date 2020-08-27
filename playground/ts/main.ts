@@ -1,4 +1,4 @@
-import { ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
+import { Actions, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
 import { LbrXManager } from 'lbrx/core'
 import { of } from 'rxjs'
 
@@ -59,6 +59,11 @@ class BetterUserStore extends Store<User> {
 
 const userStore = new UserStore()
 const betterUserStore = new BetterUserStore()
+
+userStore
+  .onAction(Actions.update)
+  .select$(state => state.firstName)
+  .subscribe(x => console.log('-----Update only: ' + x))
 
 userStore
   .select$()

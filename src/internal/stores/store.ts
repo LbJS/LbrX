@@ -3,7 +3,8 @@ import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxj
 import { isObject } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { QueryScope } from './store-accessories'
+import { Actions, QueryScope } from './store-accessories'
+import { QueryableStore } from './store-accessories/interfaces'
 
 /**
  * @example
@@ -25,7 +26,7 @@ import { QueryScope } from './store-accessories'
  *   }
  * }
  */
-export class Store<T extends object, E = any> extends BaseStore<T, E> {
+export class Store<T extends object, E = any> extends BaseStore<T, E> implements QueryableStore<T> {
 
   //#region constructor
 
@@ -80,32 +81,42 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> {
    */
   public select$<R>(project?: (value: Readonly<T>) => T | R): Observable<T | R>
   public select$<R>(project?: (value: Readonly<T>) => T | R): Observable<T | R> {
-    const tillLoaded$ = this._isLoading$.asObservable()
-      .pipe(
-        filter(x => !x),
-        distinctUntilChanged(),
-        switchMap(() => this._value$),
-      )
-    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => !!value
-    const queryScope: QueryScope = {
-      wasHardReset: false,
-      isDisposed: false,
-      observable: this._value$.asObservable()
+    return this._select$<R>()(project)
+  }
+
+  public onAction(action: Actions | string): QueryableStore<T> {
+    return { select$: this._select$<T>(action) }
+  }
+
+  protected _select$<R>(action?: Actions | string): (project?: (value: Readonly<T>) => T | R) => Observable<T | R> {
+    return (project?: (value: Readonly<T>) => T | R) => {
+      const tillLoaded$ = this._isLoading$.asObservable()
         .pipe(
-          mergeMap(x => iif(() => this.isLoading, tillLoaded$, of(x))),
-          filter(() => !this.isPaused && !queryScope.isDisposed),
-          filter(filterPredicate),
-          map(project || (x => x)),
-          distinctUntilChanged((prev, curr) => {
-            if (queryScope.wasHardReset) return false
-            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-          }),
-          tap(() => queryScope.wasHardReset = false),
-          map(x => isObject(x) ? this._clone(x) : x),
+          filter(x => !x),
+          distinctUntilChanged(),
+          switchMap(() => this._value$),
         )
+      const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => !!value
+      const queryScope: QueryScope = {
+        wasHardReset: false,
+        isDisposed: false,
+        observable: this._value$.asObservable()
+          .pipe(
+            mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
+            filter(() => !this.isPaused && !queryScope.isDisposed && (!action || action === this._lastAction)),
+            filter(filterPredicate),
+            map(project || (x => x)),
+            distinctUntilChanged((prev, curr) => {
+              if (queryScope.wasHardReset) return false
+              return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+            }),
+            tap(() => queryScope.wasHardReset = false),
+            map(x => isObject(x) ? this._clone(x) : x),
+          )
+      }
+      this._queryScopes.push(queryScope)
+      return queryScope.observable
     }
-    this._queryScopes.push(queryScope)
-    return queryScope.observable
   }
 
   //#endregion query-methods

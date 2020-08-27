@@ -120,6 +120,14 @@ export abstract class BaseStore<T extends object, E = any> {
     return this._initialValue
   }
 
+  protected _isDestroyed = false
+  /**
+   * @get Returns whether  or not the store is destroyed.
+   */
+  public get isDestroyed(): boolean {
+    return this._isDestroyed
+  }
+
   //#endregion state
   //#region error-api
 
@@ -152,14 +160,6 @@ export abstract class BaseStore<T extends object, E = any> {
       value = cloneObject(value)
     }
     this._setState({ error: value }, Actions.error)
-  }
-
-  private _isDestroyed = false
-  /**
-   * @get Returns whether  or not the store is destroyed.
-   */
-  public get isDestroyed(): boolean {
-    return this._isDestroyed
   }
 
   //#endregion error-api
@@ -222,6 +222,9 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /** @internal */
   protected readonly _queryScopes: QueryScope[] = []
+
+  /** @internal */
+  protected _lastAction: string | null = null
 
   //#endregion helpers
   //#region constructor
@@ -408,6 +411,7 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     }
     this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
+    this._lastAction = actionName
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
