@@ -1,4 +1,4 @@
-import { Actions, State } from '../stores'
+import { Actions, State } from '../stores/store-accessories'
 
 export interface StateChangeInfo {
   storeName: string,

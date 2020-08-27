@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs'
-import { BaseStore, State } from '../stores'
+import { BaseStore } from '../stores'
+import { State } from '../stores/store-accessories'
 import { KeyValue } from '../types'
 import { StateChangeInfo } from './state-change-info.interface'
 
