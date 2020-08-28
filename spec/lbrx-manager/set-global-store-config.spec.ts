@@ -36,6 +36,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
     const expectedValue: GlobalStoreConfigOptions = {
       isResettable: false,
       isSimpleCloning: true,
+      isInstanceHandler: true,
       objectCompareType: ObjectCompareTypes.reference,
       storageDebounceTime: 500,
       storageType: Storages.local,
@@ -55,6 +56,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
     const expectedValue: GlobalStoreConfigOptions = {
       isResettable: true,
       isSimpleCloning: false,
+      isInstanceHandler: true,
       objectCompareType: ObjectCompareTypes.simple,
       storageDebounceTime: 2000,
       storageType: Storages.none,

@@ -185,6 +185,9 @@ export abstract class BaseStore<T extends object, E = any> {
   protected readonly _isSimpleCloning: boolean
 
   /** @internal */
+  protected readonly _isInstanceHandler: boolean
+
+  /** @internal */
   protected readonly _objectCompareType: ObjectCompareTypes
 
   /** @internal */
@@ -226,10 +229,25 @@ export abstract class BaseStore<T extends object, E = any> {
   /** @internal */
   protected _lastAction: string | null = null
 
+  /** @internal */
+  protected _lazyPromiseOrObservable: Promise<T> | Observable<T> | null = null
+
   //#endregion helpers
   //#region constructor
 
   constructor(storeConfig: StoreConfigOptions | undefined) {
+    //#region _queryScopes proxy
+    this._queryScopes.push = (...items) => {
+      if (this._lazyPromiseOrObservable) {
+        this.initializeAsync(this._lazyPromiseOrObservable)
+        this._lazyPromiseOrObservable = null
+      }
+      items.forEach(item => {
+        this._queryScopes[this._queryScopes.length] = item
+      })
+      return this._queryScopes.length
+    }
+    //#endregion _queryScopes proxy
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
@@ -240,6 +258,7 @@ export abstract class BaseStore<T extends object, E = any> {
     this._isSimpleCloning = config.isSimpleCloning
     this._clone = !config.isImmutable ? x => x : this._isSimpleCloning ? simpleCloneObject : cloneObject
     this._freeze = config.isImmutable ? deepFreeze : x => x
+    this._isInstanceHandler = config.isInstanceHandler
     this._objectCompareType = config.objectCompareType
     this._compare = (() => {
       switch (this._objectCompareType) {
@@ -333,7 +352,7 @@ export abstract class BaseStore<T extends object, E = any> {
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isSimpleCloning ? storedValue : instanceHandler(initialValue, storedValue)
+        initialValue = this._isInstanceHandler ? instanceHandler(initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -370,6 +389,7 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public initializeAsync(promise: Promise<T>): Promise<void>
   public initializeAsync(observable: Observable<T>): Promise<void>
+  public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
     const asyncInitPromiseScope = createPromiseScope()
     this._asyncInitPromiseScope = asyncInitPromiseScope
@@ -395,6 +415,21 @@ export abstract class BaseStore<T extends object, E = any> {
     return asyncInitPromiseScope.promise
   }
 
+  /**
+   * Method for lazy initialization.
+   * - will initialize the store only after the first queryable request is made.
+   * - In case of an observable, only the finite value will be used.
+   */
+  public initializeLazily(promise: Promise<T>): void
+  public initializeLazily(observable: Observable<T>): void
+  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): void {
+    if (this._queryScopes.length) {
+      this.initializeAsync(promiseOrObservable)
+    } else if (this._assertInitializable()) {
+      this._lazyPromiseOrObservable = promiseOrObservable
+    }
+  }
+
   //#endregion initialization-methods
   //#region state-methods
 
@@ -410,8 +445,8 @@ export abstract class BaseStore<T extends object, E = any> {
         value: this._freeze(valueFnOrState(this._value))
       }
     }
-    this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
     this._lastAction = actionName
+    this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
@@ -448,7 +483,7 @@ export abstract class BaseStore<T extends object, E = any> {
       assert(value && this._initialValue && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
-      if (!this._isSimpleCloning) newValue = instanceHandler(this._initialValue, newValue)
+      if (this._isInstanceHandler) newValue = instanceHandler(this._initialValue, newValue)
       if (isFunction(this.onUpdate)) {
         const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
         if (newModifiedValue) newValue = this._clone(newModifiedValue)
@@ -464,13 +499,13 @@ export abstract class BaseStore<T extends object, E = any> {
     if (this.isPaused) return
     assert(this._value && this._initialValue && !this.isLoading,
       `Store: "${this._storeName}" can't be overridden before it was initialized`)
-    if (!this._isSimpleCloning) value = instanceHandler(this._initialValue, this._clone(value))
+    if (this._isInstanceHandler) value = instanceHandler(this._initialValue, this._clone(value))
     let modifiedValue: T | void
     if (isFunction(this.onOverride)) {
       modifiedValue = this.onOverride(this._clone(value), this._value)
       if (modifiedValue) value = this._clone(modifiedValue)
     }
-    const isCloned = !this._isSimpleCloning || !!modifiedValue
+    const isCloned = this._isInstanceHandler || !!modifiedValue
     this._setState(() => isCloned ? value : this._clone(value), actionName || Actions.override)
   }
 
@@ -536,7 +571,7 @@ export abstract class BaseStore<T extends object, E = any> {
   public disposeQueryScope(observable: Observable<T>): void {
     const queryScopes = this._queryScopes
     const i = queryScopes.findIndex(x => x.observable = observable)
-    if (i != -1) {
+    if (i > -1) {
       queryScopes[i].isDisposed = true
       queryScopes.splice(i, 1)
     }
@@ -558,6 +593,7 @@ export abstract class BaseStore<T extends object, E = any> {
         if (this._storage) this._storage.removeItem(this._storageKey)
         this._queryScopes.forEach(x => x.isDisposed = true)
         this._initialValue = null
+        this._lazyPromiseOrObservable = null
         for (const key in this) {
           if (!this.hasOwnProperty(key)) continue
           const prop = this[key]

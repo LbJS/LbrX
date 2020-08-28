@@ -150,7 +150,7 @@ export class DevToolsManager {
   }
 
   private _setState(store: BaseStore<any> | any, state: any): void {
-    if (store._initialValue && !store._isSimpleCloning) state.value = instanceHandler(store._initialValue, state.value)
+    if (store._initialValue && !store._isInstanceHandler) state.value = instanceHandler(store._initialValue, state.value)
     store._state = state
   }
 }
