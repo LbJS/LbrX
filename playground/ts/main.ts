@@ -141,3 +141,11 @@ setTimeout(() => {
     }
   })
 }, 5000)
+
+setTimeout(() => {
+  userStore.update(x => ({ firstName: x.firstName + '123' }))
+}, 10000)
+
+setTimeout(() => {
+  userStore.update(x => ({ firstName: x.firstName + '4' }))
+}, 10010)
