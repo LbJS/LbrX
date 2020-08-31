@@ -2,14 +2,11 @@ import { TestSubjectFactory } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
 import { Store } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
-
 
 describe('Store update():', () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let LbrXManager: typeof LbrXManager_type
-  let DevToolsSubjects: typeof DevToolsSubjects_type
   let store: Store<TestSubject>
   let asyncStore: Store<TestSubject>
   let partialState: Partial<TestSubject>
@@ -20,7 +17,6 @@ describe('Store update():', () => {
     store = provider.StoresFactory.createStore(createInitialState())
     asyncStore = provider.StoresFactory.createStore<TestSubject>(null, 'ASYNC-STORE')
     LbrXManager = provider.LbrXManager
-    DevToolsSubjects = provider.DevToolsSubjects
     partialState = { stringValue: 'some other string' }
   })
 

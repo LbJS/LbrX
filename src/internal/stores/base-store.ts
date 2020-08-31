@@ -114,10 +114,20 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _initialValue: Readonly<T> | null = null
 
   /**
-   * @get Returns the initial value.
+   * @get Returns the instanced value.
    */
   public get initialValue(): Readonly<T> | null {
     return this._initialValue
+  }
+
+  /** @internal */
+  protected _instancedValue: Readonly<T> | null = null
+
+  /**
+   * @get Returns the instanced value.
+   */
+  public get instancedValue(): Readonly<T> | null {
+    return this._instancedValue
   }
 
   protected _isDestroyed = false
@@ -232,6 +242,9 @@ export abstract class BaseStore<T extends object, E = any> {
   /** @internal */
   protected _lazyPromiseOrObservable: Promise<T> | Observable<T> | null = null
 
+  /** @internal */
+  protected _isInitialized = false
+
   //#endregion helpers
   //#region constructor
 
@@ -338,7 +351,7 @@ export abstract class BaseStore<T extends object, E = any> {
   }
 
   protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
-    if (this.isLoading && !this._initialValue && !this._value) return true
+    if (!this._isInitialized && !this._value && this.isLoading) return true
     const errMsg = `Store: "${this._storeName}" has already been initialized. You can hard reset the store if you want to reinitialize it.`
     if (!reject) throwError(errMsg)
     reject(newError(errMsg))
@@ -352,7 +365,7 @@ export abstract class BaseStore<T extends object, E = any> {
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isInstanceHandler ? instanceHandler(initialValue, storedValue) : storedValue
+        initialValue = this._isInstanceHandler ? instanceHandler(this._instancedValue || initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -367,13 +380,16 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     }
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
-    this._initialValue = this._freeze(initialValue)
+    initialValue = this._freeze(initialValue)
+    if (this._isResettable) this._initialValue = initialValue
+    if (!this._instancedValue) this._instancedValue = initialValue
     this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" state could not be set durning initialization.`)
     if (isFunction(this.onAfterInit)) {
       const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
       if (modifiedValue) this._setState(() => this._clone(modifiedValue), Actions.afterInitUpdate)
     }
+    this._isInitialized = true
   }
 
   /**
@@ -459,6 +475,10 @@ export abstract class BaseStore<T extends object, E = any> {
   //#endregion state-methods
   //#region update-methods
 
+  public setInstancedValue(value: T): void {
+    this._instancedValue = deepFreeze(this._clone(value))
+  }
+
   /**
    * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
    * - If you want to override the current store's state, use the `override` method.
@@ -480,10 +500,13 @@ export abstract class BaseStore<T extends object, E = any> {
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
-      assert(value && this._initialValue && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
+      assert(value && this._isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
-      if (this._isInstanceHandler) newValue = instanceHandler(this._initialValue, newValue)
+      if (this._isInstanceHandler) {
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
+        newValue = instanceHandler(this._instancedValue, newValue)
+      }
       if (isFunction(this.onUpdate)) {
         const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
         if (newModifiedValue) newValue = this._clone(newModifiedValue)
@@ -497,9 +520,12 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public override(value: T, actionName?: string): void {
     if (this.isPaused) return
-    assert(this._value && this._initialValue && !this.isLoading,
+    assert(this._value && this._isInitialized && !this.isLoading,
       `Store: "${this._storeName}" can't be overridden before it was initialized`)
-    if (this._isInstanceHandler) value = instanceHandler(this._initialValue, this._clone(value))
+    if (this._isInstanceHandler) {
+      assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
+      value = instanceHandler(this._instancedValue, this._clone(value))
+    }
     let modifiedValue: T | void
     if (isFunction(this.onOverride)) {
       modifiedValue = this.onOverride(this._clone(value), this._value)
@@ -552,6 +578,8 @@ export abstract class BaseStore<T extends object, E = any> {
         if (this._storage) this._storage.removeItem(this._storageKey)
         this._queryScopes.forEach(x => x.wasHardReset = true)
         this._initialValue = null
+        this._instancedValue = null
+        this._isInitialized = false
         this._setState({
           value: null,
           error: null,
@@ -593,6 +621,8 @@ export abstract class BaseStore<T extends object, E = any> {
         if (this._storage) this._storage.removeItem(this._storageKey)
         this._queryScopes.forEach(x => x.isDisposed = true)
         this._initialValue = null
+        this._instancedValue = null
+        this._isInitialized = false
         this._lazyPromiseOrObservable = null
         for (const key in this) {
           if (!this.hasOwnProperty(key)) continue

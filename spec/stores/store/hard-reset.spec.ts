@@ -4,7 +4,6 @@ import MockBuilder from 'helpers/mock-builder'
 import { TestSubject } from 'helpers/test-subjects'
 import { Storages, Store } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
 import { getDefaultGlobalStoreConfig } from 'lbrx/internal/stores/config'
 import { Subscription as Subscription_type, timer } from 'rxjs'
 import { map } from 'rxjs/operators'
@@ -21,7 +20,6 @@ describe('Store hardReset():', () => {
   let notResettableStore: Store<TestSubject>
   let storeWithLocalStorage: Store<TestSubject>
   let LbrXManager: typeof LbrXManager_type
-  let DevToolsSubjects: typeof DevToolsSubjects_type
   let Subscription: typeof Subscription_type
   let StoresFactory: typeof StoresFactory_type
 
@@ -33,7 +31,6 @@ describe('Store hardReset():', () => {
     const provider = await import('provider')
     Subscription = rxjs.Subscription
     LbrXManager = provider.LbrXManager
-    DevToolsSubjects = provider.DevToolsSubjects
     StoresFactory = provider.StoresFactory
     store = StoresFactory.createStore(createInitialState())
     notResettableStore = StoresFactory.createStore(createInitialState(), {
