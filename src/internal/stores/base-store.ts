@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, Compare, createPromiseScope, Freeze, getDefaultState, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
+import { Actions, Clone, Compare, createPromiseScope, Freeze, getDefaultState, LazyInitScope, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
 import { StoreTags } from './store-accessories/store-related/store-tags.enum'
 
 export abstract class BaseStore<T extends object, E = any> {
@@ -130,12 +130,22 @@ export abstract class BaseStore<T extends object, E = any> {
     return this._instancedValue
   }
 
+  /** @internal */
   protected _isDestroyed = false
   /**
-   * @get Returns whether  or not the store is destroyed.
+   * @get Returns whether or not the store is destroyed.
    */
   public get isDestroyed(): boolean {
     return this._isDestroyed
+  }
+
+  /** @internal */
+  protected _isInitialized = false
+  /**
+   * @get Returns whether or not the store is initialized.
+   */
+  public get isInitialized(): boolean {
+    return this._isInitialized
   }
 
   //#endregion state
@@ -240,10 +250,7 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _lastAction: string | null = null
 
   /** @internal */
-  protected _lazyPromiseOrObservable: Promise<T> | Observable<T> | null = null
-
-  /** @internal */
-  protected _isInitialized = false
+  protected _lazyInitScope: LazyInitScope<T> | null = null
 
   //#endregion helpers
   //#region constructor
@@ -251,9 +258,12 @@ export abstract class BaseStore<T extends object, E = any> {
   constructor(storeConfig: StoreConfigOptions | undefined) {
     //#region _queryScopes proxy
     this._queryScopes.push = (...items) => {
-      if (this._lazyPromiseOrObservable) {
-        this.initializeAsync(this._lazyPromiseOrObservable)
-        this._lazyPromiseOrObservable = null
+      const lazyInitScope = this._lazyInitScope
+      if (lazyInitScope) {
+        this.initializeAsync(lazyInitScope.value)
+          .then(d => lazyInitScope.resolve(d))
+          .catch(e => lazyInitScope.reject(e))
+        this._lazyInitScope = null
       }
       items.forEach(item => {
         this._queryScopes[this._queryScopes.length] = item
@@ -436,14 +446,18 @@ export abstract class BaseStore<T extends object, E = any> {
    * - will initialize the store only after the first queryable request is made.
    * - In case of an observable, only the finite value will be used.
    */
-  public initializeLazily(promise: Promise<T>): void
-  public initializeLazily(observable: Observable<T>): void
-  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): void {
-    if (this._queryScopes.length) {
-      this.initializeAsync(promiseOrObservable)
-    } else if (this._assertInitializable()) {
-      this._lazyPromiseOrObservable = promiseOrObservable
-    }
+  public initializeLazily(promise: Promise<T>): Promise<void>
+  public initializeLazily(observable: Observable<T>): Promise<void>
+  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
+    if (this._queryScopes.length) return this.initializeAsync(promiseOrObservable)
+    return new Promise((resolve, reject) => {
+      if (!this._assertInitializable(reject)) return
+      this._lazyInitScope = {
+        value: promiseOrObservable,
+        resolve,
+        reject,
+      }
+    })
   }
 
   //#endregion initialization-methods
@@ -623,7 +637,7 @@ export abstract class BaseStore<T extends object, E = any> {
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
-        this._lazyPromiseOrObservable = null
+        this._lazyInitScope = null
         for (const key in this) {
           if (!this.hasOwnProperty(key)) continue
           const prop = this[key]
