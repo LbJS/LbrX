@@ -2,7 +2,6 @@ import { TestSubjectFactory } from 'helpers/factories'
 import { TestSubject } from 'helpers/test-subjects'
 import { Store, StoreConfigOptions } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { DevToolsSubjects as DevToolsSubjects_type } from 'lbrx/internal/dev-tools'
 
 describe('Store reset():', () => {
 
@@ -11,12 +10,10 @@ describe('Store reset():', () => {
   let store: Store<TestSubject>
   let notResettableStore: Store<TestSubject>
   let LbrXManager: typeof LbrXManager_type
-  let DevToolsSubjects: typeof DevToolsSubjects_type
 
   beforeEach(async () => {
     const provider = await import('provider')
     LbrXManager = provider.LbrXManager
-    DevToolsSubjects = provider.DevToolsSubjects
     store = provider.StoresFactory.createStore(createInitialState())
     const notResettableStoreConfig: StoreConfigOptions = {
       name: 'NOT-RESETTABLE-STORE',
