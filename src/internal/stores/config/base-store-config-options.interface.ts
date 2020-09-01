@@ -1,3 +1,4 @@
+import { AdvancedConfigOptions } from './advanced-config-options.interface'
 import { ObjectCompareTypes } from './object-compare-types.enum'
 import { Storages } from './storages.enum'
 
@@ -78,4 +79,8 @@ export interface BaseStoreConfigOptions {
    * parse = JSON.parse
    */
   parse?: (text: string | null, reviver?: (this: any, key: string, value: any) => any) => any
+  /**
+   * Advanced configuration.
+   */
+  advanced?: AdvancedConfigOptions | null
 }

@@ -1,2 +1,2 @@
 
-export type Compare = <R extends object>(objA: R, pbjB: R) => boolean
+export type Compare = <T extends object>(objA: T, pbjB: T) => boolean

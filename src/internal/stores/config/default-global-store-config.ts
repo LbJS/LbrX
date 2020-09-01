@@ -15,5 +15,6 @@ export function getDefaultGlobalStoreConfig(): Required<GlobalStoreConfigOptions
     isImmutable: true,
     stringify,
     parse,
+    advanced: null,
   }
 }
