@@ -44,6 +44,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     LbrXManager.setGlobalStoreConfig(config)
     expect(getGlobalStoreConfig()).toStrictEqual(expectedValue)
@@ -64,6 +65,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     LbrXManager.setGlobalStoreConfig(config)
     expect(getGlobalStoreConfig()).toStrictEqual(expectedValue)

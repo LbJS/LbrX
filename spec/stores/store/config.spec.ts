@@ -53,6 +53,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
   })
@@ -116,6 +117,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
   })
@@ -145,6 +147,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
   })
@@ -170,6 +173,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
   })
@@ -196,6 +200,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
     expect(consoleWarnSpy).toBeCalled()
@@ -223,6 +228,7 @@ describe('Store Config:', () => {
       isImmutable: true,
       stringify,
       parse,
+      advanced: null,
     }
     expect(store.config).toStrictEqual(expectedConfig)
     expect(consoleWarnSpy).toBeCalled()

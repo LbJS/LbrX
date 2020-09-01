@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs'
 import { isDev } from '../core'
-import { cloneError, countObjectChanges, filterObject, instanceHandler, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
+import { cloneError, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
 import { BaseStore } from '../stores'
 import { Actions, getDefaultState, State } from '../stores/store-accessories'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
@@ -150,7 +150,7 @@ export class DevToolsManager {
   }
 
   private _setState(store: BaseStore<any> | any, state: any): void {
-    if (store._isInstanceHandler && store._instancedState) state.value = instanceHandler(store._instancedState, state.value)
+    if (store._isInstanceHandler && store._instancedState) state.value = store._handleTypes(store._instancedState, state.value)
     store._state = state
   }
 }

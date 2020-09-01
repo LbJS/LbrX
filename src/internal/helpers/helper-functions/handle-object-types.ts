@@ -7,9 +7,9 @@ import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 import { isString } from './is-string'
 
-export function instanceHandler<T extends object>(instancedObj: T, plainObj: {}): T
-export function instanceHandler<T extends object>(instancedObjs: T[], plainObjs: {}[]): T[]
-export function instanceHandler<T extends object>(instanced: T | T[], plain: {} | {}[]): T | T[] {
+export function handleObjectTypes<T extends object>(instancedObj: T, plainObj: object): T
+export function handleObjectTypes<T extends object[]>(instancedObjs: T, plainObjs: object[]): T
+export function handleObjectTypes<T extends object>(instanced: T, plain: object | object[]): T {
   if (isEmpty(plain)) return plain
   if (isClass(instanced) && !isClass(plain)) {
     if (isString(plain) && plain.length > 0) {
@@ -37,16 +37,16 @@ export function instanceHandler<T extends object>(instanced: T | T[], plain: {} 
     && isArray(plain)
   ) {
     for (let i = 0; i < plain.length; i++) {
-      plain[i] = instanceHandler(instanced[0], plain[i])
+      plain[i] = handleObjectTypes(instanced[0], plain[i])
     }
-    return plain as T[]
+    return plain as T
   }
   if (isObject(instanced) && isObject(plain)) {
     for (let i = 0, keys = objectKeys(instanced); i < keys.length; i++) {
       const key = keys[i]
       const instancedProp = instanced[key]
       if (isObject(instancedProp)) {
-        plain[key] = instanceHandler(instancedProp, plain[key])
+        plain[key] = handleObjectTypes(instancedProp, plain[key])
       }
     }
   }

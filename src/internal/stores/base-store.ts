@@ -2,11 +2,10 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, instanceHandler, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, Compare, createPromiseScope, Freeze, getDefaultState, LazyInitScope, Parse, PromiseScope, QueryScope, State, Stringify } from './store-accessories'
-import { StoreTags } from './store-accessories/store-related/store-tags.enum'
+import { Actions, Clone, CloneError, Compare, createPromiseScope, Freeze, getDefaultState, HandleTypes, LazyInitScope, Merge, Parse, PromiseScope, QueryScope, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, E = any> {
 
@@ -159,7 +158,7 @@ export abstract class BaseStore<T extends object, E = any> {
   public readonly error$: Observable<E | null> =
     this._error$.asObservable()
       .pipe(
-        map(x => isError(x) ? cloneError(x) : isObject(x) ? cloneObject(x) : x),
+        map(x => isError(x) ? this._cloneError(x) : isObject(x) ? this._clone(x) : x),
         distinctUntilChanged((prev, curr) => isNull(prev) && isNull(curr)),
       )
 
@@ -169,15 +168,15 @@ export abstract class BaseStore<T extends object, E = any> {
    */
   public get error(): E | null {
     const value = this._state.error
-    if (isError(value)) return cloneError(value)
-    if (isObject(value)) return cloneObject(value)
+    if (isError(value)) return this._cloneError(value)
+    if (isObject(value)) return this._clone(value)
     return value
   }
   public set error(value: E | null) {
     if (isError(value)) {
-      value = cloneError(value)
+      value = this._cloneError(value)
     } else if (isObject(value)) {
-      value = cloneObject(value)
+      value = this._clone(value)
     }
     this._setState({ error: value }, Actions.error)
   }
@@ -229,10 +228,19 @@ export abstract class BaseStore<T extends object, E = any> {
   protected readonly _freeze: Freeze
 
   /** @internal */
+  protected readonly _handleTypes: HandleTypes
+
+  /** @internal */
   protected readonly _stringify: Stringify
 
   /** @internal */
   protected readonly _parse: Parse
+
+  /** @internal */
+  protected readonly _cloneError: CloneError
+
+  /** @internal */
+  protected readonly _merge: Merge
 
   //#endregion config
   //#region helper
@@ -320,6 +328,18 @@ export abstract class BaseStore<T extends object, E = any> {
     this._storageKey = config.storageKey
     this._stringify = config.stringify
     this._parse = config.parse
+    this._handleTypes = handleObjectTypes
+    this._cloneError = cloneError
+    this._merge = mergeObjects
+    if (config.advanced) {
+      const advanced = config.advanced
+      if (advanced.clone) this._clone = advanced.clone
+      if (advanced.freeze) this._freeze = advanced.freeze
+      if (advanced.handleTypes) this._handleTypes = advanced.handleTypes
+      if (advanced.compare) this._compare = advanced.compare
+      if (advanced.cloneError) this._cloneError = advanced.cloneError
+      if (advanced.merge) this._merge = advanced.merge
+    }
     //#endregion configuration-initialization
   }
 
@@ -375,7 +395,7 @@ export abstract class BaseStore<T extends object, E = any> {
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isInstanceHandler ? instanceHandler(this._instancedValue || initialValue, storedValue) : storedValue
+        initialValue = this._isInstanceHandler ? this._handleTypes(this._instancedValue || initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -516,10 +536,10 @@ export abstract class BaseStore<T extends object, E = any> {
     this._setState(value => {
       assert(value && this._isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      let newValue = mergeObjects(this._clone(value), this._clone(newPartialValue))
+      let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
       if (this._isInstanceHandler) {
         assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
-        newValue = instanceHandler(this._instancedValue, newValue)
+        newValue = this._handleTypes(this._instancedValue, newValue)
       }
       if (isFunction(this.onUpdate)) {
         const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
@@ -538,7 +558,7 @@ export abstract class BaseStore<T extends object, E = any> {
       `Store: "${this._storeName}" can't be overridden before it was initialized`)
     if (this._isInstanceHandler) {
       assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
-      value = instanceHandler(this._instancedValue, this._clone(value))
+      value = this._handleTypes(this._instancedValue, this._clone(value))
     }
     let modifiedValue: T | void
     if (isFunction(this.onOverride)) {

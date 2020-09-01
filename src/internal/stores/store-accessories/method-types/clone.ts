@@ -1,2 +1,2 @@
 
-export type Clone = <R extends object | null>(obj: R) => R
+export type Clone = <T extends object | null>(obj: T) => T
