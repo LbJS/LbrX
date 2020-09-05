@@ -14,6 +14,7 @@ class User {
   firstName: string | null = null
   lastName: string | null = null
   address: Address | null = null
+  date: Date = new Date()
 }
 
 function createLeon(): User {
@@ -79,6 +80,10 @@ userStore
   .subscribe(x => console.log('address: ' + x))
 
 userStore
+  .select$<[string | null, string | null, Date]>([state => state.firstName, state => state.lastName, state => state.date])
+  .subscribe(x => console.log(x))
+
+userStore
   .isLoading$.subscribe(value => {
     if (!value) {
       console.log('From is loading: ', userStore.value)
@@ -105,6 +110,7 @@ setTimeout(() => {
   userStore.override({
     firstName: 'Some other name1',
     lastName: 'My second lastName1',
+    date: new Date(),
     address: {
       place: 'Some other place1'
     }
@@ -136,6 +142,7 @@ setTimeout(() => {
   userStore.override({
     firstName: 'Some other name1',
     lastName: 'My second lastName1',
+    date: new Date(),
     address: {
       place: 'Some other place1'
     }
