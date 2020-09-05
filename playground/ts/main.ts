@@ -4,7 +4,7 @@ import { of } from 'rxjs'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
-LbrXManager.initializeDevTools({ displayValueAsState: false, showStackTrace: true })
+LbrXManager.initializeDevTools({ displayValueAsState: true, showStackTrace: false })
 
 class Address {
   place: string | null = null

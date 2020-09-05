@@ -1,7 +1,7 @@
 import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
-import { DevToolsAdapter, isDevTools } from '../dev-tools'
+import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
@@ -259,6 +259,18 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /** @internal */
   protected _lazyInitScope: LazyInitScope<T> | null = null
+
+  /** @internal */
+  protected get _devToolsApi(): StoreDevToolsApi {
+    return {
+      isInstanceHandler: this._isInstanceHandler,
+      instancedValue: this._instancedValue,
+      handleTypes: this._handleTypes,
+      setState: (value: State<T>) => {
+        this._state = value
+      }
+    }
+  }
 
   //#endregion helpers
   //#region constructor
