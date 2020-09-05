@@ -9,6 +9,7 @@ import { DevToolsAdapter } from './dev-tools-adapter'
 import { activateStreamToDevTools } from './dev-tools-mode'
 import { ReduxDevToolsExtension } from './redux-dev-tools-extension.interface'
 import { ReduxDevToolsMonitor } from './redux-dev-tools-monitor.interface'
+import { StoreDevToolsApi } from './store-dev-tools-api.interface'
 
 declare global {
   interface Window {
@@ -130,10 +131,10 @@ export class DevToolsManager {
         objectKeys(DevToolsAdapter.stores).forEach((storeName: string) => {
           const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
           if (!store) return
-          const getReduxDevToolsState = () => {
+          const getReduxDevToolsState = (): State<any> => {
             const reduxDevToolsStoreState: State<any> | {} = reduxDevToolsState[storeName]
             this._state[storeName] = reduxDevToolsStoreState
-            if (!options.displayValueAsState) return reduxDevToolsStoreState
+            if (!options.displayValueAsState) return reduxDevToolsStoreState as State<any>
             const partialStateHistory = this._partialStateHistory
             const partialState = partialStateHistory.history[storeName][payload.actionId]
             return mergeObjects({ value: reduxDevToolsStoreState } as State<any>, partialState)
@@ -149,8 +150,11 @@ export class DevToolsManager {
     })
   }
 
-  private _setState(store: BaseStore<any> | any, state: any): void {
-    if (store._isInstanceHandler && store._instancedState) state.value = store._handleTypes(store._instancedState, state.value)
-    store._state = state
+  private _setState(store: BaseStore<any> | any, state: State<any>): void {
+    const storeDevApi: StoreDevToolsApi = store._devToolsApi
+    if (storeDevApi.isInstanceHandler && storeDevApi.instancedValue) {
+      state.value = storeDevApi.handleTypes(store._instancedValue, state.value!)
+    }
+    storeDevApi.setState(state)
   }
 }
