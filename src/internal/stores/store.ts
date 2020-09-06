@@ -1,6 +1,6 @@
 import { iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
-import { isArray, isFunction, isObject } from '../helpers'
+import { isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 import { Actions, QueryScope } from './store-accessories'
@@ -52,50 +52,58 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
   //#region query-methods
 
   public select$(): Observable<T>
-  public select$<R>(project: (value: Readonly<T>) => T | R): Observable<R>
+  public select$<R>(project: (value: Readonly<T>) => R): Observable<R>
   public select$<M extends ((value: Readonly<T>) => any), R extends ReturnType<M>>(projects: M[]): Observable<R[]>
   public select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
-  // public select$<R>(projects: ((value: Readonly<T>) => T | R)[]): Observable<R>
-  // public select$<K extends keyof T>(key: K): Observable<T[K]>
-  // public select$<R = unknown>(key: string): Observable<R>
-  // public select$<K extends keyof T>(key: K[]): Observable<Pick<T, K>>
-  // public select$<K extends keyof T>(key: K[], returnAsArray?: boolean)
-  //   : typeof returnAsArray extends true ? Observable<(T[K])[]> : Observable<Pick<T, K>>
-  // public select$<R extends object = object>(key: string[]): Observable<R>
-  // public select$<R extends object = object>(key: string[], returnAsArray?: boolean)
-  //   : typeof returnAsArray extends true ? Observable<unknown[]> : Observable<R>
-  public select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[]>
-  public select$<R>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[]> {
-    return this._select$<R>()(projectsOrKeys || [] as any)
+  public select$<K extends keyof T>(key: K): Observable<T[K]>
+  public select$<K extends keyof T>(key: K[]): Observable<Pick<T, K>>
+  public select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>>
+  public select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    return this._select$<R, K>()(projectsOrKeys || [] as any)
   }
 
   public onAction(action: Actions | string): QueryableStore<T> {
-    return { select$: this._select$<any>(action) }
+    return { select$: this._select$<any, any>(action) }
   }
 
-  protected _select$<R>(action?: Actions | string): (projectsOrKeys?: ProjectsOrKeys<T, R>) => Observable<T | R | R[]> {
-    return (projectsOrKeys?: ProjectsOrKeys<T, R>) => {
+  protected _select$<R, K extends keyof T>(action?: Actions | string):
+    (projectsOrKeys?: ProjectsOrKeys<T, R, K>) => Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    return (projectsOrKeys?: ProjectsOrKeys<T, R, K>) => {
       const tillLoaded$ = this._isLoading$.asObservable()
         .pipe(
           filter(x => !x),
           distinctUntilChanged(),
           switchMap(() => this._value$),
         )
-      const mapPredicate: (value: Readonly<T>) => T | R | any[] = (() => {
+      const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
         if (isArray(projectsOrKeys)) {
-          if (isFunction(projectsOrKeys[0])) return (value: Readonly<T>) => projectsOrKeys.map(x => x(value))
+          if (isFunction(projectsOrKeys[0])) {
+            return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
+          }
+          if (isString(projectsOrKeys[0])) {
+            return (value: Readonly<T>) => {
+              const result = {};
+              (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
+              return result
+            }
+          }
         }
+        if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
         if (isFunction(projectsOrKeys)) return projectsOrKeys
         return (x: Readonly<T>) => x
       })()
-      const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => !!value
+      const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+        return !this.isPaused
+          && !queryScope.isDisposed
+          && (!action || action === this._lastAction)
+          && !!value
+      }
       const queryScope: QueryScope = {
         wasHardReset: false,
         isDisposed: false,
         observable: this._value$.asObservable()
           .pipe(
             mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
-            filter(() => !this.isPaused && !queryScope.isDisposed && (!action || action === this._lastAction)),
             filter(filterPredicate),
             map(mapPredicate),
             distinctUntilChanged((prev, curr) => {

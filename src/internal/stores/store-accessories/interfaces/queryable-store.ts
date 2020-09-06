@@ -1,12 +1,12 @@
 import { Observable } from 'rxjs'
 
-export type ProjectsOrKeys<T, R> =
+export type ProjectsOrKeys<T, R, K> =
   ((value: Readonly<T>) => T | R)
   | ((value: Readonly<T>) => R)[]
-// | K
-// | K[]
-// | string
-// | string[]
+  | K
+  | K[]
+  | string
+  | string[]
 
 export interface QueryableStore<T extends object> {
   /**
@@ -27,17 +27,11 @@ export interface QueryableStore<T extends object> {
    *     }
    *  });
    */
-  select$<R>(project: (value: Readonly<T>) => T | R): Observable<R>
+  select$<R>(project: (value: Readonly<T>) => R): Observable<R>
   select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any), C = []>(projects: M[]): Observable<R[]>
   select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
-  // select$<K extends keyof T>(key: K): Observable<T[K]>
-  // select$<R = unknown>(key: string): Observable<R>
-  // select$<K extends keyof T>(key: K[]): Observable<Pick<T, K>>
-  // select$<K extends keyof T>(key: K[], returnAsArray?: boolean)
-  //   : typeof returnAsArray extends true ? Observable<(T[K])[]> : Observable<Pick<T, K>>
-  // select$<R extends object = object>(key: string[]): Observable<R>
-  // select$<R extends object = object>(key: string[], returnAsArray?: boolean)
-  //   : typeof returnAsArray extends true ? Observable<unknown[]> : Observable<R>
+  select$<K extends keyof T>(key: K): Observable<T[K]>
+  select$<K extends keyof T>(key: K[]): Observable<Pick<T, K>>
 
   /**
    * Returns the state's value or the extracted partial value as an Observable based on the provided projection method if it is provided.
@@ -48,6 +42,6 @@ export interface QueryableStore<T extends object> {
    *   return weatherStore.select$(optionalProjection);
    * }
    */
-  select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[]>
-  select$<R>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[]>
+  select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>>
+  select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>>
 }
