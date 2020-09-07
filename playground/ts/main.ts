@@ -1,5 +1,6 @@
 import { Actions, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
 import { LbrXManager } from 'lbrx/core'
+import { getNestedProp } from 'lbrx/utils'
 import { of } from 'rxjs'
 
 const PROD_MODE = false
@@ -76,7 +77,7 @@ userStore
   .select$('lastName')
   .subscribe(x => console.log('lastName: ' + x))
 userStore
-  .select$(state => state.address?.place)
+  .select$(state => getNestedProp(state, 'address', 'place'))
   .subscribe(x => console.log('address: ' + x))
 
 userStore
@@ -99,6 +100,12 @@ setTimeout(() => {
     lastName: 'My first lastName'
   })
 }, 200)
+
+setTimeout(() => {
+  userStore.update({
+    address: null
+  })
+}, 250)
 
 setTimeout(() => {
   userStore.update({
