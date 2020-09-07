@@ -1,10 +1,8 @@
 import { Observable } from 'rxjs'
 
-export type ProjectsOrKeys<T, R, K> =
+export type ProjectsOrKeys<T, R> =
   ((value: Readonly<T>) => T | R)
   | ((value: Readonly<T>) => R)[]
-  | K
-  | K[]
   | string
   | string[]
 
@@ -31,7 +29,7 @@ export interface QueryableStore<T extends object> {
   select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any), C = []>(projects: M[]): Observable<R[]>
   select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
   select$<K extends keyof T>(key: K): Observable<T[K]>
-  select$<K extends keyof T>(key: K[]): Observable<Pick<T, K>>
+  select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
 
   /**
    * Returns the state's value or the extracted partial value as an Observable based on the provided projection method if it is provided.
@@ -42,6 +40,6 @@ export interface QueryableStore<T extends object> {
    *   return weatherStore.select$(optionalProjection);
    * }
    */
-  select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>>
-  select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R, K>): Observable<T | R | R[] | T[K] | Pick<T, K>>
+  select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
+  select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
 }
