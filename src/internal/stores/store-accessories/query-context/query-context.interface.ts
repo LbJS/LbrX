@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 
-export interface QueryScope {
+export interface QueryContext {
   wasHardReset: boolean,
   isDisposed: boolean,
   observable: Observable<any>

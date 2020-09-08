@@ -35,7 +35,7 @@ export interface QueryableStore<T extends object> {
    *     // do something...
    *  });
    */
-  select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any), C = []>(projects: M[]): Observable<R[]>
+  select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): Observable<R[]>
   /**
    * Returns an array values as an Observable based on the provided projections methods.
    * - This overload allows to manually define the return type.
@@ -67,14 +67,12 @@ export interface QueryableStore<T extends object> {
    *  });
    */
   select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
-
   /**
-   * Returns this is an dynamic overload. Use this approach only id necessary because it's not strongly typed.
+   * This is an dynamic overload. Use this approach only id necessary because it's not strongly typed.
    * @example
-   * selectFactory(dynamic?) {
+   * function selectFactory(dynamic?) {
    *   return weatherStore.select$(dynamic?);
    * }
    */
-  select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
-  select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
+  select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<any>
 }
