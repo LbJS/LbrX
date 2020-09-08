@@ -26,18 +26,53 @@ export interface QueryableStore<T extends object> {
    *  });
    */
   select$<R>(project: (value: Readonly<T>) => R): Observable<R>
+  /**
+   * Returns an array values as an Observable based on the provided projections methods.
+   * @example
+   * weatherStore.select$([value => value.isRaining, value => value.precipitation])
+   *   .subscribe(result => {
+   *     const [isRaining, precipitation] = result
+   *     // do something...
+   *  });
+   */
   select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any), C = []>(projects: M[]): Observable<R[]>
-  select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
+  /**
+   * Returns an array values as an Observable based on the provided projections methods.
+   * - This overload allows to manually define the return type.
+   * @example
+   * weatherStore.select$([value => value.isRaining, value => value.precipitation])
+   *   .subscribe(result => {
+   *     const [isRaining, precipitation] = result
+   *     // do something...
+   *  });
+   */
+  select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R[]>
+  /**
+   * Returns as single the state's value property based on the provided key.
+   * @example
+   * weatherStore.select$('precipitation')
+   *   .subscribe(precipitation => {
+   *     // do something...
+   *  });
+   */
   select$<K extends keyof T>(key: K): Observable<T[K]>
+  /**
+   * Returns the extracted partial state's value as an Observable based on the provided keys.
+   * @example
+   * weatherStore.select$(['precipitation', 'isRaining'])
+   *   .subscribe(result => {
+   *      if (result.isRaining && result.precipitation.mm > 10) {
+   *        // do something...
+   *      }
+   *  });
+   */
   select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
 
   /**
-   * Returns the state's value or the extracted partial value as an Observable based on the provided projection method if it is provided.
-   * - This overload provides you with a more dynamic approach compare to other overloads.
-   * - With this overload you can create an dynamic Observable factory.
+   * Returns this is an dynamic overload. Use this approach only id necessary because it's not strongly typed.
    * @example
-   * statesValueProjectionFactory(optionalProjection) {
-   *   return weatherStore.select$(optionalProjection);
+   * selectFactory(dynamic?) {
+   *   return weatherStore.select$(dynamic?);
    * }
    */
   select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
