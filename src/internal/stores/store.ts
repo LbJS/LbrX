@@ -54,7 +54,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
   public select$(): Observable<T>
   public select$<R>(project: (value: Readonly<T>) => R): Observable<R>
   public select$<M extends ((value: Readonly<T>) => any), R extends ReturnType<M>>(projects: M[]): Observable<R[]>
-  public select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
+  public select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R[]>
   public select$<K extends keyof T>(key: K): Observable<T[K]>
   public select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
   public select$<R, K extends keyof T>(dynamic?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>>
