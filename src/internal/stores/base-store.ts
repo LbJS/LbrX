@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseScope, Freeze, getDefaultState, HandleTypes, LazyInitScope, Merge, Parse, PromiseScope, QueryScope, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleTypes, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, E = any> {
 
@@ -249,16 +249,16 @@ export abstract class BaseStore<T extends object, E = any> {
   protected _valueToStorageSub: Subscription | null = null
 
   /** @internal */
-  protected _asyncInitPromiseScope: PromiseScope | null = null
+  protected _asyncInitPromiseContext: PromiseContext | null = null
 
   /** @internal */
-  protected readonly _queryScopes: QueryScope[] = []
+  protected readonly _queryContext: QueryContext[] = []
 
   /** @internal */
   protected _lastAction: string | null = null
 
   /** @internal */
-  protected _lazyInitScope: LazyInitScope<T> | null = null
+  protected _lazyInitContext: LazyInitContext<T> | null = null
 
   /** @internal */
   protected get _devToolsApi(): StoreDevToolsApi {
@@ -276,21 +276,21 @@ export abstract class BaseStore<T extends object, E = any> {
   //#region constructor
 
   constructor(storeConfig: StoreConfigOptions | undefined) {
-    //#region _queryScopes proxy
-    this._queryScopes.push = (...items) => {
-      const lazyInitScope = this._lazyInitScope
-      if (lazyInitScope) {
-        this.initializeAsync(lazyInitScope.value)
-          .then(d => lazyInitScope.resolve(d))
-          .catch(e => lazyInitScope.reject(e))
-        this._lazyInitScope = null
+    //#region _queryContexts proxy
+    this._queryContext.push = (...items) => {
+      const lazyInitContext = this._lazyInitContext
+      if (lazyInitContext) {
+        this.initializeAsync(lazyInitContext.value)
+          .then(d => lazyInitContext.resolve(d))
+          .catch(e => lazyInitContext.reject(e))
+        this._lazyInitContext = null
       }
       items.forEach(item => {
-        this._queryScopes[this._queryScopes.length] = item
+        this._queryContext[this._queryContext.length] = item
       })
-      return this._queryScopes.length
+      return this._queryContext.length
     }
-    //#endregion _queryScopes proxy
+    //#endregion _queryContexts proxy
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
@@ -449,13 +449,13 @@ export abstract class BaseStore<T extends object, E = any> {
   public initializeAsync(observable: Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
   public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    const asyncInitPromiseScope = createPromiseScope()
-    this._asyncInitPromiseScope = asyncInitPromiseScope
-    asyncInitPromiseScope.promise = new Promise((resolve, reject) => {
+    const asyncInitPromiseContext = createPromiseContext()
+    this._asyncInitPromiseContext = asyncInitPromiseContext
+    asyncInitPromiseContext.promise = new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
       if (isObservable(promiseOrObservable)) promiseOrObservable = promiseOrObservable.toPromise()
       promiseOrObservable.then(r => {
-        if (asyncInitPromiseScope.isCancelled) return
+        if (asyncInitPromiseContext.isCancelled) return
         if (!this._assertInitializable(reject)) return
         if (isFunction(this.onAsyncInitSuccess)) {
           const modifiedResult = this.onAsyncInitSuccess(r)
@@ -463,14 +463,14 @@ export abstract class BaseStore<T extends object, E = any> {
         }
         this._initializeStore(r, true)
       }).catch(e => {
-        if (asyncInitPromiseScope.isCancelled) return
+        if (asyncInitPromiseContext.isCancelled) return
         if (isFunction(this.onAsyncInitError)) {
           e = this.onAsyncInitError(e)
         }
         if (e) return reject(e)
       }).finally(resolve)
     })
-    return asyncInitPromiseScope.promise
+    return asyncInitPromiseContext.promise
   }
 
   /**
@@ -481,10 +481,10 @@ export abstract class BaseStore<T extends object, E = any> {
   public initializeLazily(promise: Promise<T>): Promise<void>
   public initializeLazily(observable: Observable<T>): Promise<void>
   public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    if (this._queryScopes.length) return this.initializeAsync(promiseOrObservable)
+    if (this._queryContext.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
-      this._lazyInitScope = {
+      this._lazyInitContext = {
         value: promiseOrObservable,
         resolve,
         reject,
@@ -613,16 +613,16 @@ export abstract class BaseStore<T extends object, E = any> {
       return Promise.reject(new Error(`Store: "${this._storeName}" is not configured as resettable.`))
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
-    const asyncInitPromiseScope = this._asyncInitPromiseScope
+    const asyncInitPromiseContext = this._asyncInitPromiseContext
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
-      asyncInitPromiseScope && asyncInitPromiseScope.promise ?
-        getPromiseState(asyncInitPromiseScope.promise) :
+      asyncInitPromiseContext && asyncInitPromiseContext.promise ?
+        getPromiseState(asyncInitPromiseContext.promise) :
         Promise.resolve()
     return new Promise((resolve) => {
       const reset = () => {
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryScopes.forEach(x => x.wasHardReset = true)
+        this._queryContext.forEach(x => x.wasHardReset = true)
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
@@ -636,26 +636,26 @@ export abstract class BaseStore<T extends object, E = any> {
         resolve(this)
       }
       initializeAsyncPromiseState.then(state => {
-        if (asyncInitPromiseScope) asyncInitPromiseScope.isCancelled = state === PromiseStates.pending
+        if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
         reset()
       }).catch(() => reset())
     })
   }
 
-  public disposeQueryScope(observable: Observable<T>): void {
-    const queryScopes = this._queryScopes
-    const i = queryScopes.findIndex(x => x.observable = observable)
+  public disposeQueryContext(observable: Observable<T>): void {
+    const queryContexts = this._queryContext
+    const i = queryContexts.findIndex(x => x.observable = observable)
     if (i > -1) {
-      queryScopes[i].isDisposed = true
-      queryScopes.splice(i, 1)
+      queryContexts[i].isDisposed = true
+      queryContexts.splice(i, 1)
     }
   }
 
   public destroy(): Promise<void> {
-    const asyncInitPromiseScope = this._asyncInitPromiseScope
+    const asyncInitPromiseContext = this._asyncInitPromiseContext
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
-      asyncInitPromiseScope && asyncInitPromiseScope.promise ?
-        getPromiseState(asyncInitPromiseScope.promise) :
+      asyncInitPromiseContext && asyncInitPromiseContext.promise ?
+        getPromiseState(asyncInitPromiseContext.promise) :
         Promise.resolve()
     return new Promise((resolve) => {
       const destroy = () => {
@@ -665,11 +665,11 @@ export abstract class BaseStore<T extends object, E = any> {
         delete DevToolsAdapter.values[storeName]
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryScopes.forEach(x => x.isDisposed = true)
+        this._queryContext.forEach(x => x.isDisposed = true)
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
-        this._lazyInitScope = null
+        this._lazyInitContext = null
         for (const key in this) {
           if (!this.hasOwnProperty(key)) continue
           const prop = this[key]
@@ -686,7 +686,7 @@ export abstract class BaseStore<T extends object, E = any> {
         resolve()
       }
       initializeAsyncPromiseState.then(state => {
-        if (asyncInitPromiseScope) asyncInitPromiseScope.isCancelled = state === PromiseStates.pending
+        if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
         destroy()
       }).catch(() => destroy())
     })

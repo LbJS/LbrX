@@ -1,3 +1,3 @@
-export * from './lazy-init-scope.interface'
+export * from './lazy-init-context.interface'
 export * from './store-tags.enum'
 
