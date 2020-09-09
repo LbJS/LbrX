@@ -5,20 +5,16 @@
     "baseUrl": ".",
     "paths": {
       "lbrx": [
-        "../src",
-        "../src/*"
+        "../src/index.ts"
       ],
       "lbrx/core": [
-        "../src/core",
-        "../src/core/*"
+        "../src/core/index.ts"
       ],
       "lbrx/dev-tools": [
-        "../src/dev-tools",
-        "../src/dev-tools/*"
+        "../src/dev-tools/index.ts"
       ],
       "lbrx/utils": [
-        "../src/utils",
-        "../src/utils/*"
+        "../src/utils/index.ts"
       ],
     }
   },

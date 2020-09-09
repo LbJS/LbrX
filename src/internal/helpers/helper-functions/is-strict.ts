@@ -1,7 +1,12 @@
+import { KeyValue } from '../../types'
 
 export function isStrict(): boolean {
-  // tslint:disable
-  var x = true
-  eval('var x=false')
-  return x
+  try {
+    const obj: KeyValue = {}
+    Object.defineProperty(obj, 'x', { value: 0, writable: false })
+    obj.x = 1
+    return false
+  } catch {
+    return true
+  }
 }
