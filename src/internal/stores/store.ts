@@ -4,7 +4,7 @@ import { isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 import { Actions, QueryContext } from './store-accessories'
-import { ProjectsOrKeys, QueryableStore } from './store-accessories/interfaces'
+import { ProjectsOrKeys } from './store-accessories/types'
 
 /**
  * @example
@@ -12,7 +12,9 @@ import { ProjectsOrKeys, QueryableStore } from './store-accessories/interfaces'
  *   return {
  *     isRaining: true,
  *     isSunny: false,
- *     precipitation: 7
+ *     precipitation: {
+ *       mm: 7
+ *     }
  *   }
  * }
  *
@@ -26,7 +28,7 @@ import { ProjectsOrKeys, QueryableStore } from './store-accessories/interfaces'
  *   }
  * }
  */
-export class Store<T extends object, E = any> extends BaseStore<T, E> implements QueryableStore<T> {
+export class Store<T extends object, E = any> extends BaseStore<T, E> {
 
   //#region constructor
 
@@ -123,7 +125,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
     return this._select$<R, K>()(projectsOrKeys || [] as any)
   }
 
-  public onAction(action: Actions | string): QueryableStore<T> {
+  public onAction(action: Actions | string): Pick<Store<T, E>, 'select$'> {
     return { select$: this._select$<any, any>(action) }
   }
 
