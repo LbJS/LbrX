@@ -22,14 +22,14 @@ module.exports = {
     "^lbrx/internal/dev-tools$": "<rootDir>/src/internal/dev-tools",
     "^lbrx/internal/stores$": "<rootDir>/src/internal/stores",
     "^lbrx/internal/stores/config$": "<rootDir>/src/internal/stores/config",
-    "^helpers$": "<rootDir>/spec/helpers",
-    "^helpers/factories$": "<rootDir>/spec/helpers/factories",
-    "^helpers/functions$": "<rootDir>/spec/helpers/functions",
-    "^helpers/mocks$": "<rootDir>/spec/helpers/mocks",
-    "^helpers/test-subjects$": "<rootDir>/spec/helpers/test-subjects",
-    "^helpers/types$": "<rootDir>/spec/helpers/types",
-    "^helpers/mock-builder$": "<rootDir>/spec/helpers/mock-builder",
-    "^provider$": "<rootDir>/spec/helpers/module-provider.ts",
+    "^helpers$": "<rootDir>/spec/__test__",
+    "^helpers/factories$": "<rootDir>/spec/__test__/factories",
+    "^helpers/functions$": "<rootDir>/spec/__test__/functions",
+    "^helpers/mocks$": "<rootDir>/spec/__test__/mocks",
+    "^helpers/test-subjects$": "<rootDir>/spec/__test__/test-subjects",
+    "^helpers/types$": "<rootDir>/spec/__test__/types",
+    "^helpers/mock-builder$": "<rootDir>/spec/__test__/mock-builder",
+    "^provider$": "<rootDir>/spec/__test__/module-provider.ts",
   },
   testRegex: [
     '/spec/.*\\.spec.ts$'
@@ -37,11 +37,10 @@ module.exports = {
   modulePathIgnorePatterns: [
     '<rootDir>/build/'
   ],
-
   setupFilesAfterEnv: [
-    "<rootDir>/spec/helpers/setup/env.ts",
-    "<rootDir>/spec/helpers/setup/global-before-each.ts",
-    "<rootDir>/spec/helpers/setup/global-after-each.ts",
+    "<rootDir>/spec/__test__/setup/env.ts",
+    "<rootDir>/spec/__test__/setup/global-before-each.ts",
+    "<rootDir>/spec/__test__/setup/global-after-each.ts",
   ],
   reporters: [
     "default",
