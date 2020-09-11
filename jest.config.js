@@ -9,7 +9,7 @@ module.exports = {
   collectCoverageFrom: [
     "src/**/*.ts",
     "!src/internal/types/*",
-    "!src/internal/helpers/accessories/*",
+    "!src/internal/stores/store-accessories/types/*",
   ],
   moduleNameMapper: {
     "^lbrx$": "<rootDir>/src",
