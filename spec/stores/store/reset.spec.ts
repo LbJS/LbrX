@@ -1,7 +1,7 @@
-import { TestSubjectFactory } from 'helpers/factories'
-import { TestSubject } from 'helpers/test-subjects'
 import { Store, StoreConfigOptions } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
+import { TestSubjectFactory } from '__test__/factories'
+import { TestSubject } from '__test__/test-subjects'
 
 describe('Store reset():', () => {
 

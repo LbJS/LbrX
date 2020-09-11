@@ -1,4 +1,4 @@
-import { isArray, isEntity, isUndefined, objectKeys } from 'helpers/functions'
+import { isArray, isEntity, isUndefined, objectKeys } from '__test__/functions'
 
 export function splitToObject(obj: {}): {}[] {
   const arr: {}[] = []

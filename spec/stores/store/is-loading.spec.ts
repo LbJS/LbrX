@@ -1,6 +1,6 @@
-import { TestSubjectFactory } from 'helpers/factories'
-import { TestSubject } from 'helpers/test-subjects'
 import { Store } from 'lbrx'
+import { TestSubjectFactory } from '__test__/factories'
+import { TestSubject } from '__test__/test-subjects'
 
 describe('Store Is Loading State', () => {
 

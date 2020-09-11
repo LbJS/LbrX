@@ -1,5 +1,5 @@
-import { assertNotNullable } from 'helpers/functions'
 import { Store, TestSubject, TestSubjectFactory } from 'provider'
+import { assertNotNullable } from '__test__/functions'
 
 describe('Store value:', () => {
 

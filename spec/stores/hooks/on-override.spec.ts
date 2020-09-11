@@ -1,8 +1,8 @@
-import { TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import { TestSubject } from 'helpers/test-subjects'
-import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
+import { TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import { TestSubject } from '__test__/test-subjects'
+import { AllStoreHooks } from '__test__/types'
 
 describe('Store onOverride():', () => {
 
@@ -29,7 +29,7 @@ describe('Store onOverride():', () => {
   })
 
   it("shouldn't be called if not implemented.", () => {
-    delete store.onOverride
+    delete (store as Partial<AllStoreHooks<any>>).onOverride
     store.override(stateA)
     expect(onOverrideSpy).not.toBeCalled()
   })

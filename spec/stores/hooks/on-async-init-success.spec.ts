@@ -1,8 +1,8 @@
-import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import { TestSubject } from 'helpers/test-subjects'
-import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import { TestSubject } from '__test__/test-subjects'
+import { AllStoreHooks } from '__test__/types'
 
 describe('Store onAsyncInitSuccess():', () => {
 
@@ -30,7 +30,7 @@ describe('Store onAsyncInitSuccess():', () => {
   })
 
   it('should not be called on async initialization if not implemented.', async () => {
-    delete store.onAsyncInitSuccess
+    delete (store as Partial<AllStoreHooks<any>>).onAsyncInitSuccess
     await store.initializeAsync(Promise.resolve(initialState))
     expect(onAsyncInitSuccessSpy).not.toBeCalled()
   })

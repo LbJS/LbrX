@@ -1,4 +1,4 @@
-import { ErrorTestSubject } from 'helpers/test-subjects'
+import { ErrorTestSubject } from '__test__/test-subjects'
 
 export class ErrorFactory {
 

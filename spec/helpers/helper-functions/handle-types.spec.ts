@@ -1,8 +1,8 @@
-import { TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable, objectAssign, toPlainObject } from 'helpers/functions'
-import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from 'helpers/test-subjects'
 import { handleObjectTypes } from 'lbrx/utils'
 import moment from 'moment'
+import { TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable, objectAssign, toPlainObject } from '__test__/functions'
+import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
 describe('Helper Function - handleObjectTypes():', () => {
 

@@ -1,12 +1,12 @@
-import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import MockBuilder from 'helpers/mock-builder'
-import { TestSubject } from 'helpers/test-subjects'
 import { Storages, Store } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { getDefaultGlobalStoreConfig } from 'lbrx/internal/stores/config'
 import { Subscription as Subscription_type, timer } from 'rxjs'
 import { map } from 'rxjs/operators'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import MockBuilder from '__test__/mock-builder'
+import { TestSubject } from '__test__/test-subjects'
 
 describe('Store hardReset():', () => {
 

@@ -1,5 +1,5 @@
-import { AllStoreHooks } from 'helpers/types'
 import { Store, StoreConfig, StoreConfigOptions } from 'lbrx'
+import { AllStoreHooks } from '__test__/types'
 
 export class StoresFactory {
 

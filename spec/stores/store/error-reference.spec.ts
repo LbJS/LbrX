@@ -1,7 +1,7 @@
-import { ErrorFactory, TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import { ErrorTestSubject, TestSubject } from 'helpers/test-subjects'
 import { Store } from 'lbrx'
+import { ErrorFactory, TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import { ErrorTestSubject, TestSubject } from '__test__/test-subjects'
 
 describe('Store Error Reference:', () => {
 

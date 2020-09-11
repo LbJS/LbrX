@@ -1,6 +1,6 @@
-import { assertNotNullable } from 'helpers/functions'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { Store, TestSubject, TestSubjectFactory } from 'provider'
+import { assertNotNullable } from '__test__/functions'
 
 
 describe('Store initial value value:', () => {
