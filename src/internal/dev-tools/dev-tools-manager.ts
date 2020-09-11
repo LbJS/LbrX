@@ -50,7 +50,7 @@ export class DevToolsManager {
       $$states: DevToolsAdapter.states,
       $$values: DevToolsAdapter.values,
     }
-    const reduxDevToolsOptions = filterObject(this._devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys)
+    const reduxDevToolsOptions = filterObject(this._devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys, false)
     this._reduxMonitor = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
     if (this._devToolsOptions.displayValueAsState) this._addPartialStatesToHistory()
     this._state = simpleCloneObject(this._devToolsOptions.displayValueAsState ? DevToolsAdapter.values : DevToolsAdapter.states)
