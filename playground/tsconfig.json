@@ -16,6 +16,9 @@
       "lbrx/utils": [
         "../src/utils/index.ts"
       ],
+      "lbrx/query": [
+        "../src/query/index.ts"
+      ],
     }
   },
   "include": [

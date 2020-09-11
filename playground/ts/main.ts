@@ -1,5 +1,6 @@
 import { Actions, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
 import { LbrXManager } from 'lbrx/core'
+import { QueryableStore } from 'lbrx/query'
 import { getNestedProp } from 'lbrx/utils'
 import { of } from 'rxjs'
 
@@ -60,7 +61,12 @@ class BetterUserStore extends Store<User> {
 }
 
 const userStore = new UserStore()
-const betterUserStore = new BetterUserStore()
+const betterUserStore = new BetterUserStore();
+
+(betterUserStore as QueryableStore<User>)
+  .onAction(Actions.update)
+  .select$(x => x.address)
+  .subscribe(x => console.log(x))
 
 userStore
   .onAction(Actions.update)
