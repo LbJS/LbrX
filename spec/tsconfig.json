@@ -35,28 +35,28 @@
         "../src/internal/stores/config",
       ],
       "helpers": [
-        "helpers"
+        "__test__"
       ],
       "helpers/factories": [
-        "helpers/factories"
+        "__test__/factories"
       ],
       "helpers/functions": [
-        "helpers/functions"
+        "__test__/functions"
       ],
       "helpers/mocks": [
-        "helpers/mocks"
+        "__test__/mocks"
       ],
       "helpers/test-subjects": [
-        "helpers/test-subjects"
+        "__test__/test-subjects"
       ],
       "helpers/types": [
-        "helpers/types"
+        "__test__/types"
       ],
       "helpers/mock-builder": [
-        "helpers/mock-builder"
+        "__test__/mock-builder"
       ],
       "provider": [
-        "helpers/module-provider"
+        "__test__/module-provider"
       ],
     }
   },
