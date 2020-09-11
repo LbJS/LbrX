@@ -1,6 +1,6 @@
-import { sleep } from 'helpers/functions'
 import { InnerTestSubject, Store, TestSubject, TestSubjectFactory } from 'provider'
 import { Observable } from 'rxjs'
+import { sleep } from '__test__/functions'
 
 describe('Store select$():', () => {
 

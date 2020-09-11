@@ -1,6 +1,6 @@
-import { assertNotNullable } from 'helpers/functions'
 import { cloneError } from 'lbrx/utils'
 import { ErrorTestSubject } from 'provider'
+import { assertNotNullable } from '__test__/functions'
 
 describe('Helper Function - cloneError():', () => {
 

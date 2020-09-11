@@ -1,8 +1,8 @@
-import { MergedTestSubjectFactory } from 'helpers/factories'
-import { toPlainObject } from 'helpers/functions'
-import { InnerTestSubject, MergeTestSubject, TestSubject } from 'helpers/test-subjects'
 import { mergeObjects } from 'lbrx/utils'
 import moment from 'moment'
+import { MergedTestSubjectFactory } from '__test__/factories'
+import { toPlainObject } from '__test__/functions'
+import { InnerTestSubject, MergeTestSubject, TestSubject } from '__test__/test-subjects'
 
 describe('Helper Function - mergeObjects():', () => {
 

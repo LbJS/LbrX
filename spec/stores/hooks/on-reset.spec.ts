@@ -1,8 +1,8 @@
-import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import { TestSubject } from 'helpers/test-subjects'
-import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import { TestSubject } from '__test__/test-subjects'
+import { AllStoreHooks } from '__test__/types'
 
 describe('Store onReset():', () => {
 
@@ -31,7 +31,7 @@ describe('Store onReset():', () => {
   })
 
   it('should not be called on reset if not implemented.', () => {
-    delete store.onReset
+    delete (store as Partial<AllStoreHooks<any>>).onReset
     store.initialize(initialState)
     store.reset()
     expect(onResetSpy).not.toBeCalled()

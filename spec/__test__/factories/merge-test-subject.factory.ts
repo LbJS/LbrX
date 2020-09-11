@@ -1,5 +1,5 @@
-import { splitToObject } from 'helpers/functions'
-import { MergeTestSubject } from 'helpers/test-subjects'
+import { splitToObject } from '__test__/functions'
+import { MergeTestSubject } from '__test__/test-subjects'
 
 export class MergedTestSubjectFactory {
 

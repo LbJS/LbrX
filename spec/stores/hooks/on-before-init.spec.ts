@@ -1,8 +1,8 @@
-import { StoresFactory as StoresFactory_type, TestSubjectFactory } from 'helpers/factories'
-import { assertNotNullable } from 'helpers/functions'
-import { TestSubject } from 'helpers/test-subjects'
-import { AllStoreHooks } from 'helpers/types'
 import { Store } from 'lbrx'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assertNotNullable } from '__test__/functions'
+import { TestSubject } from '__test__/test-subjects'
+import { AllStoreHooks } from '__test__/types'
 
 describe('Store onBeforeInit():', () => {
 
@@ -30,7 +30,7 @@ describe('Store onBeforeInit():', () => {
   })
 
   it('should not be called before initialization if not implemented.', () => {
-    delete store.onBeforeInit
+    delete (store as Partial<AllStoreHooks<any>>).onBeforeInit
     store.initialize(initialState)
     expect(onBeforeInitSpy).not.toBeCalled()
   })
@@ -43,7 +43,7 @@ describe('Store onBeforeInit():', () => {
   })
 
   it('should not be called before async initialization if not implemented.', async () => {
-    delete store.onBeforeInit
+    delete (store as Partial<AllStoreHooks<any>>).onBeforeInit
     store.initializeAsync(Promise.resolve(initialState))
     await Promise.resolve()
     expect(store.value).toBeTruthy()

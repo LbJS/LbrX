@@ -1,31 +1,24 @@
-import { TestSubjectFactory } from 'helpers/factories'
-import { toPlainObject } from 'helpers/functions'
-import { InnerTestSubject, TestSubject } from 'helpers/test-subjects'
-import { compareObjects } from 'lbrx/utils'
+import { simpleCompareObjects } from 'lbrx/utils'
 import moment from 'moment'
+import { TestSubjectFactory } from '__test__/factories'
+import { toPlainObject } from '__test__/functions'
+import { InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
 // tslint:disable: variable-name
-describe('Helper Function - compareObjects():', () => {
+
+describe('Helper Function - simpleCompareObjects():', () => {
 
   const createStateConfigA = () => TestSubjectFactory.createTestSubject_configA()
-  const createStateConfigA_plain = () => TestSubjectFactory.createTestSubject_configA_plain()
   const createStateConfigB = () => TestSubjectFactory.createTestSubject_configB()
-  const createStateWithMethodsConfigA = () => TestSubjectFactory.createTestSubjectWithMethods_configA()
-  const createStateWithMethodsConfigA_plain = () => TestSubjectFactory.createTestSubjectWithMethods_configA_plain()
-  const createStateWithMethodsConfigB = () => TestSubjectFactory.createTestSubjectWithMethods_configB()
+  const createStateConfigA_plain = () => TestSubjectFactory.createTestSubject_configA_plain()
 
   it('should return that the given objects are equal.', () => {
-    expect(compareObjects(createStateConfigA(), createStateConfigA())).toBeTruthy()
-    expect(compareObjects(createStateConfigB(), createStateConfigB())).toBeTruthy()
-    expect(compareObjects(createStateWithMethodsConfigA(), createStateWithMethodsConfigA())).toBeTruthy()
-    expect(compareObjects(createStateWithMethodsConfigB(), createStateWithMethodsConfigB())).toBeTruthy()
+    expect(simpleCompareObjects(createStateConfigA(), createStateConfigA())).toBeTruthy()
+    expect(simpleCompareObjects(createStateConfigA(), createStateConfigA_plain())).toBeTruthy()
   })
 
   it('should return that the given objects are not equal.', () => {
-    expect(compareObjects(createStateConfigA(), createStateConfigA_plain())).toBeFalsy()
-    expect(compareObjects(createStateConfigA(), createStateConfigB())).toBeFalsy()
-    expect(compareObjects(createStateWithMethodsConfigA(), createStateWithMethodsConfigA_plain())).toBeFalsy()
-    expect(compareObjects(createStateWithMethodsConfigA(), createStateWithMethodsConfigB())).toBeFalsy()
+    expect(simpleCompareObjects(createStateConfigA(), createStateConfigB())).toBeFalsy()
   })
 
   it.each`
@@ -43,11 +36,9 @@ describe('Helper Function - compareObjects():', () => {
     ${1.11} | ${{ a: [], b: {} }}                                       | ${{ a: {}, b: [] }}                                       | ${false}
     ${1.12} | ${{ a: {}, b: {} }}                                       | ${{ a: new Date(2000, 0, 1), b: () => { } }}              | ${false}
     ${1.13} | ${{ a: null, b: undefined }}                              | ${{ a: null, b: undefined }}                              | ${true}
-    ${1.14} | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${true}
-    ${1.15} | ${{ a: 'a', b: 'b', c: 'c' }}                             | ${{ a: 'a', b: 'b' }}                                     | ${false}
   `('should return $isEqual. (testId: $testId)', ({ objA, objB, isEqual }) => {
-    expect(compareObjects(objA, objB)).toBe(isEqual)
-    expect(compareObjects(objB, objA)).toBe(isEqual)
+    expect(simpleCompareObjects(objA, objB)).toBe(isEqual)
+    expect(simpleCompareObjects(objB, objA)).toBe(isEqual)
   })
 
   it.each`
@@ -55,7 +46,7 @@ describe('Helper Function - compareObjects():', () => {
     ${2.01} | ${[false]}                                                | ${[]}                                                     | ${false}
     ${2.02} | ${[undefined]}                                            | ${[]}                                                     | ${false}
     ${2.03} | ${[null]}                                                 | ${[]}                                                     | ${false}
-    ${2.04} | ${[null]}                                                 | ${[undefined]}                                            | ${false}
+    ${2.04} | ${[null]}                                                 | ${[undefined]}                                            | ${true}
     ${2.05} | ${[]}                                                     | ${[]}                                                     | ${true}
     ${2.06} | ${[null, undefined, 0, '', false]}                        | ${[]}                                                     | ${false}
     ${2.07} | ${[{ a: [] }, { a: [1] }]}                                | ${[{ a: [1] }, { a: [1] }]}                               | ${false}
@@ -66,8 +57,8 @@ describe('Helper Function - compareObjects():', () => {
     ${2.12} | ${[() => { }]}                                            | ${[() => { }]}                                            | ${true}
     ${2.13} | ${[[[0]]]}                                                | ${[[[false]]]}                                            | ${false}
   `('should return $isEqual. (testId: $testId)', ({ arrA, arrB, isEqual }) => {
-    expect(compareObjects(arrA, arrB)).toBe(isEqual)
-    expect(compareObjects(arrB, arrA)).toBe(isEqual)
+    expect(simpleCompareObjects(arrA, arrB)).toBe(isEqual)
+    expect(simpleCompareObjects(arrB, arrA)).toBe(isEqual)
   })
 
   it.each`
@@ -76,18 +67,18 @@ describe('Helper Function - compareObjects():', () => {
     ${3.02} | ${{ a: { a: false } }}                                    | ${{ a: { a: true } }}                                     | ${false}
     ${3.03} | ${{ a: { a: null } }}                                     | ${{ a: { a: undefined } }}                                | ${false}
     ${3.04} | ${{ a: { a: null } }}                                     | ${{ a: { b: undefined } }}                                | ${false}
-    ${3.05} | ${{ a: { a: [null] } }}                                   | ${{ a: { a: [undefined] } }}                              | ${false}
+    ${3.05} | ${{ a: { a: [null] } }}                                   | ${{ a: { a: [undefined] } }}                              | ${true}
     ${3.06} | ${{ a: { b: new Date(2000, 0) } }}                        | ${{ a: { b: new Date(2000, 0) } }}                        | ${true}
     ${3.07} | ${{ a: { b: new Date(2000, 0) } }}                        | ${{ a: { b: new Date(2000, 1) } }}                        | ${false}
     ${3.08} | ${{ a: { b: () => { } } }}                                | ${{ a: { b: () => { } } }}                                | ${true}
     ${3.09} | ${{ a: { b: () => { } } }}                                | ${{ a: { b: [] } }}                                       | ${false}
-    ${3.10} | ${{ a: { b: Symbol() } }}                                 | ${{ a: { b: Symbol() } }}                                 | ${false}
-    ${3.11} | ${{ a: { b: () => { } } }}                                | ${{ a: { b: Symbol() } }}                                 | ${false}
+    ${3.10} | ${{ a: { b: Symbol() } }}                                 | ${{ a: { b: Symbol() } }}                                 | ${true}
+    ${3.11} | ${{ a: { b: () => { } } }}                                | ${{ a: { b: Symbol() } }}                                 | ${true}
     ${3.12} | ${{ a: { b: new Date(2000, 0) } }}                        | ${{ a: { b: {} } }}                                       | ${false}
     ${3.13} | ${{ a: { b: { c: { a: [] } } } }}                         | ${{ a: { b: { c: { a: [] } } } }}                         | ${true}
   `('should return $isEqual. (testId: $testId)', ({ objA, objB, isEqual }) => {
-    expect(compareObjects(objA, objB)).toBe(isEqual)
-    expect(compareObjects(objB, objA)).toBe(isEqual)
+    expect(simpleCompareObjects(objA, objB)).toBe(isEqual)
+    expect(simpleCompareObjects(objB, objA)).toBe(isEqual)
   })
 
   const instancedTestSubject = new TestSubject({ innerTestObject: new InnerTestSubject({ booleanValue: true }) })
@@ -99,17 +90,17 @@ describe('Helper Function - compareObjects():', () => {
     ${4.02} | ${new TestSubject({ getterSetterDate: new Date(1900, 0) })} | ${new TestSubject({ getterSetterDate: new Date(1900, 1) })}     | ${false}
     ${4.03} | ${instancedTestSubject}                                     | ${plainTestSubject}                                             | ${true}
   `('should return $isEqual. (testId: $testId)', ({ objA, objB, isEqual }) => {
-    expect(compareObjects(objA, objB)).toBe(isEqual)
-    expect(compareObjects(objB, objA)).toBe(isEqual)
+    expect(simpleCompareObjects(objA, objB)).toBe(isEqual)
+    expect(simpleCompareObjects(objB, objA)).toBe(isEqual)
   })
 
   it.each`
     testId  | objA                                                        | objB                                                            | isEqual
     ${5.01} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 0)) }}                             | ${true}
     ${5.02} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: moment(new Date(1900, 1)) }}                             | ${false}
-    ${5.03} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: new Date(1900, 0) }}                                     | ${false}
+    ${5.03} | ${{ a: moment(new Date(1900, 0)) }}                         | ${{ a: new Date(1900, 0) }}                                     | ${true}
   `('should return $isEqual. (testId: $testId)', ({ objA, objB, isEqual }) => {
-    expect(compareObjects(objA, objB)).toBe(isEqual)
-    expect(compareObjects(objB, objA)).toBe(isEqual)
+    expect(simpleCompareObjects(objA, objB)).toBe(isEqual)
+    expect(simpleCompareObjects(objB, objA)).toBe(isEqual)
   })
 })

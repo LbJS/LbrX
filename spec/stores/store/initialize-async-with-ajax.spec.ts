@@ -1,7 +1,7 @@
-import { Todo } from 'helpers/test-subjects'
 import { Store } from 'lbrx'
 import fetch from 'node-fetch'
 import { from } from 'rxjs'
+import { Todo } from '__test__/test-subjects'
 
 describe('Store initializeAsync():', () => {
 

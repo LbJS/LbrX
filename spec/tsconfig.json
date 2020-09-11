@@ -34,25 +34,25 @@
       "lbrx/internal/stores/config": [
         "../src/internal/stores/config",
       ],
-      "helpers": [
+      "__test__": [
         "__test__"
       ],
-      "helpers/factories": [
+      "__test__/factories": [
         "__test__/factories"
       ],
-      "helpers/functions": [
+      "__test__/functions": [
         "__test__/functions"
       ],
-      "helpers/mocks": [
+      "__test__/mocks": [
         "__test__/mocks"
       ],
-      "helpers/test-subjects": [
+      "__test__/test-subjects": [
         "__test__/test-subjects"
       ],
-      "helpers/types": [
+      "__test__/types": [
         "__test__/types"
       ],
-      "helpers/mock-builder": [
+      "__test__/mock-builder": [
         "__test__/mock-builder"
       ],
       "provider": [

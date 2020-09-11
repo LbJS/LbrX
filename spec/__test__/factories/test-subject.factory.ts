@@ -1,4 +1,4 @@
-import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectConfigurations, TestSubjectWithMethods } from 'helpers/test-subjects'
+import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectConfigurations, TestSubjectWithMethods } from '__test__/test-subjects'
 
 export class TestSubjectFactory {
 

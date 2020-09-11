@@ -1,7 +1,7 @@
-import { toPlainObject } from 'helpers/functions'
-import { InnerTestSubject, TestSubject } from 'helpers/test-subjects'
 import { countObjectChanges } from 'lbrx/utils'
 import moment from 'moment'
+import { toPlainObject } from '__test__/functions'
+import { InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
 describe('Helper Function - countObjectChanges():', () => {
 

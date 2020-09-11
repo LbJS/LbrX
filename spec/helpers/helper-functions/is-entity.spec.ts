@@ -1,6 +1,6 @@
-import { ErrorFactory, TestSubjectFactory } from 'helpers/factories'
 import { isEntity } from 'lbrx/utils'
 import moment from 'moment'
+import { ErrorFactory, TestSubjectFactory } from '__test__/factories'
 
 describe('Helper Function - isEntity():', () => {
 

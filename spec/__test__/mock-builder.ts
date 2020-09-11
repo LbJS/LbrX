@@ -1,4 +1,4 @@
-import { deleteLocalStorageMock, deleteMockedWindow, deleteReduxDevToolsExtensionMock, deleteSessionStorageMock, mockLocalStorage, mockReduxDevToolsExtension, mockSessionStorage, mockWindow } from 'helpers/mocks'
+import { deleteLocalStorageMock, deleteMockedWindow, deleteReduxDevToolsExtensionMock, deleteSessionStorageMock, mockLocalStorage, mockReduxDevToolsExtension, mockSessionStorage, mockWindow } from '__test__/mocks'
 
 export default class MockBuilder {
 
