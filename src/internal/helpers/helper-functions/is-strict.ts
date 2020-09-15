@@ -1,5 +1,9 @@
 
+let _isStrict: boolean | null = null
+
+// tslint:disable: no-eval
 export function isStrict(): boolean {
-  // tslint:disable: no-eval
-  return eval('(function() { return !this; })()')
+  if (_isStrict !== null) return _isStrict
+  _isStrict = eval('(function() { return !this; })()') as boolean
+  return _isStrict
 }
