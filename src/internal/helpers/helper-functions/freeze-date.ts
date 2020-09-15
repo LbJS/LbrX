@@ -8,8 +8,9 @@ export function freezeDate(value: Date): Readonly<Date> {
   if (!_dateSettersMethodsKeys) {
     _dateSettersMethodsKeys = getOwnPropertyNames(Date.prototype).filter(x => x.startsWith('set'))
   }
+  const _isStrict = isStrict()
   _dateSettersMethodsKeys.forEach(key => {
-    value[key] = isStrict() ? () => { throwError(`Date: "${value.toString()}" is readonly`) } : () => { }
+    value[key] = _isStrict ? () => { throwError(`Date: "${value.toString()}" is readonly`) } : () => { }
   })
   return value
 }
