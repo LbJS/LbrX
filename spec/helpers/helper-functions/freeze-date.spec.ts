@@ -30,12 +30,6 @@ describe('Helper Function - freezeDate():', () => {
     expect(() => { date.setUTCSeconds(1) }).toThrow()
   })
 
-  it('should return the same date.', () => {
-    const date = new Date()
-    const returnedDate = freezeDate(date)
-    expect(returnedDate).toBe(date)
-  })
-
   it('should throw on returned value modification.', () => {
     const date = new Date()
     const returnedDate = freezeDate(date)
@@ -168,5 +162,11 @@ describe('Helper Function - freezeDate():', () => {
     returnedDate.setUTCSeconds(1)
     expect(date).toStrictEqual(expectedDate)
     expect(returnedDate).toStrictEqual(expectedDate)
+  })
+
+  it('should return the same date.', () => {
+    const date = new Date()
+    const returnedDate = freezeDate(date)
+    expect(returnedDate).toBe(date)
   })
 })
