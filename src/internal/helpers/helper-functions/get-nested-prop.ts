@@ -96,7 +96,8 @@ export function getNestedProp<
   P10 extends keyof NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]>[P5]>[P6]>[P7]>[P8]>[P9]>
 >(obj: T, prop1: P1, prop2: P2, prop3: P3, prop4: P4, prop5: P5, prop6: P6, prop7: P7, prop8: P8, prop9: P9, prop10: P10): NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]>[P5]>[P6]>[P7]>[P8]>[P9]>[P10] | null | undefined
 
-export function getNestedProp(obj: unknown, ...props: string[]): any {
+export function getNestedProp(obj: object, ...props: string[]): any {
+  if (!obj) return obj
   let result = obj
   for (const prop of props) {
     if (!isObject(result)) return result
