@@ -24,19 +24,19 @@ export class LbrXManager {
   }
 
   /**
+   * Enables stack-tracing errors.
+   */
+  public static enableStackTracingErrors(): typeof LbrXManager {
+    enableStackTracingErrors()
+    return LbrXManager
+  }
+
+  /**
    * Initializes Redux DevTools.
    */
   public static initializeDevTools(devToolsOptions?: Partial<DevtoolsOptions>): typeof LbrXManager {
     LbrXManager._devToolsManager = new DevToolsManager(devToolsOptions)
     LbrXManager._devToolsManager.initialize()
-    return LbrXManager
-  }
-
-  /**
-   * Sets global store configuration for all stores.
-   */
-  public static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
-    setGlobalStoreConfig(options)
     return LbrXManager
   }
 
@@ -64,10 +64,10 @@ export class LbrXManager {
   }
 
   /**
-   * Enables stack-tracing errors.
+   * Sets global store configuration for all stores.
    */
-  public static enableStackTracingErrors(): typeof LbrXManager {
-    enableStackTracingErrors()
+  public static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
+    setGlobalStoreConfig(options)
     return LbrXManager
   }
 

@@ -22,6 +22,9 @@
       "lbrx/internal/dev-tools": [
         "../src/internal/dev-tools",
       ],
+      "lbrx/internal/dev-tools/config": [
+        "../src/internal/dev-tools/config",
+      ],
       "lbrx/internal/helpers": [
         "../src/internal/helpers",
       ],
@@ -33,6 +36,9 @@
       ],
       "lbrx/internal/stores/config": [
         "../src/internal/stores/config",
+      ],
+      "lbrx/internal/stores/store-accessories": [
+        "../src/internal/stores/store-accessories"
       ],
       "__test__": [
         "__test__"

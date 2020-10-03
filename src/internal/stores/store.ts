@@ -3,8 +3,7 @@ import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxj
 import { isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, QueryableStore, QueryContext } from './store-accessories'
-import { ProjectsOrKeys } from './store-accessories/types'
+import { Actions, ProjectsOrKeys, QueryableStore, QueryContext } from './store-accessories'
 
 /**
  * @example
