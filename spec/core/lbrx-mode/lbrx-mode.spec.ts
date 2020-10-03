@@ -1,17 +1,14 @@
+import { enableProdMode as enableProdMode_type, isDev as isDev_type } from 'lbrx/internal/core'
 
-describe('LbrX Mode:', () => {
+describe('lbrx-mode:', () => {
 
-  let enableProdMode: () => void
-  let isDev: () => boolean
+  let enableProdMode: typeof enableProdMode_type
+  let isDev: typeof isDev_type
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
-    enableProdMode = providerModule.enableProdMode
-    isDev = providerModule.isDev
-  })
-
-  afterEach(() => {
-    jest.resetModules()
+    const provider = await import('provider')
+    enableProdMode = provider.enableProdMode
+    isDev = provider.isDev
   })
 
   it('should be in development mode by default.', () => {
