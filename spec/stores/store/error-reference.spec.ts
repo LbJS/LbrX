@@ -3,7 +3,7 @@ import { ErrorFactory, TestSubjectFactory } from '__test__/factories'
 import { assertNotNullable } from '__test__/functions'
 import { ErrorTestSubject, TestSubject } from '__test__/test-subjects'
 
-describe('Store Error Reference:', () => {
+describe(`Store Error Reference:`, () => {
 
   const error = ErrorFactory.createError()
   const nestedError = ErrorFactory.createNestedError()
@@ -13,27 +13,27 @@ describe('Store Error Reference:', () => {
   let loadingStore: Store<TestSubject, ErrorTestSubject>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     store = providerModule.StoresFactory.createStore(initialState)
-    loadingStore = providerModule.StoresFactory.createStore<TestSubject>(null, 'LOADING-STORE')
+    loadingStore = providerModule.StoresFactory.createStore<TestSubject>(null, `LOADING-STORE`)
   })
 
   afterEach(() => {
     jest.resetModules()
   })
 
-  it('should return the exact same error.', () => {
+  it(`should return the exact same error.`, () => {
     loadingStore.error = nestedError
     expect(loadingStore.error).toStrictEqual(pureNestedError)
   })
 
-  it('should return the error with different reference after setting it.', () => {
+  it(`should return the error with different reference after setting it.`, () => {
     store.error = error
     expect(store.error).toBeTruthy()
     expect(store.error).not.toBe(error)
   })
 
-  it('should return the error with different reference for the inner error after setting it.', () => {
+  it(`should return the error with different reference for the inner error after setting it.`, () => {
     assertNotNullable(nestedError?.innerError?.innerError)
     loadingStore.error = nestedError
     const storesError = loadingStore.error
@@ -41,8 +41,8 @@ describe('Store Error Reference:', () => {
     expect(storesError.innerError.innerError).not.toBe(nestedError.innerError.innerError)
   })
 
-  it('should not be effected by error object change after set.', () => {
-    const newErrorMsg = 'New error message'
+  it(`should not be effected by error object change after set.`, () => {
+    const newErrorMsg = `New error message`
     const localError = ErrorFactory.createError()
     store.error = localError
     localError.message = newErrorMsg
@@ -52,8 +52,8 @@ describe('Store Error Reference:', () => {
     expect(storesError.message).not.toBe(newErrorMsg)
   })
 
-  it('should not be effected by returned error object change.', () => {
-    const newErrorMsg = 'New error message'
+  it(`should not be effected by returned error object change.`, () => {
+    const newErrorMsg = `New error message`
     let localError: Error | null = ErrorFactory.createError()
     store.error = localError
     localError = store.error
@@ -65,7 +65,7 @@ describe('Store Error Reference:', () => {
     expect(storesError.message).not.toBe(newErrorMsg)
   })
 
-  it('should have different nested custom error object reference.', () => {
+  it(`should have different nested custom error object reference.`, () => {
     loadingStore.error = nestedError
     assertNotNullable(nestedError.innerError?.innerError)
     const storesError = loadingStore.error
@@ -73,8 +73,8 @@ describe('Store Error Reference:', () => {
     expect(storesError.innerError.innerError).not.toBe(nestedError.innerError.innerError)
   })
 
-  it("should not be effected by custom error object's change after set.", () => {
-    const newErrorMsg = 'New error message'
+  it(`should not be effected by custom error object's change after set.`, () => {
+    const newErrorMsg = `New error message`
     const localError = ErrorFactory.createNestedError()
     loadingStore.error = localError
     assertNotNullable(localError.innerError?.innerError)

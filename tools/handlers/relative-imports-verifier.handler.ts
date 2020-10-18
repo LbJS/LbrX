@@ -13,10 +13,10 @@ export function testRelativeImports(config: RelativeImportsVerifierConfig): void
   })
   filteredFiles.forEach(file => {
     const fileStr = readStrFromFile(file)
-    fileStr.split('\n').forEach((line, i) => {
-      if (line.startsWith('import')
-        || (line.startsWith('export *')
-          && file.endsWith('index.ts'))
+    fileStr.split(`\n`).forEach((line, i) => {
+      if (line.startsWith(`import`)
+        || (line.startsWith(`export *`)
+          && file.endsWith(`index.ts`))
       ) {
         if (!testImport(line, file, config.fileExtension, config.excludedImports)) {
           throw new Error(`File: ${file} has a non relative import at line: ${i + 1} ${line}`)
@@ -32,13 +32,13 @@ function testImport(
   extension: string,
   excludedImports: string[]
 ): boolean {
-  let importPath = fileLine.split("'")[1]
-  if (!importPath) importPath = fileLine.split('"')[1]
+  let importPath = fileLine.split(`'`)[1]
+  if (!importPath) importPath = fileLine.split(`"`)[1]
   if (excludedImports.some(x => x == importPath)) return true
-  if (!importPath.startsWith('./') && !importPath.startsWith('../')) return false
+  if (!importPath.startsWith(`./`) && !importPath.startsWith(`../`)) return false
   const currentDir = dirname(filePath)
   let relativeFile = resolvePath(currentDir, importPath)
   if (existsSync(relativeFile + extension)) return true
-  relativeFile = resolvePath(relativeFile, 'index')
+  relativeFile = resolvePath(relativeFile, `index`)
   return existsSync(relativeFile + extension)
 }

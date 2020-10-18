@@ -15,5 +15,5 @@ export default async function main(): Promise<void> {
   // root package-lock.json
   handlePkgJsonFile(config.rootFolder, config.packageLockJsonPath, config.packageLockJsonConfig)
   addBanners(config.bannerAdder)
-  logger.logSuccess('Post SRC build')
+  logger.logSuccess(`Post SRC build`)
 }

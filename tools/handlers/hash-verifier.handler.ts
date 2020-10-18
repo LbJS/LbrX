@@ -14,14 +14,14 @@ export function verifyHashes(config: HashVerifierConfig): void {
     const hashedFile = hashFileName(set.hashedFile, hash)
       .split(config.rootFolder)[1]
       .substring(1)
-      .replace(/\\/g, '/')
+      .replace(/\\/g, `/`)
     if (!fileStr.includes(hashedFile)) throw new Error(`Initiator file: "${set.initiatorFile}" does not include "${hashedFile}".`)
   })
   if (!config.indexHtml) return
   const filteredFiles = getAllFilesFromDirectory(config.rootFolder).filter(x => {
     if (x.includes(hash)
-      && (x.endsWith('.js')
-        || x.endsWith('.css'))
+      && (x.endsWith(`.js`)
+        || x.endsWith(`.css`))
       && !config.excludedFiles.some(y => y === x
         || (!y.includes(hash)
           && hashFileName(y, hash) === x))
@@ -36,7 +36,7 @@ export function verifyHashes(config: HashVerifierConfig): void {
     const rawHtmlFile = readStrFromFile(config.indexHtml)
     const hashedFile = file.split(config.rootFolder)[1]
       .substring(1)
-      .replace(/\\/g, '/')
+      .replace(/\\/g, `/`)
     if (!rawHtmlFile.includes(hashedFile)) throw new Error(`Html file: "${config.indexHtml}" doesn't include "${hashedFile}"`)
   }
 }

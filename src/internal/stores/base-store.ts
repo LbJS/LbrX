@@ -28,7 +28,7 @@ export abstract class BaseStore<T extends object, E = any> {
     return this._stateField
   }
   protected set _state(value: State<T, E>) {
-    if (isStackTracingErrors() && isDev() && !isCalledBy('_setState', 0)) {
+    if (isStackTracingErrors() && isDev() && !isCalledBy(`_setState`, 0)) {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     this._stateField = value
@@ -310,7 +310,7 @@ export abstract class BaseStore<T extends object, E = any> {
         case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
       }
     })()
-    config.objectCompareTypeName = ['Reference', 'Simple', 'Advanced'][this._objectCompareType]
+    config.objectCompareTypeName = [`Reference`, `Simple`, `Advanced`][this._objectCompareType]
     const storeName = this._storeName
     if (config.storageType != Storages.custom) {
       if (config.customStorageApi) {
@@ -331,10 +331,10 @@ export abstract class BaseStore<T extends object, E = any> {
       }
     })()
     config.storageTypeName = [
-      'None',
-      'Local-Storage',
-      'Session-Storage',
-      'Custom',
+      `None`,
+      `Local-Storage`,
+      `Session-Storage`,
+      `Custom`,
     ][config.storageType]
     this._storageDebounce = config.storageDebounceTime
     this._storageKey = config.storageKey
@@ -360,7 +360,7 @@ export abstract class BaseStore<T extends object, E = any> {
 
   /** @internal */
   protected _main(initialValueOrNull: T | null): void {
-    if (!this.config) throwError('Store must be provided with store configuration via decorator or via constructor.')
+    if (!this.config) throwError(`Store must be provided with store configuration via decorator or via constructor.`)
     const storeName = this._storeName
     this._assertStoreNameValid(storeName)
     BaseStore._storeNames.push(storeName)

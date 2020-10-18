@@ -5,5 +5,5 @@ export const LOGGER_CONFIG: LoggerConfig = {
   isActive: true,
   consoleLogLevel: LogLevels.log,
   fileLogLevel: LogLevels.none,
-  logFolderLocation: 'logs',
+  logFolderLocation: `logs`,
 }

@@ -3,7 +3,7 @@ import { TestSubjectFactory } from '__test__/factories'
 import { objectAssign } from '__test__/functions'
 
 // tslint:disable: variable-name
-describe('Helper Function - isObjectCloned():', () => {
+describe(`Helper Function - isObjectCloned():`, () => {
 
   const createStateConfigA = () => TestSubjectFactory.createTestSubject_configA()
   const createStateConfigA_plain = () => TestSubjectFactory.createTestSubject_configA_plain()
@@ -12,7 +12,7 @@ describe('Helper Function - isObjectCloned():', () => {
   const createStateWithMethodsConfigA_plain = () => TestSubjectFactory.createTestSubjectWithMethods_configA_plain()
   const createStateWithMethodsConfigB = () => TestSubjectFactory.createTestSubjectWithMethods_configB()
 
-  it('should return that objects are cloned.', () => {
+  it(`should return that objects are cloned.`, () => {
     expect(isObjectCloned(createStateConfigA(), createStateConfigA())).toBeTruthy()
     expect(isObjectCloned(createStateConfigA_plain(), createStateConfigA_plain())).toBeTruthy()
     expect(isObjectCloned(createStateConfigB(), createStateConfigB())).toBeTruthy()
@@ -21,7 +21,7 @@ describe('Helper Function - isObjectCloned():', () => {
     expect(isObjectCloned(createStateWithMethodsConfigB(), createStateWithMethodsConfigB())).toBeTruthy()
   })
 
-  it('should return that objects are not cloned.', () => {
+  it(`should return that objects are not cloned.`, () => {
     let obj = createStateConfigA()
     expect(isObjectCloned(obj, objectAssign({}, obj))).toBeFalsy()
     obj = createStateConfigA_plain()

@@ -13,7 +13,7 @@ export function copyFiles(config: FileCopyConfig | FileCopyConfig[]): void {
 
 function _copyFiles(config: FileCopyConfig): void {
   if (!config.files && !config.sourceFolder) {
-    throw new Error("Can't initiate Files Copy Handler without files list or source folder.")
+    throw new Error(`Can't initiate Files Copy Handler without files list or source folder.`)
   }
   const targetFolder = resolvePath(config.rootFolder, config.targetFolder)
   if (config.files) {
@@ -36,18 +36,18 @@ function _copyFiles(config: FileCopyConfig): void {
       }
       const baseFileName = base(path, /*include ext*/ true)
       if (sourceFolderConfig.excludedFileNamesByPattern) {
-        const patternParts = sourceFolderConfig.excludedFileNamesByPattern.split('.')
-        const fileParts = baseFileName.split('.')
+        const patternParts = sourceFolderConfig.excludedFileNamesByPattern.split(`.`)
+        const fileParts = baseFileName.split(`.`)
         let isMatch = false
         if (patternParts.length == 2
-          && ((patternParts[0] == '**'
-            && baseFileName.endsWith('.' + patternParts[1]))
-            || (patternParts[1] == '**'
-              && baseFileName.startsWith('.' + patternParts[0])))
+          && ((patternParts[0] == `**`
+            && baseFileName.endsWith(`.` + patternParts[1]))
+            || (patternParts[1] == `**`
+              && baseFileName.startsWith(`.` + patternParts[0])))
         ) {
           isMatch = true
         } else {
-          isMatch = fileParts.every((part, i) => patternParts[i] === part || patternParts[i] === '*')
+          isMatch = fileParts.every((part, i) => patternParts[i] === part || patternParts[i] === `*`)
         }
         if (isMatch) return false
       }

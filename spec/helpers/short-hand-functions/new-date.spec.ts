@@ -1,19 +1,19 @@
 import { newDate } from 'lbrx/utils'
 
-describe('Short Hand Function - newDate():', () => {
+describe(`Short Hand Function - newDate():`, () => {
 
-  it("should call Date's constructor.", () => {
-    const dateSpy = jest.spyOn(globalThis, 'Date').mockImplementationOnce(jest.fn())
+  it(`should call Date's constructor.`, () => {
+    const dateSpy = jest.spyOn(globalThis, `Date`).mockImplementationOnce(jest.fn())
     newDate()
     expect(dateSpy).toBeCalledTimes(1)
   })
 
-  it('should return the expected Date.', () => {
+  it(`should return the expected Date.`, () => {
     let refDate = new Date()
     let resultDate = newDate()
     expect(resultDate).toBeInstanceOf(Date)
     expect(refDate.getTime()).toBeLessThanOrEqual(resultDate.getTime())
-    const isoDate = '2020-09-09T18:43:20.354Z'
+    const isoDate = `2020-09-09T18:43:20.354Z`
     refDate = new Date(isoDate)
     resultDate = newDate(isoDate)
     expect(resultDate).toStrictEqual(refDate)

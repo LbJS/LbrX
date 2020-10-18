@@ -70,10 +70,7 @@
     "ordered-imports": false,
     "quotemark": [
       true,
-      "single",
-      "backtick",
-      "avoid-escape",
-      "avoid-template"
+      "backtick"
     ],
     "trailing-comma": false,
     "indent": [

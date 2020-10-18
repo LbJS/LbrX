@@ -3,7 +3,7 @@ import { Store, TestSubject, TestSubjectFactory } from 'provider'
 import { assertNotNullable } from '__test__/functions'
 
 
-describe('Store initial value value:', () => {
+describe(`Store initial value:`, () => {
 
   const initialValue = TestSubjectFactory.createTestSubject_initial()
   let store: Store<TestSubject>
@@ -11,9 +11,9 @@ describe('Store initial value value:', () => {
   let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
-    const provider = await import('provider')
-    store = provider.StoresFactory.createStore<TestSubject>(initialValue, 'TEST-STORE')
-    nullStore = provider.StoresFactory.createStore<TestSubject>(null, 'NULL-STORE')
+    const provider = await import(`provider`)
+    store = provider.StoresFactory.createStore<TestSubject>(initialValue, `TEST-STORE`)
+    nullStore = provider.StoresFactory.createStore<TestSubject>(null, `NULL-STORE`)
     LbrXManager = provider.LbrXManager
   })
 
@@ -21,16 +21,16 @@ describe('Store initial value value:', () => {
     jest.resetModules()
   })
 
-  it('should be null before initialization.', () => {
+  it(`should be null before initialization.`, () => {
     expect(nullStore.initialValue).toBeNull()
   })
 
-  it('should have value after initialization.', () => {
+  it(`should have value after initialization.`, () => {
     nullStore.initialize(initialValue)
     expect(nullStore.initialValue).toStrictEqual(initialValue)
   })
 
-  it('should return a readonly value on dev mode.', () => {
+  it(`should return a readonly value on dev mode.`, () => {
     const value = store.initialValue
     expect(() => {
       assertNotNullable(value)

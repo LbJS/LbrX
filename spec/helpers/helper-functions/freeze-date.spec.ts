@@ -1,16 +1,16 @@
 import { freezeDate as freezeDate_type } from 'lbrx/utils'
 
 
-describe('Helper Function - freezeDate():', () => {
+describe(`Helper Function - freezeDate():`, () => {
 
   let freezeDate: typeof freezeDate_type
 
   beforeEach(async () => {
-    const provider = await import('provider')
+    const provider = await import(`provider`)
     freezeDate = provider.freezeDate
   })
 
-  it("should throw on date's modification.", () => {
+  it(`should throw on date's modification.`, () => {
     const date = new Date()
     freezeDate(date)
     expect(() => { date.setTime(1) }).toThrow()
@@ -30,13 +30,13 @@ describe('Helper Function - freezeDate():', () => {
     expect(() => { date.setUTCSeconds(1) }).toThrow()
   })
 
-  it('should return the same date.', () => {
+  it(`should return the same date.`, () => {
     const date = new Date()
     const returnedDate = freezeDate(date)
     expect(returnedDate).toBe(date)
   })
 
-  it('should throw on returned value modification.', () => {
+  it(`should throw on returned value modification.`, () => {
     const date = new Date()
     const returnedDate = freezeDate(date)
     expect(() => { returnedDate.setTime(1) }).toThrow()
@@ -56,8 +56,8 @@ describe('Helper Function - freezeDate():', () => {
     expect(() => { returnedDate.setUTCSeconds(1) }).toThrow()
   })
 
-  it('should not throw on non strict mode.', async () => {
-    jest.spyOn(globalThis, 'eval').mockImplementationOnce(jest.fn().mockReturnValue(false))
+  it(`should not throw on non strict mode.`, async () => {
+    jest.spyOn(globalThis, `eval`).mockImplementationOnce(jest.fn().mockReturnValue(false))
     const date = new Date()
     const returnedDate = freezeDate(date)
     expect(() => { date.setTime(1) }).not.toThrow()
@@ -92,8 +92,8 @@ describe('Helper Function - freezeDate():', () => {
     expect(() => { returnedDate.setUTCSeconds(1) }).not.toThrow()
   })
 
-  it('should not be modified.', async () => {
-    jest.spyOn(globalThis, 'eval').mockImplementationOnce(jest.fn().mockReturnValue(false))
+  it(`should not be modified.`, async () => {
+    jest.spyOn(globalThis, `eval`).mockImplementationOnce(jest.fn().mockReturnValue(false))
     const date = new Date()
     const expectedDate = new Date(date)
     const returnedDate = freezeDate(date)
@@ -131,8 +131,8 @@ describe('Helper Function - freezeDate():', () => {
     expect(returnedDate).toStrictEqual(expectedDate)
   })
 
-  it('should not be modified on non strict mode.', async () => {
-    jest.spyOn(globalThis, 'eval').mockImplementationOnce(jest.fn().mockReturnValue(false))
+  it(`should not be modified on non strict mode.`, async () => {
+    jest.spyOn(globalThis, `eval`).mockImplementationOnce(jest.fn().mockReturnValue(false))
     const date = new Date()
     const expectedDate = new Date(date)
     const returnedDate = freezeDate(date)

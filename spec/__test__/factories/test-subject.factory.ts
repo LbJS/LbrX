@@ -32,7 +32,7 @@ export class TestSubjectFactory {
     switch (configuration) {
       case TestSubjectConfigurations.initial:
         return new TestSubject({
-          stringValue: 'abcdefg',
+          stringValue: `abcdefg`,
           numberValue: 5,
           booleanValue: false,
           dateValue: new Date(2020, 5),
@@ -42,7 +42,7 @@ export class TestSubjectFactory {
         })
       case TestSubjectConfigurations.configurationA:
         return new TestSubject({
-          stringValue: 'abcdefg',
+          stringValue: `abcdefg`,
           numberValue: 5,
           booleanValue: false,
           dateValue: new Date(2020, 2),
@@ -54,7 +54,7 @@ export class TestSubjectFactory {
         return JSON.parse(JSON.stringify(this.createTestSubject(TestSubjectConfigurations.configurationA)))
       case TestSubjectConfigurations.configurationB:
         return new TestSubject({
-          stringValue: 'abcdefg',
+          stringValue: `abcdefg`,
           numberValue: 5,
           booleanValue: false,
           dateValue: new Date(2020, 2),
@@ -69,27 +69,27 @@ export class TestSubjectFactory {
     switch (configuration) {
       case TestSubjectConfigurations.initial:
         return new InnerTestSubject({
-          stringValue: 'a b c',
+          stringValue: `a b c`,
           numberValue: 112346579.1236549,
           booleanValue: true,
           dateValue: new Date(2018, 9),
           getterSetterDate: new Date(2018, 8),
           deepNestedObj: TestSubjectFactory.createDeepNestedTestSubject(configuration),
           obj: {
-            value: 'aaaaaaaa bbbbbbbbb',
+            value: `aaaaaaaa bbbbbbbbb`,
             date: new Date(2017, 5)
           },
         })
       case TestSubjectConfigurations.configurationA:
         return new InnerTestSubject({
-          stringValue: 'a b c',
+          stringValue: `a b c`,
           numberValue: 112346579.1236549,
           booleanValue: true,
           dateValue: new Date(2018, 9),
           getterSetterDate: new Date(2018, 8),
           deepNestedObj: TestSubjectFactory.createDeepNestedTestSubject(configuration),
           obj: {
-            value: 'aaaaaaaa bbbbbbbbb',
+            value: `aaaaaaaa bbbbbbbbb`,
             date: new Date(2017, 5)
           },
         })
@@ -104,65 +104,65 @@ export class TestSubjectFactory {
     switch (configuration) {
       case TestSubjectConfigurations.initial: {
         const partialDeepNestedObject: Partial<DeepNestedTestSubject> = {
-          stringValue: 'some string here',
+          stringValue: `some string here`,
           numberValue: 5.55,
           booleanValue: false,
           dateValue: new Date(2019, 0),
           objectList: [
             {
-              value: 'some value',
+              value: `some value`,
               date: new Date(2019, 5)
             },
             {
-              value: 'some other value',
+              value: `some other value`,
               date: new Date(2019, 5)
             },
             null,
             {
-              value: 'some value',
+              value: `some value`,
               date: new Date(2019, 6)
             },
           ],
           stringsList: [
-            'a',
-            'b b b',
-            'c',
+            `a`,
+            `b b b`,
+            `c`,
             null,
-            'e e'
+            `e e`
           ]
         }
         return Object.assign(new DeepNestedTestSubject(), partialDeepNestedObject)
       }
       case TestSubjectConfigurations.configurationA: {
         const partialDeepNestedObject: Partial<DeepNestedTestSubject> = {
-          stringValue: 'some string here',
+          stringValue: `some string here`,
           numberValue: 5.55,
           booleanValue: false,
           dateValue: new Date(2019, 0),
           objectList: [
             {
-              value: 'some value',
+              value: `some value`,
               date: new Date(2019, 5)
             },
             {
-              value: 'some other value',
+              value: `some other value`,
               date: new Date(2019, 5)
             },
             {
-              value: 'some value',
+              value: `some value`,
               date: new Date(2019, 9)
             },
             {
-              value: 'some value',
+              value: `some value`,
               date: new Date(2019, 6)
             },
           ],
           stringsList: [
-            'a',
-            'b b b',
-            'c',
+            `a`,
+            `b b b`,
+            `c`,
             null,
-            'e e'
+            `e e`
           ]
         }
         return Object.assign(new DeepNestedTestSubject(), partialDeepNestedObject)

@@ -8,10 +8,10 @@ export class MergedTestSubjectFactory {
     return splitToObject(<MergeTestSubject>{
       a: [1, 0, 0],
       b: [null, 0, 0],
-      c: ['', null, null],
+      c: [``, null, null],
       d: [null, null, null],
       e: [undefined, 0, 0],
-      f: ['', undefined, ''],
+      f: [``, undefined, ``],
       g: [[1], [2], [2]],
       h: [null, [], []],
       i: [[], null, null],
@@ -31,10 +31,10 @@ export class MergedTestSubjectFactory {
       objA: {
         a: [1, 0, 0],
         b: [null, 0, 0],
-        c: ['', null, null],
+        c: [``, null, null],
         d: [null, null, null],
         e: [undefined, 0, 0],
-        f: ['', undefined, ''],
+        f: [``, undefined, ``],
         g: [[1], [2], [2]],
         h: [null, [], []],
         i: [[], null, null],
@@ -53,12 +53,12 @@ export class MergedTestSubjectFactory {
         u: [true, undefined, true],
       },
       objB: {
-        a: ['', undefined, '']
+        a: [``, undefined, ``]
       },
       objC: {
         nestedObj: {
           deepNestedObj: {
-            a: [undefined, '', '']
+            a: [undefined, ``, ``]
           }
         }
       }

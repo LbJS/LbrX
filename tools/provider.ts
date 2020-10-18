@@ -7,22 +7,22 @@ export class Provider {
   private static container: { [key: string]: {} } = {}
 
   public static getPostPgBuildConfigHandler = (): ConfigHandler<PostPgBuildConfig> => {
-    if (!Provider.container[ConfigHandler.name + 'A']) {
-      Provider.container[ConfigHandler.name + 'A'] = new ConfigHandler<PostPgBuildConfig>(POST_PG_BUILD_CONFIG)
+    if (!Provider.container[ConfigHandler.name + `A`]) {
+      Provider.container[ConfigHandler.name + `A`] = new ConfigHandler<PostPgBuildConfig>(POST_PG_BUILD_CONFIG)
     }
-    return Provider.container[ConfigHandler.name + 'A'] as ConfigHandler<PostPgBuildConfig>
+    return Provider.container[ConfigHandler.name + `A`] as ConfigHandler<PostPgBuildConfig>
   }
   public static getPostSrcBuildConfigHandler = (): ConfigHandler<PostSrcBuildConfig> => {
-    if (!Provider.container[ConfigHandler.name + 'B']) {
-      Provider.container[ConfigHandler.name + 'B'] = new ConfigHandler<PostSrcBuildConfig>(POST_SRC_BUILD_CONFIG)
+    if (!Provider.container[ConfigHandler.name + `B`]) {
+      Provider.container[ConfigHandler.name + `B`] = new ConfigHandler<PostSrcBuildConfig>(POST_SRC_BUILD_CONFIG)
     }
-    return Provider.container[ConfigHandler.name + 'B'] as ConfigHandler<PostSrcBuildConfig>
+    return Provider.container[ConfigHandler.name + `B`] as ConfigHandler<PostSrcBuildConfig>
   }
   public static getSrcBuildConfigHandler = (): ConfigHandler<SrcBuildConfig> => {
-    if (!Provider.container[ConfigHandler.name + 'C']) {
-      Provider.container[ConfigHandler.name + 'C'] = new ConfigHandler<SrcBuildConfig>(SRC_BUILD_CONFIG)
+    if (!Provider.container[ConfigHandler.name + `C`]) {
+      Provider.container[ConfigHandler.name + `C`] = new ConfigHandler<SrcBuildConfig>(SRC_BUILD_CONFIG)
     }
-    return Provider.container[ConfigHandler.name + 'C'] as ConfigHandler<SrcBuildConfig>
+    return Provider.container[ConfigHandler.name + `C`] as ConfigHandler<SrcBuildConfig>
   }
   public static getLoggerHandler = (): LoggerHandler => {
     if (!Provider.container[LoggerHandler.name]) {

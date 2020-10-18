@@ -10,5 +10,5 @@ export default async function main(): Promise<void> {
   verifyHashes(config.hashVerifier)
   await runCommand(config.minifyHtmlCommand)
   addBanners(config.bannerAdder)
-  logger.logSuccess('Post build procedure')
+  logger.logSuccess(`Post build procedure`)
 }

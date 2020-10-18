@@ -3,13 +3,13 @@ import moment from 'moment'
 import { TestSubjectFactory } from '__test__/factories'
 import { assertNotNullable } from '__test__/functions'
 
-describe('Helper Function - cloneObject():', () => {
+describe(`Helper Function - cloneObject():`, () => {
 
   const createTestSubjectA = () => TestSubjectFactory.createTestSubject_configA()
   const createObjWithMoment = () => ({ a: moment(new Date(1900, 1)) })
   const createObjWithSymbol = () => ({ a: Symbol() })
 
-  it('should clone object.', () => {
+  it(`should clone object.`, () => {
     const state = createTestSubjectA()
     const clonedState = cloneObject(createTestSubjectA())
     assertNotNullable(clonedState.innerTestObjectGetSet?.deepNestedObj?.objectList)
@@ -30,7 +30,7 @@ describe('Helper Function - cloneObject():', () => {
       .toBe(state.innerTestObjectGetSet.deepNestedObj.objectList[0].date)
   })
 
-  it('should clone moment object.', () => {
+  it(`should clone moment object.`, () => {
     const objWithMoment = createObjWithMoment()
     const clonedObjWithMoment = cloneObject(objWithMoment)
     expect(moment.isMoment(clonedObjWithMoment.a)).toBeTruthy()
@@ -38,26 +38,26 @@ describe('Helper Function - cloneObject():', () => {
     expect(clonedObjWithMoment.a).not.toBe(objWithMoment.a)
   })
 
-  it('should copy symbols reference.', () => {
+  it(`should copy symbols reference.`, () => {
     const objWithSymbol = createObjWithSymbol()
     const clonedObjWithSymbol = cloneObject(objWithSymbol)
-    expect(typeof clonedObjWithSymbol.a).toBe('symbol')
+    expect(typeof clonedObjWithSymbol.a).toBe(`symbol`)
     expect(clonedObjWithSymbol).toStrictEqual(objWithSymbol)
     expect(clonedObjWithSymbol.a).toBe(clonedObjWithSymbol.a)
   })
 
-  it("should return null or undefined if the value that's provided is null or undefined.", () => {
+  it(`should return null or undefined if the value that's provided is null or undefined.`, () => {
     let result = cloneObject(null as unknown as {})
     expect(result).toBeNull()
     result = cloneObject(undefined as unknown as {})
     expect(result).toBeUndefined()
   })
 
-  it('should return string, number, boolean or method if they are provided', () => {
+  it(`should return string, number, boolean or method if they are provided`, () => {
     let result = cloneObject(false as unknown as {})
     expect(result).toBe(false)
-    result = cloneObject('' as unknown as {})
-    expect(result).toBe('')
+    result = cloneObject(`` as unknown as {})
+    expect(result).toBe(``)
     result = cloneObject(0 as unknown as {})
     expect(result).toBe(0)
     const method = () => { }

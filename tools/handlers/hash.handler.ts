@@ -18,7 +18,7 @@ export class HashHandler {
     if (!isNumber(this._config.config.hashLength)
       || !isString(this._config.config.hashCharPool)
     ) {
-      throw new Error('Hash generator is missing a configuration for hash length or hash char pool.')
+      throw new Error(`Hash generator is missing a configuration for hash length or hash char pool.`)
     }
     this._hashLength = this._config.config.hashLength
     this._hashCharPool = this._config.config.hashCharPool
@@ -28,7 +28,7 @@ export class HashHandler {
     const getRandomInteger = (min: number, max: number): number => {
       return Math.floor(Math.random() * (max - min + 1)) + min
     }
-    let localHash = ''
+    let localHash = ``
     for (let i = 0; i < this._hashLength; i++) {
       const charIndex = getRandomInteger(0, this._hashCharPool.length - 1)
       localHash += this._hashCharPool[charIndex]

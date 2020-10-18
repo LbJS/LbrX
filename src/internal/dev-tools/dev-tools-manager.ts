@@ -28,7 +28,7 @@ export class DevToolsManager {
     run: (f: any) => f()
   }
   private _reduxMonitor: ReduxDevToolsMonitor | null = null
-  private _reduxDevToolsOptionsKeys: KeyOf<ReduxDevToolsOptions>[] = ['name', 'maxAge']
+  private _reduxDevToolsOptionsKeys: KeyOf<ReduxDevToolsOptions>[] = [`name`, `maxAge`]
   private _devToolsOptions: DevtoolsOptions
   private _partialStateHistory: { historyLength: number, history: KeyValue<string, Partial<State<any>>[]> } =
     { historyLength: 0, history: {} }
@@ -43,7 +43,7 @@ export class DevToolsManager {
   public initialize(): void {
     if (!isDev() || !isBrowser() || !window.__REDUX_DEVTOOLS_EXTENSION__ || DevToolsManager._wasInitialized) return
     if (objectKeys(DevToolsAdapter.stores).length) {
-      logWarn('DevToolsManager was initialized after one or more stores were created.')
+      logWarn(`DevToolsManager was initialized after one or more stores were created.`)
     }
     (window as any).$$LbrX = {
       $$stores: DevToolsAdapter.stores,
@@ -94,7 +94,7 @@ export class DevToolsManager {
       if (this._pauseRecording) return
       if (x.state.error && x.state.error != DevToolsAdapter.stores[x.storeName].state.error) {
         const error: string | Error | object = x.state.error
-        if (isError(error) && error.message && !error['toJSON']) reduxMonitor.error(error.message)
+        if (isError(error) && error.message && !error[`toJSON`]) reduxMonitor.error(error.message)
         else if (isString(error)) reduxMonitor.error(error)
         else if (isObject(error)) reduxMonitor.error(stringify(error))
         else reduxMonitor.error(`Store: "${x.storeName}" had an error.`)
@@ -107,25 +107,25 @@ export class DevToolsManager {
       let state: KeyValue | void
       if (options.showStackTrace && this._state[x.storeName]) {
         state = simpleCloneObject(this._state)
-        state[x.storeName]['action-stack-trace'] = newError().stack
+        state[x.storeName][`action-stack-trace`] = newError().stack
       }
       reduxMonitor.send(`${x.storeName} - ${x.actionName}`, state || this._state)
       if (options.displayValueAsState) this._addPartialStatesToHistory()
     }))
     reduxMonitor.subscribe((message: KeyValue) => {
-      if (message.type != 'DISPATCH') return
+      if (message.type != `DISPATCH`) return
       const payload: KeyValue = message.payload
       const payloadType: string = payload.type
-      if (payloadType == 'COMMIT') {
+      if (payloadType == `COMMIT`) {
         reduxMonitor.init(this._state)
         if (!this._devToolsOptions.displayValueAsState) return
         this._partialStateHistory = { historyLength: 0, history: {} }
         this._addPartialStatesToHistory()
-      } else if (payloadType == 'PAUSE_RECORDING') {
+      } else if (payloadType == `PAUSE_RECORDING`) {
         this._pauseRecording = payload.status
       } else if (!message.state) {
         return
-      } else if (payloadType == 'JUMP_TO_STATE' || payloadType == 'JUMP_TO_ACTION') {
+      } else if (payloadType == `JUMP_TO_STATE` || payloadType == `JUMP_TO_ACTION`) {
         const reduxDevToolsState = parse<object>(message.state)
         const reduxStoreNames = objectKeys(reduxDevToolsState)
         objectKeys(DevToolsAdapter.stores).forEach((storeName: string) => {
@@ -144,8 +144,8 @@ export class DevToolsManager {
             this._setState(store, didStoreExisted ? getReduxDevToolsState() : getDefaultState())
           })
         })
-      } else if (payloadType == 'TOGGLE_ACTION') {
-        reduxMonitor.error('"skip" option is not supported.')
+      } else if (payloadType == `TOGGLE_ACTION`) {
+        reduxMonitor.error(`"skip" option is not supported.`)
       }
     })
   }
