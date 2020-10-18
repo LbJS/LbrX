@@ -47,11 +47,11 @@ export class StoresFactory {
     storeNameOrWithHooksOrOptions?: string | boolean | StoreConfigOptions,
     withHooks?: boolean,
   ): Store<T, E> | Store<T, E> & AllStoreHooks<T, E> {
-    const storeName = typeof storeNameOrWithHooksOrOptions == 'string' ? storeNameOrWithHooksOrOptions : 'TEST-STORE'
-    const options: StoreConfigOptions = typeof storeNameOrWithHooksOrOptions == 'object' && storeNameOrWithHooksOrOptions ?
+    const storeName = typeof storeNameOrWithHooksOrOptions == `string` ? storeNameOrWithHooksOrOptions : `TEST-STORE`
+    const options: StoreConfigOptions = typeof storeNameOrWithHooksOrOptions == `object` && storeNameOrWithHooksOrOptions ?
       storeNameOrWithHooksOrOptions : { name: storeName }
-    withHooks = typeof withHooks == 'boolean' ?
-      withHooks : typeof storeNameOrWithHooksOrOptions == 'boolean' ?
+    withHooks = typeof withHooks == `boolean` ?
+      withHooks : typeof storeNameOrWithHooksOrOptions == `boolean` ?
         storeNameOrWithHooksOrOptions : false
     if (withHooks) {
       @StoreConfig(options)

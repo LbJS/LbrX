@@ -1,32 +1,32 @@
 import { isPromise } from 'lbrx/utils'
 
-describe('Helper Function - isPromise():', () => {
+describe(`Helper Function - isPromise():`, () => {
 
-  it('should return true for Promise instance.', () => {
+  it(`should return true for Promise instance.`, () => {
     expect(isPromise(new Promise(() => { }))).toBeTruthy()
   })
 
-  it('should return true for fulfilled Promise.', () => {
+  it(`should return true for fulfilled Promise.`, () => {
     expect(isPromise(Promise.resolve())).toBeTruthy()
   })
 
-  it('should return true for rejected Promise.', () => {
+  it(`should return true for rejected Promise.`, () => {
     expect(isPromise(Promise.reject().catch(() => { }))).toBeTruthy()
   })
 
-  it('should return false for Promise type.', () => {
+  it(`should return false for Promise type.`, () => {
     expect(isPromise(Promise)).toBeFalsy()
   })
 
-  it('should return false for plain object.', () => {
+  it(`should return false for plain object.`, () => {
     expect(isPromise({})).toBeFalsy()
   })
 
-  it('should return false for null.', () => {
+  it(`should return false for null.`, () => {
     expect(isPromise(null)).toBeFalsy()
   })
 
-  it('should return false for undefined.', () => {
+  it(`should return false for undefined.`, () => {
     expect(isPromise(undefined)).toBeFalsy()
   })
 })

@@ -15,8 +15,8 @@ export function handlePkgJsonFile(
   const obj = readJsonFromFile(sourcePath)
   let tempObj = obj
   config.propertiesToDelete.forEach(prop => {
-    prop.split('.').forEach((key, i) => {
-      if (prop.split('.').length - 1 == i) {
+    prop.split(`.`).forEach((key, i) => {
+      if (prop.split(`.`).length - 1 == i) {
         delete tempObj[key]
       } else {
         tempObj = tempObj[key]
@@ -24,11 +24,11 @@ export function handlePkgJsonFile(
     })
   })
   config.propertiesToAddOrUpdate.forEach(set => {
-    if (set.value.includes('[nextAppVer]')) set.value = set.value.replace('[nextAppVer]', appDetails.nextAppVer)
-    if (set.value.includes('[appName]')) set.value = set.value.replace('[appName]', appDetails.appName)
+    if (set.value.includes(`[nextAppVer]`)) set.value = set.value.replace(`[nextAppVer]`, appDetails.nextAppVer)
+    if (set.value.includes(`[appName]`)) set.value = set.value.replace(`[appName]`, appDetails.appName)
     tempObj = obj
-    set.key.split('.').forEach((key, i) => {
-      if (set.key.split('.').length - 1 == i
+    set.key.split(`.`).forEach((key, i) => {
+      if (set.key.split(`.`).length - 1 == i
         && tempObj[key] !== set.value
       ) {
         tempObj[key] = set.value

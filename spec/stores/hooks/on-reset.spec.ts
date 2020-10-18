@@ -4,7 +4,7 @@ import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
 import { AllStoreHooks } from '__test__/types'
 
-describe('Store onReset():', () => {
+describe(`Store onReset():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const initialState = createInitialState()
@@ -13,10 +13,10 @@ describe('Store onReset():', () => {
   let onResetSpy: jest.SpyInstance<void | TestSubject, [TestSubject, Readonly<TestSubject>]>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     StoresFactory = providerModule.StoresFactory
     store = StoresFactory.createStore<TestSubject>(null, true/*with hooks*/)
-    onResetSpy = jest.spyOn(store, 'onReset')
+    onResetSpy = jest.spyOn(store, `onReset`)
   })
 
   afterEach(() => {
@@ -24,20 +24,20 @@ describe('Store onReset():', () => {
     jest.resetAllMocks()
   })
 
-  it('should be called on reset if implemented.', () => {
+  it(`should be called on reset if implemented.`, () => {
     store.initialize(initialState)
     store.reset()
     expect(onResetSpy).toBeCalled()
   })
 
-  it('should not be called on reset if not implemented.', () => {
+  it(`should not be called on reset if not implemented.`, () => {
     delete (store as Partial<AllStoreHooks<any>>).onReset
     store.initialize(initialState)
     store.reset()
     expect(onResetSpy).not.toBeCalled()
   })
 
-  it('should receive the nextState and the currSate as arguments and currSate should be readonly.', done => {
+  it(`should receive the nextState and the currSate as arguments and currSate should be readonly.`, done => {
     const stateForUpdate = TestSubjectFactory.createTestSubject_configA()
     onResetSpy.mockImplementation((nextState: TestSubject, currSate: Readonly<TestSubject>): void => {
       expect(nextState).toStrictEqual(initialState)
@@ -52,7 +52,7 @@ describe('Store onReset():', () => {
     store.reset()
   })
 
-  it('should allow changing the next state.', () => {
+  it(`should allow changing the next state.`, () => {
     const localInitialState = createInitialState()
     onResetSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       assertNotNullable(nextState.innerTestObjectGetSet)
@@ -66,7 +66,7 @@ describe('Store onReset():', () => {
     expect(store.value).toStrictEqual(localInitialState)
   })
 
-  it("should disconnect nextState object's references.", async () => {
+  it(`should disconnect nextState object's references.`, async () => {
     onResetSpy.mockImplementation((nextState: TestSubject): void => {
       assertNotNullable(nextState.innerTestObject)
       assertNotNullable(nextState.innerTestObject.obj)
@@ -79,8 +79,8 @@ describe('Store onReset():', () => {
     store.reset()
     expect(store.value).toStrictEqual(initialState)
     jest.resetAllMocks()
-    store = StoresFactory.createStore<TestSubject>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
-    onResetSpy = jest.spyOn(store, 'onReset')
+    store = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, true/*with hooks*/)
+    onResetSpy = jest.spyOn(store, `onReset`)
     let tmpState: TestSubject | null = null
     onResetSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       tmpState = nextState

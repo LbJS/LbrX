@@ -5,7 +5,7 @@ import { Provider } from './provider'
   const logger = Provider.getLoggerHandler()
   try {
     const arg = process.argv[2].substr(2)
-    const result = (await import('./scripts/' + arg)).default() as unknown
+    const result = (await import(`./scripts/` + arg)).default() as unknown
     if (isPromise(result)) await result
   } catch (e) {
     logger.logError(e)

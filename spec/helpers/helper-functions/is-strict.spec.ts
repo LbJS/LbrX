@@ -1,8 +1,8 @@
 import { isStrict } from 'lbrx/utils'
 
-describe('Helper Function - isStrict():', () => {
+describe(`Helper Function - isStrict():`, () => {
 
-  it('should return true.', () => {
+  it(`should return true.`, () => {
     expect(isStrict()).toBeTruthy()
   })
 })

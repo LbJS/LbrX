@@ -3,7 +3,7 @@ import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { getGlobalStoreConfig as getGlobalStoreConfig_type, GlobalStoreConfigOptions } from 'lbrx/internal/stores/config'
 import { Parse, Stringify } from 'lbrx/internal/stores/store-accessories'
 
-describe('LbrXManager setGlobalStoreConfig():', () => {
+describe(`LbrXManager setGlobalStoreConfig():`, () => {
 
   let LbrXManager: typeof LbrXManager_type
   let getGlobalStoreConfig: typeof getGlobalStoreConfig_type
@@ -12,7 +12,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
   let defaultGlobalConfig: GlobalStoreConfigOptions
 
   beforeEach(async () => {
-    const provider = await import('provider')
+    const provider = await import(`provider`)
     LbrXManager = provider.LbrXManager
     getGlobalStoreConfig = provider.getGlobalStoreConfig
     stringify = provider.stringify
@@ -32,7 +32,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
     }
   })
 
-  it('should set global store configurations.', () => {
+  it(`should set global store configurations.`, () => {
     const config: Partial<GlobalStoreConfigOptions> = {
       objectCompareType: ObjectCompareTypes.simple
     }
@@ -41,7 +41,7 @@ describe('LbrXManager setGlobalStoreConfig():', () => {
     expect(getGlobalStoreConfig()).toStrictEqual(defaultGlobalConfig)
   })
 
-  it('should return LbrXManager.', () => {
+  it(`should return LbrXManager.`, () => {
     const value = LbrXManager.setGlobalStoreConfig({})
     expect(value).toStrictEqual(LbrXManager)
   })

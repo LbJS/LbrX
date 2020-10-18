@@ -1,7 +1,7 @@
 import { isError, isString } from 'lbrx/utils'
 
 export function createError(): Error {
-  return new Error('Some error text')
+  return new Error(`Some error text`)
 }
 
 export class CustomError extends Error {
@@ -19,7 +19,7 @@ export class CustomError extends Error {
 }
 
 export function createCustomError(): CustomError {
-  const err1 = new CustomError('First Error')
-  const err2 = new CustomError(err1, 'Second Error')
+  const err1 = new CustomError(`First Error`)
+  const err2 = new CustomError(err1, `Second Error`)
   return new CustomError(err2)
 }

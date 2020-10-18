@@ -3,7 +3,7 @@ import { TestSubjectFactory } from '__test__/factories'
 import { assertEqual, assertNotNullable } from '__test__/functions'
 import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
-describe('Store override():', () => {
+describe(`Store override():`, () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -12,7 +12,7 @@ describe('Store override():', () => {
   let store: Store<TestSubject>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     store = providerModule.StoresFactory.createStore(initialState)
   })
 
@@ -20,7 +20,7 @@ describe('Store override():', () => {
     jest.resetModules()
   })
 
-  it("should override the store's state value.", () => {
+  it(`should override the store's state value.`, () => {
     expect(store.value).toStrictEqual(initialState)
     const localStateA = createStateA()
     store.override(localStateA)
@@ -28,7 +28,7 @@ describe('Store override():', () => {
     expect(store.value).toStrictEqual(expectedState)
   })
 
-  it('should get the expected steam of states.', done => {
+  it(`should get the expected steam of states.`, done => {
     const expectedStates = [
       initialState,
       stateB,
@@ -47,7 +47,7 @@ describe('Store override():', () => {
     store.override(initialState)
   }, 100)
 
-  it('should disconnect object reference.', () => {
+  it(`should disconnect object reference.`, () => {
     const localStateA = createStateA()
     store.override(localStateA)
     expect(store.value).not.toBe(localStateA)
@@ -59,7 +59,7 @@ describe('Store override():', () => {
     expect(store.value).toStrictEqual(expectedState)
   })
 
-  it('should handle instances for plain object.', () => {
+  it(`should handle instances for plain object.`, () => {
     store.override(stateA)
     expect(store.value).toStrictEqual(stateA)
     const plainStateA = TestSubjectFactory.createTestSubject_configA_plain()

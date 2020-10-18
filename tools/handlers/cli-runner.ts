@@ -9,7 +9,7 @@ export function runCommand(command: string, logMsg?: string): Promise<string> {
     })
     if (logMsg) logger.log(logMsg)
     if (child.stdout) {
-      child.stdout.on('data', stdout => {
+      child.stdout.on(`data`, stdout => {
         logger.log(stdout)
       })
     }

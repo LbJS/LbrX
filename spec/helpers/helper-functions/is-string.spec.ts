@@ -1,24 +1,24 @@
 import { isString } from 'lbrx/utils'
 
-describe('Helper Function - isString():', () => {
+describe(`Helper Function - isString():`, () => {
 
-  it('should return true for string.', () => {
-    expect(isString('')).toBeTruthy()
+  it(`should return true for string.`, () => {
+    expect(isString(``)).toBeTruthy()
   })
 
-  it('should return false boolean.', () => {
+  it(`should return false boolean.`, () => {
     expect(isString(true)).toBeFalsy()
   })
 
-  it('should return false number.', () => {
+  it(`should return false number.`, () => {
     expect(isString(1)).toBeFalsy()
   })
 
-  it('should return false for null.', () => {
+  it(`should return false for null.`, () => {
     expect(isString(null)).toBeFalsy()
   })
 
-  it('should return false for undefined.', () => {
+  it(`should return false for undefined.`, () => {
     expect(isString(undefined)).toBeFalsy()
   })
 })

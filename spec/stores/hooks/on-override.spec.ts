@@ -4,7 +4,7 @@ import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
 import { AllStoreHooks } from '__test__/types'
 
-describe('Store onOverride():', () => {
+describe(`Store onOverride():`, () => {
 
   const initialState = TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -13,9 +13,9 @@ describe('Store onOverride():', () => {
   let onOverrideSpy: jest.SpyInstance<void | TestSubject, [TestSubject, Readonly<TestSubject>]>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     store = providerModule.StoresFactory.createStore(initialState, true/*with hooks*/)
-    onOverrideSpy = jest.spyOn(store, 'onOverride')
+    onOverrideSpy = jest.spyOn(store, `onOverride`)
   })
 
   afterEach(() => {
@@ -23,18 +23,18 @@ describe('Store onOverride():', () => {
     jest.resetAllMocks()
   })
 
-  it('should be called if implemented.', () => {
+  it(`should be called if implemented.`, () => {
     store.override(stateA)
     expect(onOverrideSpy).toBeCalled()
   })
 
-  it("shouldn't be called if not implemented.", () => {
+  it(`shouldn't be called if not implemented.`, () => {
     delete (store as Partial<AllStoreHooks<any>>).onOverride
     store.override(stateA)
     expect(onOverrideSpy).not.toBeCalled()
   })
 
-  it('should get the nextState and the currState as arguments.', done => {
+  it(`should get the nextState and the currState as arguments.`, done => {
     onOverrideSpy.mockImplementation((nextState: TestSubject, currState: Readonly<TestSubject>): void => {
       expect(nextState).toStrictEqual(stateA)
       expect(currState).toStrictEqual(initialState)
@@ -43,7 +43,7 @@ describe('Store onOverride():', () => {
     store.override(stateA)
   })
 
-  it('should allow changing the next state.', () => {
+  it(`should allow changing the next state.`, () => {
     const localStateA = createStateA()
     onOverrideSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       assertNotNullable(nextState.dateValue)
@@ -57,7 +57,7 @@ describe('Store onOverride():', () => {
     expect(store.value).toStrictEqual(localStateA)
   })
 
-  it('should supply a readonly current state.', done => {
+  it(`should supply a readonly current state.`, done => {
     onOverrideSpy.mockImplementation((nextState: TestSubject, currState: Readonly<TestSubject>): void => {
       expect(() => {
         assertNotNullable(currState.dateValue)
@@ -68,11 +68,11 @@ describe('Store onOverride():', () => {
     store.override(stateA)
   })
 
-  it("should disconnect nextState object's references.", () => {
+  it(`should disconnect nextState object's references.`, () => {
     onOverrideSpy.mockImplementation((nextState: TestSubject): void => {
       assertNotNullable(nextState.dateValue)
       nextState.dateValue.setFullYear(1900)
-      nextState.stringValue = 'some new value'
+      nextState.stringValue = `some new value`
     })
     store.override(stateA)
     expect(store.value).toStrictEqual(stateA)
@@ -86,7 +86,7 @@ describe('Store onOverride():', () => {
     assertNotNullable(tmpState!)
     assertNotNullable(tmpState!.dateValue)
     tmpState!.dateValue.setFullYear(1900)
-    tmpState!.stringValue = 'some new value'
+    tmpState!.stringValue = `some new value`
     expect(store.value).toStrictEqual(stateA)
   })
 })

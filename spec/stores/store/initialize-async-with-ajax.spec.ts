@@ -3,26 +3,26 @@ import fetch from 'node-fetch'
 import { from } from 'rxjs'
 import { Todo } from '__test__/test-subjects'
 
-describe('Store initializeAsync():', () => {
+describe(`Store initializeAsync():`, () => {
 
-  const geTodoItem = (): Promise<Todo> => fetch('https://jsonplaceholder.typicode.com/todos/1').then(r => r.json()).catch(() => { })
+  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
   let expectedTodoItem: Todo | null
   let store: Store<Todo>
 
   beforeEach(async () => {
     expectedTodoItem = await geTodoItem()
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     store = providerModule.StoresFactory.createStore<Todo>(null)
   })
 
   jest.retryTimes(5)
-  it('should get todo item from promise ajax call.', async () => {
+  it(`should get todo item from promise ajax call.`, async () => {
     await store.initializeAsync(geTodoItem())
     expect(store.value).toStrictEqual(expectedTodoItem)
   })
 
   jest.retryTimes(5)
-  it('should get todo item from observable ajax call.', async () => {
+  it(`should get todo item from observable ajax call.`, async () => {
     await store.initializeAsync(from(geTodoItem()))
     expect(store.value).toStrictEqual(expectedTodoItem)
   })

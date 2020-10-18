@@ -9,9 +9,9 @@ export default async function main(): Promise<void> {
   logger.config = config.logger
   removeSync(resolvePath(config.buildFolder))
   testRelativeImports(config.relativeImportsVerifier)
-  logger.logSuccess('Relative path verification')
+  logger.logSuccess(`Relative path verification`)
   await Promise.all(config.buildSets.map(async set => {
     return runCommand(set.command, set.startInfoLog).then(() => logger.logInfo(set.endInfoLog))
   }))
-  logger.logSuccess('SRC build')
+  logger.logSuccess(`SRC build`)
 }

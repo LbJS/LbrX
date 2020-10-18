@@ -1,11 +1,11 @@
 
-describe('Dev Tools Mode:', () => {
+describe(`Dev Tools Mode:`, () => {
 
   let activateStreamToDevTools: () => void
   let isDevTools: () => boolean
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     activateStreamToDevTools = providerModule.activateStreamToDevTools
     isDevTools = providerModule.isDevTools
   })
@@ -14,11 +14,11 @@ describe('Dev Tools Mode:', () => {
     jest.resetModules()
   })
 
-  it('should deactivated by default.', () => {
+  it(`should deactivated by default.`, () => {
     expect(isDevTools()).toBeFalsy()
   })
 
-  it('should activated after enabling pushes.', () => {
+  it(`should activated after enabling pushes.`, () => {
     activateStreamToDevTools()
     expect(isDevTools()).toBeTruthy()
   })

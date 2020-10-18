@@ -32,15 +32,15 @@ export class AppDetails {
   public async getCurrAppVer(): Promise<string> {
     if (this._curAppVer) return Promise.resolve(this._curAppVer)
     let npmCommand: string | null = null
-    if (this._config.config.npmGetVerCommand.includes('[appName]')) {
-      npmCommand = this._config.config.npmGetVerCommand.replace('[appName]', this.appName)
+    if (this._config.config.npmGetVerCommand.includes(`[appName]`)) {
+      npmCommand = this._config.config.npmGetVerCommand.replace(`[appName]`, this.appName)
     }
     const currVer = await this.getCurrentVersionFromNpm(npmCommand || this._config.config.npmGetVerCommand)
     if (currVer) {
       this._curAppVer = currVer.trim()
       return Promise.resolve(this._curAppVer)
     } else {
-      return Promise.reject("Can't find current app version.")
+      return Promise.reject(`Can't find current app version.`)
     }
   }
 
@@ -50,13 +50,13 @@ export class AppDetails {
 
   private _getAppNameFromPkgJson(): string {
     const pkgJson: { [key: string]: any } = readJsonFromFile(resolvePath(this._pkgJsonPath))
-    if (!pkgJson || !pkgJson.name) throw new Error('Package json is invalid.')
+    if (!pkgJson || !pkgJson.name) throw new Error(`Package json is invalid.`)
     return pkgJson.name.trim()
   }
 
   private _getAppVerFromPkgJson(): string {
     const pkgJson: { [key: string]: any } = readJsonFromFile(resolvePath(this._pkgJsonPath))
-    if (!pkgJson || !pkgJson.version) throw new Error('Package json is invalid.')
+    if (!pkgJson || !pkgJson.version) throw new Error(`Package json is invalid.`)
     return pkgJson.version.trim()
   }
 

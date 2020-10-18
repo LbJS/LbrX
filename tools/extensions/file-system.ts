@@ -13,13 +13,13 @@ export function assertPathExist(fullPath: string): asserts fullPath {
 }
 
 export function readStrFromFile(filePath: string): string {
-  const str = readFileSync(filePath, 'utf8')
+  const str = readFileSync(filePath, `utf8`)
   if (!isString(str)) throw new Error(`Can't read file: "${filePath}" as a string.`)
   return str
 }
 
 export function writeStrToFile(filePath: string, str: string): void {
-  writeFileSync(filePath, str, 'utf8')
+  writeFileSync(filePath, str, `utf8`)
 }
 
 export function getAllFilesFromDirectory(rootFolder: string): string[] {
@@ -64,9 +64,9 @@ export function copyFilesList(filesList: string[], target: string): void {
 }
 
 export function readJsonFromFile(filePath: string): { [key: string]: any } {
-  return readJsonSync(filePath, { encoding: 'utf8' })
+  return readJsonSync(filePath, { encoding: `utf8` })
 }
 
 export function writeJsonToFile(filePath: string, obj: { [key: string]: any }): void {
-  writeJsonSync(filePath, obj, { encoding: 'utf8', spaces: 2 })
+  writeJsonSync(filePath, obj, { encoding: `utf8`, spaces: 2 })
 }

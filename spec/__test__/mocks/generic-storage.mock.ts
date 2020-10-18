@@ -4,7 +4,7 @@ export class GenericStorage implements Storage {
   public get length(): number {
     return Object.keys(this._data).length
   }
-  private [Symbol.toStringTag]: 'Storage'
+  private [Symbol.toStringTag]: `Storage`
 
   constructor() { }
 

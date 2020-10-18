@@ -4,7 +4,7 @@ import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
 import { AllStoreHooks } from '__test__/types'
 
-describe('Store onAsyncInitSuccess():', () => {
+describe(`Store onAsyncInitSuccess():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const initialState = createInitialState()
@@ -13,10 +13,10 @@ describe('Store onAsyncInitSuccess():', () => {
   let onAsyncInitSuccessSpy: jest.SpyInstance<void | TestSubject, [TestSubject]>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     StoresFactory = providerModule.StoresFactory
     store = StoresFactory.createStore<TestSubject>(null, true/*with hooks*/)
-    onAsyncInitSuccessSpy = jest.spyOn(store, 'onAsyncInitSuccess')
+    onAsyncInitSuccessSpy = jest.spyOn(store, `onAsyncInitSuccess`)
   })
 
   afterEach(() => {
@@ -24,18 +24,18 @@ describe('Store onAsyncInitSuccess():', () => {
     jest.resetAllMocks()
   })
 
-  it('should be called on async initialization if implemented.', async () => {
+  it(`should be called on async initialization if implemented.`, async () => {
     await store.initializeAsync(Promise.resolve(initialState))
     expect(onAsyncInitSuccessSpy).toBeCalled()
   })
 
-  it('should not be called on async initialization if not implemented.', async () => {
+  it(`should not be called on async initialization if not implemented.`, async () => {
     delete (store as Partial<AllStoreHooks<any>>).onAsyncInitSuccess
     await store.initializeAsync(Promise.resolve(initialState))
     expect(onAsyncInitSuccessSpy).not.toBeCalled()
   })
 
-  it('should get the async result as an argument.', async done => {
+  it(`should get the async result as an argument.`, async done => {
     onAsyncInitSuccessSpy.mockImplementation((result: TestSubject): void => {
       expect(result).toStrictEqual(initialState)
       done()
@@ -43,7 +43,7 @@ describe('Store onAsyncInitSuccess():', () => {
     await store.initializeAsync(Promise.resolve(initialState))
   })
 
-  it('should allow changing the async result.', async () => {
+  it(`should allow changing the async result.`, async () => {
     const localInitialState = createInitialState()
     onAsyncInitSuccessSpy.mockImplementation((result: TestSubject): TestSubject => {
       assertNotNullable(result.innerTestObjectGetSet)

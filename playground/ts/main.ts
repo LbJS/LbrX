@@ -21,15 +21,15 @@ class User {
 
 function createLeon(): User {
   return Object.assign(new User(), {
-    firstName: 'Leon',
+    firstName: `Leon`,
     address: Object.assign(new Address(), {
-      place: 'Hell of a place'
+      place: `Hell of a place`
     })
   })
 }
 
 @StoreConfig({
-  name: 'LEON-STORE',
+  name: `LEON-STORE`,
   objectCompareType: ObjectCompareTypes.advanced,
   isResettable: true,
   storageType: Storages.session,
@@ -42,12 +42,12 @@ class UserStore extends Store<User> {
   }
 
   public onBeforeInit(initialState: User): void {
-    console.log('ON BEFORE INIT: ', initialState)
+    console.log(`ON BEFORE INIT: `, initialState)
   }
 }
 
 @StoreConfig({
-  name: 'BETTER-LEON-STORE',
+  name: `BETTER-LEON-STORE`,
   objectCompareType: ObjectCompareTypes.advanced,
   isResettable: true,
   storageType: Storages.session,
@@ -71,23 +71,23 @@ const betterUserStore = new BetterUserStore();
 userStore
   .onAction(Actions.update)
   .select$(state => state.firstName)
-  .subscribe(x => console.log('-----Update only: ' + x))
+  .subscribe(x => console.log(`-----Update only: ` + x))
 
 userStore
   .select$()
   .subscribe(x => console.log(x))
 userStore
   .select$(state => state.firstName)
-  .subscribe(x => console.log('firstName: ' + x))
+  .subscribe(x => console.log(`firstName: ` + x))
 userStore
-  .select$('lastName')
-  .subscribe(x => console.log('lastName: ' + x))
+  .select$(`lastName`)
+  .subscribe(x => console.log(`lastName: ` + x))
 userStore
-  .select$(state => getNestedProp(state, 'address', 'place'))
-  .subscribe(x => console.log('address: ' + x))
+  .select$(state => getNestedProp(state, `address`, `place`))
+  .subscribe(x => console.log(`address: ` + x))
 
 userStore
-  .select$(['date', 'address'])
+  .select$([`date`, `address`])
   .subscribe(x => console.log(x))
 
 userStore
@@ -97,13 +97,13 @@ userStore
 userStore
   .isLoading$.subscribe(value => {
     if (!value) {
-      console.log('From is loading: ', userStore.value)
+      console.log(`From is loading: `, userStore.value)
     }
   })
 setTimeout(() => {
   userStore.update({
-    firstName: 'Some other name',
-    lastName: 'My first lastName'
+    firstName: `Some other name`,
+    lastName: `My first lastName`
   })
 }, 200)
 
@@ -115,21 +115,21 @@ setTimeout(() => {
 
 setTimeout(() => {
   userStore.update({
-    firstName: 'Some other name',
-    lastName: 'My second lastName',
+    firstName: `Some other name`,
+    lastName: `My second lastName`,
     address: {
-      place: 'Some other place'
+      place: `Some other place`
     }
   })
 }, 500)
 
 setTimeout(() => {
   userStore.override({
-    firstName: 'Some other name1',
-    lastName: 'My second lastName1',
+    firstName: `Some other name1`,
+    lastName: `My second lastName1`,
     date: new Date(),
     address: {
-      place: 'Some other place1'
+      place: `Some other place1`
     }
   })
 }, 510)
@@ -157,19 +157,19 @@ setTimeout(() => {
 
 setTimeout(() => {
   userStore.override({
-    firstName: 'Some other name1',
-    lastName: 'My second lastName1',
+    firstName: `Some other name1`,
+    lastName: `My second lastName1`,
     date: new Date(),
     address: {
-      place: 'Some other place1'
+      place: `Some other place1`
     }
   })
 }, 5000)
 
 setTimeout(() => {
-  userStore.update(x => ({ firstName: x.firstName + '123' }))
+  userStore.update(x => ({ firstName: x.firstName + `123` }))
 }, 10000)
 
 setTimeout(() => {
-  userStore.update(x => ({ firstName: x.firstName + '4' }))
+  userStore.update(x => ({ firstName: x.firstName + `4` }))
 }, 10010)

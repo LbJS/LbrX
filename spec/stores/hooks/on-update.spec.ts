@@ -4,7 +4,7 @@ import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
 import { AllStoreHooks } from '__test__/types'
 
-describe('Store onReset():', () => {
+describe(`Store onReset():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const initialState = createInitialState()
@@ -13,10 +13,10 @@ describe('Store onReset():', () => {
   let onUpdateSpy: jest.SpyInstance<void | TestSubject, [TestSubject, Readonly<TestSubject>]>
 
   beforeEach(async () => {
-    const providerModule = await import('provider')
+    const providerModule = await import(`provider`)
     StoresFactory = providerModule.StoresFactory
     store = StoresFactory.createStore<TestSubject>(null, true/*with hooks*/)
-    onUpdateSpy = jest.spyOn(store, 'onUpdate')
+    onUpdateSpy = jest.spyOn(store, `onUpdate`)
   })
 
   afterEach(() => {
@@ -24,23 +24,23 @@ describe('Store onReset():', () => {
     jest.resetAllMocks()
   })
 
-  it('should be called on update if implemented.', () => {
+  it(`should be called on update if implemented.`, () => {
     store.initialize(initialState)
-    store.update(() => ({ stringValue: 'some other value' }))
+    store.update(() => ({ stringValue: `some other value` }))
     expect(onUpdateSpy).toBeCalled()
   })
 
-  it('should not be called on update if not implemented.', () => {
+  it(`should not be called on update if not implemented.`, () => {
     delete (store as Partial<AllStoreHooks<any>>).onUpdate
     store.initialize(initialState)
-    store.update(() => ({ stringValue: 'some other value' }))
+    store.update(() => ({ stringValue: `some other value` }))
     expect(onUpdateSpy).not.toBeCalled()
   })
 
-  it('should receive the nextState and the currSate as arguments and currSate should be readonly.', done => {
+  it(`should receive the nextState and the currSate as arguments and currSate should be readonly.`, done => {
     const localInitialState = TestSubjectFactory.createTestSubject_initial()
     onUpdateSpy.mockImplementation((nextState: TestSubject, currSate: Readonly<TestSubject>): void => {
-      localInitialState.stringValue = 'some other value'
+      localInitialState.stringValue = `some other value`
       expect(nextState).toStrictEqual(localInitialState)
       expect(currSate).toStrictEqual(initialState)
       expect(() => {
@@ -49,10 +49,10 @@ describe('Store onReset():', () => {
       done()
     })
     store.initialize(initialState)
-    store.update(() => ({ stringValue: 'some other value' }))
+    store.update(() => ({ stringValue: `some other value` }))
   })
 
-  it('should allow changing the next state.', () => {
+  it(`should allow changing the next state.`, () => {
     const localInitialState = createInitialState()
     onUpdateSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       assertNotNullable(nextState.innerTestObjectGetSet)
@@ -66,7 +66,7 @@ describe('Store onReset():', () => {
     expect(store.value).toStrictEqual(localInitialState)
   })
 
-  it("should disconnect nextState object's references.", async () => {
+  it(`should disconnect nextState object's references.`, async () => {
     onUpdateSpy.mockImplementation((nextState: TestSubject): void => {
       assertNotNullable(nextState.innerTestObject)
       assertNotNullable(nextState.innerTestObject.obj)
@@ -79,8 +79,8 @@ describe('Store onReset():', () => {
     store.update(() => ({}))
     expect(store.value).toStrictEqual(initialState)
     jest.resetAllMocks()
-    store = StoresFactory.createStore<TestSubject>(null, 'ANOTHER-TEST-STORE', true/*with hooks*/)
-    onUpdateSpy = jest.spyOn(store, 'onUpdate')
+    store = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, true/*with hooks*/)
+    onUpdateSpy = jest.spyOn(store, `onUpdate`)
     let tmpState: TestSubject | null = null
     onUpdateSpy.mockImplementation((nextState: TestSubject): TestSubject => {
       tmpState = nextState

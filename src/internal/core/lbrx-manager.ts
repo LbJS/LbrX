@@ -56,7 +56,7 @@ export class LbrXManager {
     zone: ZoneLike
   ): typeof LbrXManager {
     if (!LbrXManager._devToolsManager) {
-      logError('DevTools must be initialized before setting DevTools Zone.')
+      logError(`DevTools must be initialized before setting DevTools Zone.`)
     } else {
       LbrXManager._devToolsManager.setDevToolsZone(zone)
     }

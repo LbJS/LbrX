@@ -1,2 +1,2 @@
 
-export const STORE_CONFIG_KEY = 'storeConfig'
+export const STORE_CONFIG_KEY = `storeConfig`
