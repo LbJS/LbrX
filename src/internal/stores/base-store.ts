@@ -2,7 +2,7 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, simpleCloneObject, simpleCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleTypes, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify } from './store-accessories'
@@ -299,14 +299,14 @@ export abstract class BaseStore<T extends object, E = any> {
     this._storeName = config.name
     this._isResettable = config.isResettable
     this._isSimpleCloning = config.isSimpleCloning
-    this._clone = !config.isImmutable ? x => x : this._isSimpleCloning ? simpleCloneObject : cloneObject
+    this._clone = !config.isImmutable ? x => x : this._isSimpleCloning ? shallowCloneObject : cloneObject
     this._freeze = config.isImmutable ? deepFreeze : x => x
     this._isInstanceHandler = config.isInstanceHandler
     this._objectCompareType = config.objectCompareType
     this._compare = (() => {
       switch (this._objectCompareType) {
         case ObjectCompareTypes.advanced: return compareObjects
-        case ObjectCompareTypes.simple: return simpleCompareObjects
+        case ObjectCompareTypes.simple: return shallowCompareObjects
         case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
       }
     })()
