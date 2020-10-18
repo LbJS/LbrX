@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs'
 import { isDev } from '../core'
-import { cloneError, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, simpleCloneObject, stringify } from '../helpers'
+import { cloneError, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, shallowCloneObject, stringify } from '../helpers'
 import { BaseStore } from '../stores'
 import { Actions, getDefaultState, State } from '../stores/store-accessories'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
@@ -53,7 +53,7 @@ export class DevToolsManager {
     const reduxDevToolsOptions = filterObject(this._devToolsOptions as DevtoolsOptions, this._reduxDevToolsOptionsKeys, false)
     this._reduxMonitor = window.__REDUX_DEVTOOLS_EXTENSION__.connect(reduxDevToolsOptions)
     if (this._devToolsOptions.displayValueAsState) this._addPartialStatesToHistory()
-    this._state = simpleCloneObject(this._devToolsOptions.displayValueAsState ? DevToolsAdapter.values : DevToolsAdapter.states)
+    this._state = shallowCloneObject(this._devToolsOptions.displayValueAsState ? DevToolsAdapter.values : DevToolsAdapter.states)
     this._reduxMonitor.init(this._state)
     this._setSubscribers(this._reduxMonitor)
     activateStreamToDevTools()
@@ -99,14 +99,14 @@ export class DevToolsManager {
         else if (isObject(error)) reduxMonitor.error(stringify(error))
         else reduxMonitor.error(`Store: "${x.storeName}" had an error.`)
       }
-      const clonedState = simpleCloneObject(options.displayValueAsState ? x.state.value! : x.state)
+      const clonedState = shallowCloneObject(options.displayValueAsState ? x.state.value! : x.state)
       const numOfChanges = countObjectChanges(this._state[x.storeName], clonedState)
       if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
       this._state[x.storeName] = clonedState
       this._storeLastAction[x.storeName] = x.actionName
       let state: KeyValue | void
       if (options.showStackTrace && this._state[x.storeName]) {
-        state = simpleCloneObject(this._state)
+        state = shallowCloneObject(this._state)
         state[x.storeName][`action-stack-trace`] = newError().stack
       }
       reduxMonitor.send(`${x.storeName} - ${x.actionName}`, state || this._state)
