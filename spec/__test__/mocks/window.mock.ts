@@ -4,5 +4,5 @@ export function mockWindow(): void {
 }
 
 export function deleteMockedWindow(): void {
-  delete globalThis.window
+  delete (globalThis as any).window
 }
