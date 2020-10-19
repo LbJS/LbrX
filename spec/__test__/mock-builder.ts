@@ -27,9 +27,6 @@ export default class MockBuilder {
   }
 
   public static buildMocks(): void {
-    if (!MockBuilder.jobsList.map(f => f.name).includes(mockWindow.name)) {
-      mockWindow()
-    }
     MockBuilder.jobsList.forEach(f => f())
     MockBuilder.jobsList = []
   }

@@ -17,7 +17,8 @@ describe(`LbrXManager setGlobalStoreConfig():`, () => {
   beforeEach(async () => {
     const provider = await import(`provider`)
     LbrXManager = provider.LbrXManager
-    MockBuilder.addReduxDevToolsExtensionMock()
+    MockBuilder.addWindowMock()
+      .addReduxDevToolsExtensionMock()
       .buildMocks()
   })
 
