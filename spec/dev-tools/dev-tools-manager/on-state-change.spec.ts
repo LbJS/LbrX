@@ -325,4 +325,19 @@ describe(`Dev Tools Manager - constructor():`, () => {
     expect(state[store.config.name].error).toBeTruthy()
     expect(state[store.config.name].error).toStrictEqual(store.error)
   })
+
+  it(`should not send the same error twice.`, () => {
+    LbrXManager.initializeDevTools()
+    const devtoolsManager: DevToolsManager_type = LbrXManager[`_devToolsManager`] as DevToolsManager_type
+    const reduxMonitor: ReduxDevToolsMonitor = devtoolsManager[`_reduxMonitor`] as ReduxDevToolsMonitor
+    const errorSpy = jest.spyOn(reduxMonitor, `error`)
+    const store = StoresFactory.createStore(initialFoo)
+    store.update({ foo: `foo1` })
+    store.error = new Error(`Some error`)
+    store.update({ foo: `foo2` })
+    store.update({ foo: `foo3` })
+    store.error = new Error(`Some error`)
+    store.error = new Error(`Some error1`)
+    expect(errorSpy).toBeCalledTimes(2)
+  })
 })
