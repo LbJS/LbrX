@@ -6,7 +6,7 @@ import { of } from 'rxjs'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
-LbrXManager.initializeDevTools({ displayValueAsState: true, showStackTrace: false })
+LbrXManager.initializeDevTools({ showStackTrace: false })
 
 class Address {
   place: string | null = null
@@ -173,3 +173,7 @@ setTimeout(() => {
 setTimeout(() => {
   userStore.update(x => ({ firstName: x.firstName + `4` }))
 }, 10010)
+
+setTimeout(() => {
+  userStore.error = new Error(`Some error`)
+}, 10015)
