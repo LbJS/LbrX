@@ -92,12 +92,14 @@ export class DevToolsManager {
     const options = this._devToolsOptions
     this._sub.add(DevToolsAdapter.stateChange$.subscribe(x => {
       if (this._pauseRecording) return
-      if (x.state.error && x.state.error != DevToolsAdapter.stores[x.storeName].state.error) {
+      if (x.state.error) {
+        let errMsg = `An ERROR occurred at "${x.storeName}". Message: `
         const error: string | Error | object = x.state.error
-        if (isError(error) && error.message && !error[`toJSON`]) reduxMonitor.error(error.message)
-        else if (isString(error)) reduxMonitor.error(error)
-        else if (isObject(error)) reduxMonitor.error(stringify(error))
-        else reduxMonitor.error(`Store: "${x.storeName}" had an error.`)
+        if (isError(error) && error.message && !error[`toJSON`]) errMsg += `"${error.message}"`
+        else if (isString(error)) errMsg += `"${error}"`
+        else if (isObject(error)) errMsg += `"${stringify(error)}"`
+        else errMsg += `DevTools Manager couldn't resolve the error message.`
+        reduxMonitor.error(errMsg)
       }
       const clonedState = shallowCloneObject(options.displayValueAsState ? x.state.value! : x.state)
       const numOfChanges = countObjectChanges(this._state[x.storeName], clonedState)
