@@ -5,6 +5,9 @@ import { isFunction } from './is-function'
 import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 
+/**
+ * Returns true if the objects are equal.
+ */
 export function compareObjects(objA: {}, objB: {}): boolean {
   if (isDate(objA) || isDate(objB)) return isDate(objA) && isDate(objB) && objA.getTime() == objB.getTime()
   if (isMoment(objA) || isMoment(objB)) return isMoment(objA) && isMoment(objB) && objA.valueOf() == objB.valueOf()

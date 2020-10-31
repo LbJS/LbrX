@@ -1,6 +1,6 @@
 import { Subscription } from 'rxjs'
 import { isDev } from '../core'
-import { cloneError, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, shallowCloneObject, stringify } from '../helpers'
+import { cloneError, compareObjects, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, shallowCloneObject, stringify } from '../helpers'
 import { BaseStore } from '../stores'
 import { Actions, getDefaultState, State } from '../stores/store-accessories'
 import { KeyOf, KeyValue, ZoneLike } from '../types'
@@ -32,6 +32,7 @@ export class DevToolsManager {
   private _devToolsOptions: DevtoolsOptions
   private _partialStateHistory: { historyLength: number, history: KeyValue<string, Partial<State<any>>[]> } =
     { historyLength: 0, history: {} }
+  private _errorsCache: KeyValue<string, any> = {}
   private _pauseRecording = false
 
   constructor(
@@ -92,7 +93,7 @@ export class DevToolsManager {
     const options = this._devToolsOptions
     this._sub.add(DevToolsAdapter.stateChange$.subscribe(x => {
       if (this._pauseRecording) return
-      if (x.state.error) {
+      if (x.state.error && !compareObjects(this._errorsCache[x.storeName], x.state.error)) {
         let errMsg = `An ERROR occurred at "${x.storeName}". Message: `
         const error: string | Error | object = x.state.error
         if (isError(error) && error.message && !error[`toJSON`]) errMsg += `"${error.message}"`
@@ -101,6 +102,7 @@ export class DevToolsManager {
         else errMsg += `DevTools Manager couldn't resolve the error message.`
         reduxMonitor.error(errMsg)
       }
+      this._errorsCache[x.storeName] = x.state.error
       const clonedState = shallowCloneObject(options.displayValueAsState ? x.state.value! : x.state)
       const numOfChanges = countObjectChanges(this._state[x.storeName], clonedState)
       if (!numOfChanges && this._storeLastAction[x.storeName] == x.actionName && !options.logEqualStates) return
