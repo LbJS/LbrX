@@ -1,19 +1,28 @@
-import { ReduxDevToolsExtension, ReduxDevToolsMonitor } from 'lbrx/internal/dev-tools'
+import { ReduxDevToolsExtension, ReduxDevToolsMessage } from 'lbrx/internal/dev-tools'
 import { ReduxDevToolsOptions } from 'lbrx/internal/dev-tools/config'
-import { KeyValue } from 'lbrx/internal/types'
 
 export function mockReduxDevToolsExtension(): void {
-  const reduxDevToolsMonitor: ReduxDevToolsMonitor = {
-    init: (state: {}) => { },
-    send: (action: string, state: {}, options?: {}) => { },
-    subscribe: (listener: (message: KeyValue) => void) => { },
-    unsubscribe: () => { },
-    error: (message: string) => { },
+  const getReduxDevToolsMonitor = () => {
+    let subscribers: ((message: ReduxDevToolsMessage) => void)[] = []
+    return {
+      init: (state: {}) => { },
+      send: (action: string, state: {}, options?: {}) => { },
+      subscribe: (listener: (message: ReduxDevToolsMessage) => void) => {
+        subscribers.push(listener)
+      },
+      unsubscribe: () => {
+        subscribers = []
+      },
+      error: (message: string) => { },
+      emitMsg: (message: ReduxDevToolsMessage) => {
+        subscribers.forEach(x => x(message))
+      }
+    }
   }
   const reduxDevToolsExtension: ReduxDevToolsExtension = {
     connect: (options: ReduxDevToolsOptions) => {
       globalThis.__REDUX_DEVTOOLS_EXTENSION_config__ = options
-      return reduxDevToolsMonitor
+      return getReduxDevToolsMonitor()
     },
     disconnect: () => { },
     send: (action: string | {}, state: {}, options?: ReduxDevToolsOptions, instanceId?: string) => { },

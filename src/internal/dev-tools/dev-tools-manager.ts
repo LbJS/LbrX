@@ -8,6 +8,7 @@ import { DevtoolsOptions, getDefaultDevToolsConfig, ReduxDevToolsOptions } from 
 import { DevToolsAdapter } from './dev-tools-adapter'
 import { activateStreamToDevTools } from './dev-tools-mode'
 import { ReduxDevToolsExtension } from './redux-dev-tools-extension.interface'
+import { ReduxDevToolsMessage } from './redux-dev-tools-message.interface'
 import { ReduxDevToolsMonitor } from './redux-dev-tools-monitor.interface'
 import { StoreDevToolsApi } from './store-dev-tools-api.interface'
 
@@ -44,7 +45,7 @@ export class DevToolsManager {
   public initialize(): void {
     if (!isDev() || !isBrowser() || !window.__REDUX_DEVTOOLS_EXTENSION__ || DevToolsManager._wasInitialized) return
     if (objectKeys(DevToolsAdapter.stores).length) {
-      logWarn(`DevToolsManager was initialized after one or more stores were created.`)
+      logWarn(`DevToolsManager was initialized after one or more stores were created. This can result an unexpected results when debugging with Redux Monitor.`)
     }
     (window as any).$$LbrX = {
       $$stores: DevToolsAdapter.stores,
@@ -116,9 +117,9 @@ export class DevToolsManager {
       reduxMonitor.send(`${x.storeName} - ${x.actionName}`, state || this._state)
       if (options.displayValueAsState) this._addPartialStatesToHistory()
     }))
-    reduxMonitor.subscribe((message: KeyValue) => {
+    reduxMonitor.subscribe((message: ReduxDevToolsMessage) => {
       if (message.type != `DISPATCH`) return
-      const payload: KeyValue = message.payload
+      const payload = message.payload
       const payloadType: string = payload.type
       if (payloadType == `COMMIT`) {
         reduxMonitor.init(this._state)
@@ -143,9 +144,9 @@ export class DevToolsManager {
             const partialState = partialStateHistory.history[storeName][payload.actionId]
             return mergeObjects({ value: reduxDevToolsStoreState } as State<any>, partialState)
           }
-          const didStoreExisted = reduxStoreNames.includes(storeName)
+          const isStoreExisted = reduxStoreNames.includes(storeName)
           this._zone.run(() => {
-            this._setState(store, didStoreExisted ? getReduxDevToolsState() : getDefaultState())
+            this._setState(store, isStoreExisted ? getReduxDevToolsState() : getDefaultState())
           })
         })
       } else if (payloadType == `TOGGLE_ACTION`) {
