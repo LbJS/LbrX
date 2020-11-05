@@ -5,7 +5,7 @@ import { StoresFactory as StoresFactory_type } from '__test__/factories'
 import { assert } from '__test__/functions'
 import MockBuilder from '__test__/mock-builder'
 
-describe(`Dev Tools Manager - constructor():`, () => {
+describe(`Dev Tools Manager - on state change:`, () => {
 
   let initialFoo: {}
   let DevToolsManager: typeof DevToolsManager_type
