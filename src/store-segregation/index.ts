@@ -1,3 +1,2 @@
-export * from '../internal/stores/store-accessories/interface-segregation/destroyable-store.interface'
-export * from '../internal/stores/store-accessories/interface-segregation/writeable-store.interface'
+export { DestroyableStore, InitializableStore, WriteableStore } from '../internal/stores/store-accessories/interface-segregation'
 
