@@ -252,7 +252,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
   protected _asyncInitPromiseContext: PromiseContext | null = null
 
   /** @internal */
-  protected readonly _queryContext: QueryContext[] = []
+  protected readonly _queryContextList: QueryContext[] = []
 
   /** @internal */
   protected _lastAction: string | null = null
@@ -276,21 +276,9 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
   //#region constructor
 
   constructor(storeConfig: StoreConfigOptions | undefined) {
-    //#region _queryContexts proxy
-    this._queryContext.push = (...items) => {
-      const lazyInitContext = this._lazyInitContext
-      if (lazyInitContext) {
-        this.initializeAsync(lazyInitContext.value)
-          .then(d => lazyInitContext.resolve(d))
-          .catch(e => lazyInitContext.reject(e))
-        this._lazyInitContext = null
-      }
-      items.forEach(item => {
-        this._queryContext[this._queryContext.length] = item
-      })
-      return this._queryContext.length
-    }
-    //#endregion _queryContexts proxy
+    //#region create queryContextList
+    this._queryContextList.push = this.pushToQueryContext.bind(this)
+    //#endregion create queryContextList
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
@@ -303,13 +291,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
     this._freeze = config.isImmutable ? deepFreeze : x => x
     this._isInstanceHandler = config.isInstanceHandler
     this._objectCompareType = config.objectCompareType
-    this._compare = (() => {
-      switch (this._objectCompareType) {
-        case ObjectCompareTypes.advanced: return compareObjects
-        case ObjectCompareTypes.simple: return shallowCompareObjects
-        case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
-      }
-    })()
+    this._compare = this.resolveObjectCompareType(this._objectCompareType)
     config.objectCompareTypeName = [`Reference`, `Simple`, `Advanced`][this._objectCompareType]
     const storeName = this._storeName
     if (config.storageType != Storages.custom) {
@@ -322,14 +304,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
       logWarn(`Store: "${storeName}" has storage type set to custom but no custom storage api implementation was provided. Therefore storage type will be set to none.`)
       config.storageType = Storages.none
     }
-    this._storage = (() => {
-      switch (config.storageType) {
-        case Storages.none: return null
-        case Storages.local: return localStorage
-        case Storages.session: return sessionStorage
-        case Storages.custom: return this._config.customStorageApi
-      }
-    })()
+    this._storage = this.resolveStorageType(config.storageType)
     config.storageTypeName = [
       `None`,
       `Local-Storage`,
@@ -356,6 +331,40 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
   }
 
   //#endregion constructor
+  //#region helper-methods
+
+  protected pushToQueryContext(...items: QueryContext[]): number {
+    const lazyInitContext = this._lazyInitContext
+    if (lazyInitContext) {
+      this.initializeAsync(lazyInitContext.value)
+        .then(d => lazyInitContext.resolve(d))
+        .catch(e => lazyInitContext.reject(e))
+      this._lazyInitContext = null
+    }
+    items.forEach(item => {
+      this._queryContextList[this._queryContextList.length] = item
+    })
+    return this._queryContextList.length
+  }
+
+  protected resolveObjectCompareType(objectCompareType: ObjectCompareTypes): Compare {
+    switch (objectCompareType) {
+      case ObjectCompareTypes.advanced: return compareObjects
+      case ObjectCompareTypes.simple: return shallowCompareObjects
+      case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
+    }
+  }
+
+  protected resolveStorageType(storageType: Storages): Storage | null {
+    switch (storageType) {
+      case Storages.none: return null
+      case Storages.local: return localStorage
+      case Storages.session: return sessionStorage
+      case Storages.custom: return this._config.customStorageApi
+    }
+  }
+
+  //#endregion helper-methods
   //#region initialization-methods
 
   /** @internal */
@@ -481,7 +490,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
   public initializeLazily(promise: Promise<T>): Promise<void>
   public initializeLazily(observable: Observable<T>): Promise<void>
   public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    if (this._queryContext.length) return this.initializeAsync(promiseOrObservable)
+    if (this._queryContextList.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
       this._lazyInitContext = {
@@ -622,7 +631,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
       const reset = () => {
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryContext.forEach(x => x.wasHardReset = true)
+        this._queryContextList.forEach(x => x.wasHardReset = true)
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
@@ -643,7 +652,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
   }
 
   public disposeQueryContext(observable: Observable<T>): void {
-    const queryContexts = this._queryContext
+    const queryContexts = this._queryContextList
     const i = queryContexts.findIndex(x => x.observable = observable)
     if (i > -1) {
       queryContexts[i].isDisposed = true
@@ -665,7 +674,7 @@ export abstract class BaseStore<T extends object, E = any> implements WriteableS
         delete DevToolsAdapter.values[storeName]
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryContext.forEach(x => x.isDisposed = true)
+        this._queryContextList.forEach(x => x.isDisposed = true)
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
