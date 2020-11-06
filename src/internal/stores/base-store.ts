@@ -337,7 +337,7 @@ export abstract class BaseStore<T extends object, E = any> {
       `Custom`,
     ][config.storageType]
     this._storageDebounce = config.storageDebounceTime
-    this._storageKey = config.storageKey
+    this._storageKey = config.storageKey ? config.storageKey : config.name
     this._stringify = config.stringify
     this._parse = config.parse
     this._handleTypes = handleObjectTypes
