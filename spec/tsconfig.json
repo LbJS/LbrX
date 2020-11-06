@@ -28,6 +28,12 @@
       "lbrx/internal/helpers": [
         "../src/internal/helpers",
       ],
+      "lbrx/internal/helpers/helper-functions": [
+        "../src/internal/helpers/helper-functions",
+      ],
+      "lbrx/internal/helpers/shortened-functions": [
+        "../src/internal/helpers/shortened-functions",
+      ],
       "lbrx/internal/types": [
         "../src/internal/types",
       ],

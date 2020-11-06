@@ -18,6 +18,8 @@ module.exports = {
     "^lbrx/utils$": "<rootDir>/src/utils",
     "^lbrx/internal/core$": "<rootDir>/src/internal/core",
     "^lbrx/internal/helpers$": "<rootDir>/src/internal/helpers",
+    "^lbrx/internal/helpers/helper-functions$": "<rootDir>/src/internal/helpers/helper-functions",
+    "^lbrx/internal/helpers/shortened-functions$": "<rootDir>/src/internal/helpers/shortened-functions",
     "^lbrx/internal/types$": "<rootDir>/src/internal/types",
     "^lbrx/internal/dev-tools$": "<rootDir>/src/internal/dev-tools",
     "^lbrx/internal/dev-tools/config$": "<rootDir>/src/internal/dev-tools/config",
