@@ -1,96 +1,84 @@
-import { Store } from 'lbrx'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
-import { AllStoreHooks } from '__test__/types'
 
 describe(`Store onAfterInit():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
-  const initialState = createInitialState()
   let StoresFactory: typeof StoresFactory_type
-  let store: Store<TestSubject> & AllStoreHooks<TestSubject>
-  let onAfterInitSpy: jest.SpyInstance<void | TestSubject, [TestSubject]>
 
   beforeEach(async () => {
     const providerModule = await import(`provider`)
     StoresFactory = providerModule.StoresFactory
-    store = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
-    onAfterInitSpy = jest.spyOn(store, `onAfterInit`)
   })
 
-  afterEach(() => {
-    jest.resetModules()
-    jest.resetAllMocks()
+  it(`should not be implemented by default.`, () => {
+    const storeWithoutHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/false)
+    expect(storeWithoutHooks[`onAfterInit`]).toBeUndefined()
   })
 
   it(`should be called after initialization if implemented.`, () => {
-    store.initialize(initialState)
-    expect(onAfterInitSpy).toBeCalled()
-  })
-
-  it(`should not be called after initialization if not implemented.`, () => {
-    delete (store as Partial<AllStoreHooks<any>>).onAfterInit
-    store.initialize(initialState)
-    expect(onAfterInitSpy).not.toBeCalled()
+    const storeWithHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
+    const onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
+    storeWithHooks.initialize(createInitialState())
+    expect(onAfterInitSpy).toBeCalledTimes(1)
   })
 
   it(`should be called after async initialization if implemented.`, async () => {
-    store.initializeAsync(Promise.resolve(initialState))
-    await Promise.resolve()
-    expect(store.value).toBeTruthy()
-    expect(onAfterInitSpy).toBeCalled()
-  })
-
-  it(`should not be called after async initialization if not implemented.`, async () => {
-    delete (store as Partial<AllStoreHooks<any>>).onAfterInit
-    store.initializeAsync(Promise.resolve(initialState))
-    await Promise.resolve()
-    expect(store.value).toBeTruthy()
-    expect(onAfterInitSpy).not.toBeCalled()
+    const storeWithHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
+    const onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
+    await storeWithHooks.initializeAsync(Promise.resolve(createInitialState()))
+    expect(storeWithHooks.value).toBeTruthy()
+    expect(onAfterInitSpy).toBeCalledTimes(1)
   })
 
   it(`should get the currState as an argument.`, done => {
+    const storeWithHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
+    const onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
     onAfterInitSpy.mockImplementation((currState: TestSubject): void => {
-      expect(currState).toStrictEqual(initialState)
+      expect(currState).toStrictEqual(createInitialState())
       done()
     })
-    store.initialize(initialState)
+    storeWithHooks.initialize(createInitialState())
   })
 
-  it(`should allow changing the next state.`, () => {
+  it(`should allow changing the currState.`, () => {
+    const storeWithHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
+    const onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
     const localInitialState = createInitialState()
     onAfterInitSpy.mockImplementation((currState: TestSubject): TestSubject => {
       assertNotNullable(currState.innerTestObjectGetSet)
       currState.innerTestObjectGetSet.booleanValue = !currState.innerTestObjectGetSet.booleanValue
       return currState
     })
-    store.initialize(localInitialState)
+    storeWithHooks.initialize(localInitialState)
     assertNotNullable(localInitialState.innerTestObjectGetSet)
     localInitialState.innerTestObjectGetSet.booleanValue = !localInitialState.innerTestObjectGetSet.booleanValue
-    expect(store.value).toStrictEqual(localInitialState)
+    expect(storeWithHooks.value).toStrictEqual(localInitialState)
   })
 
-  it(`should disconnect nextState object's references.`, async () => {
-    onAfterInitSpy.mockImplementation((nextState: TestSubject): void => {
-      assertNotNullable(nextState.innerTestObject)
-      assertNotNullable(nextState.innerTestObject.obj)
-      nextState.innerTestObject.obj.date.setFullYear(1900)
-      assertNotNullable(nextState.innerTestObjectGetSet)
-      nextState.innerTestObjectGetSet.numberValue = 777
+  it(`should disconnect currState object's references.`, async () => {
+    let storeWithHooks = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
+    let onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
+    onAfterInitSpy.mockImplementation((currState: TestSubject): void => {
+      assertNotNullable(currState.innerTestObject)
+      assertNotNullable(currState.innerTestObject.obj)
+      currState.innerTestObject.obj.date.setFullYear(1900)
+      assertNotNullable(currState.innerTestObjectGetSet)
+      currState.innerTestObjectGetSet.numberValue = 777
     })
-    store.initializeAsync(Promise.resolve(initialState))
+    storeWithHooks.initializeAsync(Promise.resolve(createInitialState()))
     await Promise.resolve()
-    expect(store.value).toStrictEqual(initialState)
+    expect(storeWithHooks.value).toStrictEqual(createInitialState())
     jest.resetAllMocks()
-    store = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, true/*with hooks*/)
-    onAfterInitSpy = jest.spyOn(store, `onAfterInit`)
+    storeWithHooks = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, true/*with hooks*/)
+    onAfterInitSpy = jest.spyOn(storeWithHooks, `onAfterInit`)
     let tmpState: TestSubject | null = null
     onAfterInitSpy.mockImplementation((currState: TestSubject): TestSubject => {
       tmpState = currState
       return currState
     })
-    store.initializeAsync(Promise.resolve(initialState))
+    storeWithHooks.initializeAsync(Promise.resolve(createInitialState()))
     await Promise.resolve()
     assertNotNullable(tmpState)
     assertNotNullable(tmpState!.innerTestObject)
@@ -98,6 +86,6 @@ describe(`Store onAfterInit():`, () => {
     tmpState!.innerTestObject.obj.date.setFullYear(1900)
     assertNotNullable(tmpState!.innerTestObjectGetSet)
     tmpState!.innerTestObjectGetSet.numberValue = 777
-    expect(store.value).toStrictEqual(initialState)
+    expect(storeWithHooks.value).toStrictEqual(createInitialState())
   })
 })
