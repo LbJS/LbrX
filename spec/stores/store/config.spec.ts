@@ -38,7 +38,7 @@ describe(`Store Config:`, () => {
     store = createStore({
       name: `TEST-STORE`
     })
-    const expectedConfig: Required<StoreConfigInfo> = {
+    const expectedConfig: Required<Omit<StoreConfigInfo, 'storageKey'>> = {
       name: `TEST-STORE`,
       isResettable: true,
       storageType: Storages.none,
@@ -47,7 +47,6 @@ describe(`Store Config:`, () => {
       objectCompareType: ObjectCompareTypes.advanced,
       isSimpleCloning: false,
       isInstanceHandler: true,
-      storageKey: `TEST-STORE`,
       objectCompareTypeName: `Advanced`,
       storageTypeName: `None`,
       isImmutable: true,
@@ -158,7 +157,7 @@ describe(`Store Config:`, () => {
       storageType: Storages.custom,
       customStorageApi: new GenericStorage(),
     })
-    const expectedConfig: Required<StoreConfigInfo> = {
+    const expectedConfig: Required<Omit<StoreConfigInfo, 'storageKey'>> = {
       name: `TEST-STORE`,
       isResettable: true,
       storageType: Storages.custom,
@@ -167,7 +166,6 @@ describe(`Store Config:`, () => {
       objectCompareType: ObjectCompareTypes.advanced,
       isSimpleCloning: false,
       isInstanceHandler: true,
-      storageKey: `TEST-STORE`,
       objectCompareTypeName: `Advanced`,
       storageTypeName: `Custom`,
       isImmutable: true,
@@ -185,7 +183,7 @@ describe(`Store Config:`, () => {
       storageType: Storages.local,
       customStorageApi: new GenericStorage(),
     })
-    const expectedConfig: Required<StoreConfigInfo> = {
+    const expectedConfig: Required<Omit<StoreConfigInfo, 'storageKey'>> = {
       name: `TEST-STORE`,
       isResettable: true,
       storageType: Storages.local,
@@ -194,7 +192,6 @@ describe(`Store Config:`, () => {
       objectCompareType: ObjectCompareTypes.advanced,
       isSimpleCloning: false,
       isInstanceHandler: true,
-      storageKey: `TEST-STORE`,
       objectCompareTypeName: `Advanced`,
       storageTypeName: `Local-Storage`,
       isImmutable: true,
@@ -213,7 +210,7 @@ describe(`Store Config:`, () => {
       storageType: Storages.custom,
       customStorageApi: null,
     })
-    const expectedConfig: Required<StoreConfigInfo> = {
+    const expectedConfig: Required<Omit<StoreConfigInfo, 'storageKey'>> = {
       name: `TEST-STORE`,
       isResettable: true,
       storageType: Storages.none,
@@ -222,7 +219,6 @@ describe(`Store Config:`, () => {
       objectCompareType: ObjectCompareTypes.advanced,
       isSimpleCloning: false,
       isInstanceHandler: true,
-      storageKey: `TEST-STORE`,
       objectCompareTypeName: `Advanced`,
       storageTypeName: `None`,
       isImmutable: true,
