@@ -1,51 +1,47 @@
-import { Store } from 'lbrx'
-import { TestSubjectFactory } from '__test__/factories'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { assertNotNullable } from '__test__/functions'
 import { TestSubject } from '__test__/test-subjects'
-import { AllStoreHooks } from '__test__/types'
 
 describe(`Store onOverride():`, () => {
 
-  const initialState = TestSubjectFactory.createTestSubject_initial()
+  const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
-  const stateA = createStateA()
-  let store: Store<TestSubject> & AllStoreHooks<TestSubject>
-  let onOverrideSpy: jest.SpyInstance<void | TestSubject, [TestSubject, Readonly<TestSubject>]>
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
-    const providerModule = await import(`provider`)
-    store = providerModule.StoresFactory.createStore(initialState, true/*with hooks*/)
-    onOverrideSpy = jest.spyOn(store, `onOverride`)
+    const provider = await import(`provider`)
+    StoresFactory = provider.StoresFactory
   })
 
-  afterEach(() => {
-    jest.resetModules()
-    jest.resetAllMocks()
+  it(`should not be implemented by default.`, () => {
+    const store = StoresFactory.createStore<TestSubject>(null)
+    expect(store[`onOverride`]).toBeUndefined()
   })
 
   it(`should be called if implemented.`, () => {
-    store.override(stateA)
+    const store = StoresFactory.createStore(createInitialState(), /*with hooks*/true)
+    const onOverrideSpy = jest.spyOn(store, `onOverride`)
+    store.override(createStateA())
     expect(onOverrideSpy).toBeCalled()
   })
 
-  it(`shouldn't be called if not implemented.`, () => {
-    delete (store as Partial<AllStoreHooks<any>>).onOverride
-    store.override(stateA)
-    expect(onOverrideSpy).not.toBeCalled()
-  })
-
   it(`should get the nextState and the currState as arguments.`, done => {
+    const store = StoresFactory.createStore(createInitialState(), /*with hooks*/true)
+    const onOverrideSpy = jest.spyOn(store, `onOverride`)
     onOverrideSpy.mockImplementation((nextState: TestSubject, currState: Readonly<TestSubject>): void => {
-      expect(nextState).toStrictEqual(stateA)
-      expect(currState).toStrictEqual(initialState)
+      expect(nextState).toStrictEqual(createStateA())
+      expect(currState).toStrictEqual(createInitialState())
       done()
     })
-    store.override(stateA)
+    store.override(createStateA())
   })
 
   it(`should allow changing the next state.`, () => {
+    const store = StoresFactory.createStore(createInitialState(), /*with hooks*/true)
+    const onOverrideSpy = jest.spyOn(store, `onOverride`)
     const localStateA = createStateA()
     onOverrideSpy.mockImplementation((nextState: TestSubject): TestSubject => {
+      expect(nextState).toStrictEqual(createStateA())
       assertNotNullable(nextState.dateValue)
       nextState.dateValue.setFullYear(1900)
       return nextState
@@ -58,35 +54,43 @@ describe(`Store onOverride():`, () => {
   })
 
   it(`should supply a readonly current state.`, done => {
+    const store = StoresFactory.createStore(createInitialState(), /*with hooks*/true)
+    const onOverrideSpy = jest.spyOn(store, `onOverride`)
     onOverrideSpy.mockImplementation((nextState: TestSubject, currState: Readonly<TestSubject>): void => {
+      expect(nextState).toStrictEqual(createStateA())
+      expect(store.value).toStrictEqual(currState)
       expect(() => {
         assertNotNullable(currState.dateValue)
         currState.dateValue.setFullYear(1900)
       }).toThrow()
       done()
     })
-    store.override(stateA)
+    store.override(createStateA())
   })
 
   it(`should disconnect nextState object's references.`, () => {
+    const store = StoresFactory.createStore(createInitialState(), /*with hooks*/true)
+    const onOverrideSpy = jest.spyOn(store, `onOverride`)
     onOverrideSpy.mockImplementation((nextState: TestSubject): void => {
+      expect(nextState).toStrictEqual(createStateA())
       assertNotNullable(nextState.dateValue)
       nextState.dateValue.setFullYear(1900)
       nextState.stringValue = `some new value`
     })
-    store.override(stateA)
-    expect(store.value).toStrictEqual(stateA)
+    store.override(createStateA())
+    expect(store.value).toStrictEqual(createStateA())
     jest.resetAllMocks()
     let tmpState: TestSubject | null = null
     onOverrideSpy.mockImplementation((nextState: TestSubject): TestSubject => {
+      expect(nextState).toStrictEqual(createStateA())
       tmpState = nextState
       return nextState
     })
-    store.override(stateA)
+    store.override(createStateA())
     assertNotNullable(tmpState!)
     assertNotNullable(tmpState!.dateValue)
     tmpState!.dateValue.setFullYear(1900)
     tmpState!.stringValue = `some new value`
-    expect(store.value).toStrictEqual(stateA)
+    expect(store.value).toStrictEqual(createStateA())
   })
 })
