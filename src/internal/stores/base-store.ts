@@ -5,9 +5,13 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
 
-export abstract class BaseStore<T extends object, E = any> implements WriteableStore<T, E>, DestroyableStore<T, E> {
+export abstract class BaseStore<T extends object, E = any> implements
+  WriteableStore<T, E>,
+  DestroyableStore<T, E>,
+  InitializableStore<T, E>
+{
 
   //#region static
 
