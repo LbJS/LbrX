@@ -1,2 +1,2 @@
-export { QueryableStore } from '../internal/stores/store-accessories/query-context/queryable-store.interface'
+export { QueryableStore } from '../internal/stores/store-accessories/interface-segregation/queryable-store.interface'
 

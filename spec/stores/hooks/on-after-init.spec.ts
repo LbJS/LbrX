@@ -8,12 +8,12 @@ describe(`Store onAfterInit():`, () => {
   let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
-    const providerModule = await import(`provider`)
-    StoresFactory = providerModule.StoresFactory
+    const provider = await import(`provider`)
+    StoresFactory = provider.StoresFactory
   })
 
   it(`should not be implemented by default.`, () => {
-    const store = StoresFactory.createStore<TestSubject>(null, /*with hooks*/false)
+    const store = StoresFactory.createStore<TestSubject>(null)
     expect(store[`onAfterInit`]).toBeUndefined()
   })
 
@@ -71,7 +71,7 @@ describe(`Store onAfterInit():`, () => {
     await Promise.resolve()
     expect(store.value).toStrictEqual(createInitialState())
     jest.resetAllMocks()
-    store = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, true/*with hooks*/)
+    store = StoresFactory.createStore<TestSubject>(null, `ANOTHER-TEST-STORE`, /*with hooks*/true)
     onAfterInitSpy = jest.spyOn(store, `onAfterInit`)
     let tmpState: TestSubject | null = null
     onAfterInitSpy.mockImplementation((currState: TestSubject): TestSubject => {
