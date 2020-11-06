@@ -176,7 +176,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
             map(x => isObject(x) ? this._clone(x) : x),
           )
       }
-      this._queryContext.push(queryContext)
+      this._queryContextList.push(queryContext)
       return queryContext.observable
     }
   }
