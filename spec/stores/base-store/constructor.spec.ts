@@ -403,4 +403,37 @@ describe(`Base Store - constructor():`, () => {
     expect(store[`_cloneError`]).toBe(advanced.cloneError)
     expect(store[`_merge`]).toBe(advanced.merge)
   })
+
+  it(`should include the provided advanced configurations and ignore the undefined ones.`, () => {
+    const advanced: AdvancedConfigOptions = {
+      clone: (a: any) => a,
+      freeze: (a: any) => a,
+      handleTypes: (a: any, b: any) => a,
+    }
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, advanced })
+    expect(store[`_clone`]).toBe(advanced.clone)
+    expect(store[`_freeze`]).toBe(advanced.freeze)
+    expect(store[`_handleTypes`]).toBe(advanced.handleTypes)
+    expect(store[`_compare`]).toBe(provider.compareObjects)
+    expect(store[`_cloneError`]).toBe(provider.cloneError)
+    expect(store[`_merge`]).toBe(provider.mergeObjects)
+  })
+
+  it(`should include the provided advanced configurations and ignore the null ones.`, () => {
+    const advanced: AdvancedConfigOptions = {
+      clone: null,
+      freeze: null,
+      handleTypes: null,
+      compare: (a: any, b: any) => a === b,
+      cloneError: (e: any) => e,
+      merge: (a: any, b: any) => a
+    }
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, advanced })
+    expect(store[`_clone`]).toBe(provider.cloneObject)
+    expect(store[`_freeze`]).toBe(provider.deepFreeze)
+    expect(store[`_handleTypes`]).toBe(provider.handleObjectTypes)
+    expect(store[`_compare`]).toBe(advanced.compare)
+    expect(store[`_cloneError`]).toBe(advanced.cloneError)
+    expect(store[`_merge`]).toBe(advanced.merge)
+  })
 })
