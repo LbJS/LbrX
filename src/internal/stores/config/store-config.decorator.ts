@@ -9,5 +9,6 @@ export function StoreConfig(options: StoreConfigOptions): <T extends Class>(cons
   return <T extends Class>(constructor: T): void => {
     if (!isFunction(constructor)) throwError(`"@StoreConfig" decorator can decorate only a class!`)
     constructor[STORE_CONFIG_KEY] = cloneObject(options)
+    constructor[STORE_CONFIG_KEY].customStorageApi = options.customStorageApi
   }
 }
