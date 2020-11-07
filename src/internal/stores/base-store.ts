@@ -4,7 +4,7 @@ import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
-import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
+import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
 
 export abstract class BaseStore<T extends object, E = any> implements
@@ -189,12 +189,12 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#region config
 
   /** @internal */
-  protected readonly _config: StoreConfigInfo
+  protected readonly _config: StoreConfigCompleteInfo
 
   /**
    * @get Returns store's configuration.
    */
-  public get config(): StoreConfigInfo {
+  public get config(): StoreConfigCompleteInfo {
     return this._config
   }
 
@@ -279,51 +279,45 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#endregion helpers
   //#region constructor
 
-  constructor(storeConfig: StoreConfigOptions | undefined) {
+  constructor(storeConfig?: StoreConfigOptions) {
     //#region create queryContextList
     this._queryContextList.push = this.pushToQueryContext.bind(this)
     //#endregion create queryContextList
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
-    this._config = cloneObject(this.constructor[STORE_CONFIG_KEY])
+    const config: StoreConfigCompleteInfo = cloneObject(this.constructor[STORE_CONFIG_KEY])
+    config.customStorageApi = this.constructor[STORE_CONFIG_KEY].customStorageApi
     delete this.constructor[STORE_CONFIG_KEY]
-    const config = this._config
-    this._storeName = config.name
-    this._isResettable = config.isResettable
-    this._isSimpleCloning = config.isSimpleCloning
-    this._clone = !config.isImmutable ? x => x : this._isSimpleCloning ? shallowCloneObject : cloneObject
-    this._freeze = config.isImmutable ? deepFreeze : x => x
-    this._isInstanceHandler = config.isInstanceHandler
-    this._objectCompareType = config.objectCompareType
-    this._compare = this.resolveObjectCompareType(this._objectCompareType)
-    config.objectCompareTypeName = [`Reference`, `Simple`, `Advanced`][this._objectCompareType]
-    const storeName = this._storeName
-    if (config.storageType != Storages.custom) {
-      if (config.customStorageApi) {
-        logWarn(`Store: "${storeName}" was provided with custom storage api implementation but storage type was not set to custom. Therefore custom storage api implementation will be ignored.`)
-      }
+    const storeName = config.name
+    if (config.storageType != Storages.custom && config.customStorageApi) {
+      logWarn(`Store: "${storeName}" was provided with custom storage api implementation but storage type was not set to custom. Therefore custom storage api implementation will be ignored.`)
       config.customStorageApi = null
-    }
-    if (config.storageType == Storages.custom && !this._config.customStorageApi) {
+    } else if (config.storageType == Storages.custom && !config.customStorageApi) {
       logWarn(`Store: "${storeName}" has storage type set to custom but no custom storage api implementation was provided. Therefore storage type will be set to none.`)
       config.storageType = Storages.none
     }
-    this._storage = this.resolveStorageType(config.storageType)
-    config.storageTypeName = [
-      `None`,
-      `Local-Storage`,
-      `Session-Storage`,
-      `Custom`,
-    ][config.storageType]
+    config.storageKey = config.storageKey || storeName
+    config.objectCompareTypeName = [`Reference`, `Simple`, `Advanced`][config.objectCompareType]
+    config.storageTypeName = [`None`, `Local-Storage`, `Session-Storage`, `Custom`][config.storageType]
+    this._config = config
+    this._storeName = config.name
+    this._isResettable = config.isResettable
+    this._isSimpleCloning = config.isSimpleCloning
+    this._isInstanceHandler = config.isInstanceHandler
+    this._objectCompareType = config.objectCompareType
+    this._storageKey = config.storageKey
     this._storageDebounce = config.storageDebounceTime
-    this._storageKey = config.storageKey ? config.storageKey : config.name
+    this._storage = this.resolveStorageType(config.storageType, config.customStorageApi)
+    this._compare = this.resolveObjectCompareType(config.objectCompareType)
+    this._clone = !config.isImmutable ? x => x : config.isSimpleCloning ? shallowCloneObject : cloneObject
+    this._freeze = config.isImmutable ? deepFreeze : x => x
     this._stringify = config.stringify
     this._parse = config.parse
     this._handleTypes = handleObjectTypes
     this._cloneError = cloneError
     this._merge = mergeObjects
-    if (config.advanced) {
-      const advanced = config.advanced
+    const advanced = config.advanced
+    if (advanced) {
       if (advanced.clone) this._clone = advanced.clone
       if (advanced.freeze) this._freeze = advanced.freeze
       if (advanced.handleTypes) this._handleTypes = advanced.handleTypes
@@ -359,12 +353,12 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
   }
 
-  protected resolveStorageType(storageType: Storages): Storage | null {
+  protected resolveStorageType(storageType: Storages, customStorageApi: Storage | null): Storage | null {
     switch (storageType) {
       case Storages.none: return null
       case Storages.local: return localStorage
       case Storages.session: return sessionStorage
-      case Storages.custom: return this._config.customStorageApi
+      case Storages.custom: return customStorageApi
     }
   }
 

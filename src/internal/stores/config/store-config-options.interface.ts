@@ -1,9 +1,9 @@
-import { GlobalStoreConfigOptions } from './global-store-config-options.interface'
+import { BaseStoreConfigOptions } from './base-store-config-options.interface'
 
 /**
  * Store configuration options.
  */
-export interface StoreConfigOptions extends GlobalStoreConfigOptions {
+export interface StoreConfigOptions extends BaseStoreConfigOptions {
   /**
    * Store's name will be used for Redux DevTools and cache storage's key if storage is configured.
    * @warning Store's name must be unique!
