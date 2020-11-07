@@ -108,8 +108,8 @@ export abstract class BaseStore<T extends object, E = any> implements
     if (state.isHardResettings) return StoreTags.hardResetting
     if (state.isLoading) return StoreTags.loading
     if (state.isPaused) return StoreTags.paused
-    if (state.value) return StoreTags.active
     if (state.error) return StoreTags.error
+    if (state.value) return StoreTags.active
     return StoreTags.resolving
   }
 
