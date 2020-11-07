@@ -8,11 +8,12 @@ import path from 'path'
 export function getRollupBaseOptions() {
   return {
     input: [
-      'src/index.ts',
       'src/core/index.ts',
-      'src/query/index.ts',
       'src/dev-tools/index.ts',
-      'src/utils/index.ts'
+      'src/query/index.ts',
+      'src/store-segregation/index.ts',
+      'src/utils/index.ts',
+      'src/index.ts',
     ],
     output: {
       sourcemap: true,

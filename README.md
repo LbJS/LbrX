@@ -26,8 +26,8 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Select with string literals
 - [ ] Full spec coverage of the above - wip
 - [ ] **List Store**
-- [ ] Playground
 - [ ] Full spec coverage of the above
+- [ ] Playground
 - [ ] Full documentation
 
 ## Important Notice
