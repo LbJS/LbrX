@@ -48,6 +48,8 @@ export abstract class BaseStore<T extends object, E = any> implements
   /** @internal */
   protected readonly _state$ = new BehaviorSubject(this._state)
 
+  public readonly state$ = this._state$.asObservable()
+
   /**
    * @get Returns the state.
    */
@@ -279,16 +281,17 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#endregion helpers
   //#region constructor
 
-  constructor(storeConfig?: StoreConfigOptions) {
-    //#region create queryContextList
-    this._queryContextList.push = this.pushToQueryContext.bind(this)
-    //#endregion create queryContextList
+  constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     const config: StoreConfigCompleteInfo = cloneObject(this.constructor[STORE_CONFIG_KEY])
+    if (!config) throwError(`Store must be provided with store configuration via decorator or via constructor.`)
     config.customStorageApi = this.constructor[STORE_CONFIG_KEY].customStorageApi
     delete this.constructor[STORE_CONFIG_KEY]
     const storeName = config.name
+    this._assertStoreNameValid(storeName)
+    BaseStore._storeNames.push(storeName)
+    DevToolsAdapter.stores[storeName] = this
     if (config.storageType != Storages.custom && config.customStorageApi) {
       logWarn(`Store: "${storeName}" was provided with custom storage api implementation but storage type was not set to custom. Therefore custom storage api implementation will be ignored.`)
       config.customStorageApi = null
@@ -305,6 +308,10 @@ export abstract class BaseStore<T extends object, E = any> implements
     this._isSimpleCloning = config.isSimpleCloning
     this._isInstanceHandler = config.isInstanceHandler
     this._objectCompareType = config.objectCompareType
+    if (this._config.storageType != Storages.none) {
+      this._assertStorageKeyValid(config.storageKey, storeName)
+      BaseStore._storageKeys.push(config.storageKey)
+    }
     this._storageKey = config.storageKey
     this._storageDebounce = config.storageDebounceTime
     this._storage = this.resolveStorageType(config.storageType, config.customStorageApi)
@@ -326,11 +333,21 @@ export abstract class BaseStore<T extends object, E = any> implements
       if (advanced.merge) this._merge = advanced.merge
     }
     //#endregion configuration-initialization
+    //#region pre-state initialization procedure
+    this._queryContextList.push = this.pushToQueryContext.bind(this)
+    if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
+    if (isNull(initialValueOrNull)) {
+      this._setState({ isLoading: true }, Actions.loading)
+    } else {
+      this._initializeStore(initialValueOrNull, false)
+    }
+    //#endregion pre-state initialization procedure
   }
 
   //#endregion constructor
   //#region helper-methods
 
+  /** @internal */
   protected pushToQueryContext(...items: QueryContext[]): number {
     const lazyInitContext = this._lazyInitContext
     if (lazyInitContext) {
@@ -345,6 +362,7 @@ export abstract class BaseStore<T extends object, E = any> implements
     return this._queryContextList.length
   }
 
+  /** @internal */
   protected resolveObjectCompareType(objectCompareType: ObjectCompareTypes): Compare {
     switch (objectCompareType) {
       case ObjectCompareTypes.advanced: return compareObjects
@@ -353,35 +371,13 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
   }
 
+  /** @internal */
   protected resolveStorageType(storageType: Storages, customStorageApi: Storage | null): Storage | null {
     switch (storageType) {
       case Storages.none: return null
       case Storages.local: return localStorage
       case Storages.session: return sessionStorage
       case Storages.custom: return customStorageApi
-    }
-  }
-
-  //#endregion helper-methods
-  //#region initialization-methods
-
-  /** @internal */
-  protected _main(initialValueOrNull: T | null): void {
-    if (!this.config) throwError(`Store must be provided with store configuration via decorator or via constructor.`)
-    const storeName = this._storeName
-    this._assertStoreNameValid(storeName)
-    BaseStore._storeNames.push(storeName)
-    if (this._config.storageType != Storages.none) {
-      const storageKey = this._storageKey
-      this._assertStorageKeyValid(this._storageKey, storeName)
-      BaseStore._storageKeys.push(storageKey)
-    }
-    if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as initial state.`)
-    DevToolsAdapter.stores[storeName] = this
-    if (isNull(initialValueOrNull)) {
-      this._setState({ isLoading: true }, Actions.loading)
-    } else {
-      this._initializeStore(initialValueOrNull, false)
     }
   }
 
@@ -399,6 +395,7 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
   }
 
+  /** @internal */
   protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
     if (!this._isInitialized && !this._value && this.isLoading) return true
     const errMsg = `Store: "${this._storeName}" has already been initialized. You can hard reset the store if you want to reinitialize it.`
@@ -406,6 +403,9 @@ export abstract class BaseStore<T extends object, E = any> implements
     reject(newError(errMsg))
     return false
   }
+
+  //#endregion helper-methods
+  //#region initialization-methods
 
   /** @internal */
   protected _initializeStore(initialValue: T, isAsync: boolean): void {
