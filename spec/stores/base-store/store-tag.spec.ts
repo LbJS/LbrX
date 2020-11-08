@@ -17,23 +17,23 @@ describe(`Base Store - store tag:`, () => {
     }
     const store = new FooStore()
     store[`_isDestroyed`] = true
-    store[`_stateField`][`isHardResettings`] = true
-    store[`_stateField`][`isLoading`] = true
-    store[`_stateField`][`isPaused`] = true
-    store[`_stateField`][`error`] = {}
-    store[`_stateField`][`value`] = {}
+    store[`_stateSource`][`isHardResettings`] = true
+    store[`_stateSource`][`isLoading`] = true
+    store[`_stateSource`][`isPaused`] = true
+    store[`_stateSource`][`error`] = {}
+    store[`_stateSource`][`value`] = {}
     expect(store.storeTag).toBe(StoreTags.destroyed)
     store[`_isDestroyed`] = false
     expect(store.storeTag).toBe(StoreTags.hardResetting)
-    store[`_stateField`][`isHardResettings`] = false
+    store[`_stateSource`][`isHardResettings`] = false
     expect(store.storeTag).toBe(StoreTags.loading)
-    store[`_stateField`][`isLoading`] = false
+    store[`_stateSource`][`isLoading`] = false
     expect(store.storeTag).toBe(StoreTags.paused)
-    store[`_stateField`][`isPaused`] = false
+    store[`_stateSource`][`isPaused`] = false
     expect(store.storeTag).toBe(StoreTags.error)
-    store[`_stateField`][`error`] = null
+    store[`_stateSource`][`error`] = null
     expect(store.storeTag).toBe(StoreTags.active)
-    store[`_stateField`][`value`] = null
+    store[`_stateSource`][`value`] = null
     expect(store.storeTag).toBe(StoreTags.resolving)
   })
 })

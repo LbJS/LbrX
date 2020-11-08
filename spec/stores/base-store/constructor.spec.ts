@@ -1,6 +1,7 @@
-import { AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as Store_type, StoreConfigCompleteInfo } from 'lbrx'
+import { AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as Store_type, StoreConfigCompleteInfo, StoreTags } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { isDev as isDev_type } from 'lbrx/internal/core'
+import { DevToolsAdapter as DevToolsAdapter_type } from 'lbrx/internal/dev-tools'
 import { parse as parse_type, stringify as stringify_type } from 'lbrx/utils'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 import MockBuilder from '__test__/mock-builder'
@@ -13,6 +14,7 @@ describe(`Base Store - constructor():`, () => {
   let provider: typeof import('provider')
   let LbrXManager: typeof LbrXManager_type
   let StoresFactory: typeof StoresFactory_type
+  let DevToolsAdapter: typeof DevToolsAdapter_type
   let Store: typeof Store_type
   let isDev: typeof isDev_type
   let stringify: typeof stringify_type
@@ -22,6 +24,7 @@ describe(`Base Store - constructor():`, () => {
     provider = await import(`provider`)
     LbrXManager = provider.LbrXManager
     StoresFactory = provider.StoresFactory
+    DevToolsAdapter = provider.DevToolsAdapter
     Store = provider.Store
     isDev = provider.isDev
     stringify = provider.stringify
@@ -30,12 +33,6 @@ describe(`Base Store - constructor():`, () => {
       .addLocalStorageMock()
       .addSessionStorageMock()
       .buildMocks()
-  })
-
-  it(`should overwrite _queryContextList push method.`, () => {
-    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
-    expect(store[`_queryContextList`].push).not.toBe([].push)
-    expect(store[`_queryContextList`].push.prototype).toBe((store as any).prototype)
   })
 
   it(`should have the expected default configuration.`, () => {
@@ -126,7 +123,6 @@ describe(`Base Store - constructor():`, () => {
   })
 
   it(`should throw an error if there are two stores with the same name.`, () => {
-    expect(isDev()).toBeTruthy()
     expect(() => {
       StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
       StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
@@ -134,7 +130,6 @@ describe(`Base Store - constructor():`, () => {
   })
 
   it(`should throw an error if there are two stores with the same storage key.`, () => {
-    expect(isDev()).toBeTruthy()
     expect(() => {
       StoresFactory.createStore<TestSubject>(null, {
         name: `TEST-STORE1`,
@@ -146,6 +141,12 @@ describe(`Base Store - constructor():`, () => {
         storageType: Storages.local,
         storageKey: `TEST-KEY`,
       })
+    }).toThrow()
+  })
+
+  it(`should throw is the state's value is provided with undefined.`, () => {
+    expect(() => {
+      StoresFactory.createStore<TestSubject>(undefined!, { name: `TEST-STORE` })
     }).toThrow()
   })
 
@@ -435,5 +436,38 @@ describe(`Base Store - constructor():`, () => {
     expect(store[`_compare`]).toBe(advanced.compare)
     expect(store[`_cloneError`]).toBe(advanced.cloneError)
     expect(store[`_merge`]).toBe(advanced.merge)
+  })
+
+  it(`should overwrite _queryContextList push method.`, () => {
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
+    expect(store[`_queryContextList`].push).not.toBe([].push)
+    expect(store[`_queryContextList`].push.prototype).toBe((store as any).prototype)
+  })
+
+  it(`should set the store to DevToolsAdapter stores object.`, () => {
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
+    expect(DevToolsAdapter.stores[store.config.name]).toBe(store)
+  })
+
+  it(`should set the store's state to DevToolsAdapter states object.`, () => {
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
+    expect(DevToolsAdapter.states[store.config.name]).toStrictEqual(store.state)
+  })
+
+  it(`should set the store's state value to DevToolsAdapter values object.`, () => {
+    const store = StoresFactory.createStore({ foo: `Foo` }, { name: `TEST-STORE` })
+    expect(DevToolsAdapter.values[store.config.name]).toStrictEqual(store.value)
+  })
+
+  it(`should initialize the store if value is provided.`, () => {
+    const store = StoresFactory.createStore({ foo: `Foo` }, { name: `TEST-STORE` })
+    expect(store.storeTag).toBe(StoreTags.active)
+    expect(store[`_isInitialized`]).toBeTruthy()
+  })
+
+  it(`should set the store into loading state if null is provided as a value.`, () => {
+    const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
+    expect(store.storeTag).toBe(StoreTags.loading)
+    expect(store.state.isLoading).toBeTruthy()
   })
 })
