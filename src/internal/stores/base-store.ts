@@ -25,17 +25,17 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#region state
 
   /** @internal */
-  protected _stateField: State<T, E> = getDefaultState()
+  protected _stateSource: State<T, E> = getDefaultState()
 
   /** @internal */
   protected get _state(): State<T, E> {
-    return this._stateField
+    return this._stateSource
   }
   protected set _state(value: State<T, E>) {
     if (isStackTracingErrors() && isDev() && !isCalledBy(`_setState`, 0)) {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
-    this._stateField = value
+    this._stateSource = value
     DevToolsAdapter.states[this._storeName] = value
     DevToolsAdapter.values[this._storeName] = value.value
     this._state$.next(value)
@@ -48,7 +48,7 @@ export abstract class BaseStore<T extends object, E = any> implements
   /** @internal */
   protected readonly _state$ = new BehaviorSubject(this._state)
 
-  public readonly state$ = this._state$.asObservable()
+  public readonly state$ = this._state$.asObservable().pipe(map(x => this._clone(x)))
 
   /**
    * @get Returns the state.
