@@ -21,8 +21,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], E> {
    */
   constructor(initialValue: T[], storeConfig?: StoreConfigOptions)
   constructor(initialValueOrNull: T[] | null, storeConfig?: StoreConfigOptions) {
-    super(storeConfig)
-    this._main(initialValueOrNull)
+    super(initialValueOrNull, storeConfig)
   }
 
   //#endregion constructor
