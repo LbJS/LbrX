@@ -158,7 +158,7 @@ export class DevToolsManager {
   private _setState(store: BaseStore<any> | any, state: State<any>): void {
     const storeDevApi: StoreDevToolsApi = store._devToolsApi
     if (storeDevApi.isInstanceHandler && storeDevApi.instancedValue) {
-      state.value = storeDevApi.handleTypes(store._instancedValue, state.value!)
+      state.value = storeDevApi.handleTypes(storeDevApi.instancedValue, state.value!)
     }
     storeDevApi.setState(state)
   }
