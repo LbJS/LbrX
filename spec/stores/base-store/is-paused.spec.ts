@@ -2,7 +2,7 @@ import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { StoreTags } from 'lbrx/internal/stores/store-accessories'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
-describe(`Base Store - state:`, () => {
+describe(`Base Store - isPaused:`, () => {
 
   let StoresFactory: typeof StoresFactory_type
   let LbrXManager: typeof LbrXManager_type
@@ -33,18 +33,18 @@ describe(`Base Store - state:`, () => {
     expect(store.storeTag).toBe(StoreTags.active)
   })
 
-  it(`should emit only distinct values.`, done => {
+  it(`should emit only distinct values.`, async () => {
     const values = [true, false, false, true, true]
     const expectedValues = [false, true, false, true]
+    const actualValues: boolean[] = []
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
-    let valuesCounter = 0
     store.isPaused$.subscribe(isPaused => {
-      valuesCounter++
-      expect(isPaused).toBe(store.isPaused)
-      if (valuesCounter == expectedValues.length) done()
+      actualValues.push(isPaused)
     })
     values.forEach(value => {
       store.isPaused = value
     })
+    await Promise.resolve()
+    expect(expectedValues).toStrictEqual(actualValues)
   })
 })
