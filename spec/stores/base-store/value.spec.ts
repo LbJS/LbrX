@@ -1,24 +1,21 @@
-import { Store, TestSubject, TestSubjectFactory } from 'provider'
-import { assertNotNullable } from '__test__/functions'
+import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Store value:`, () => {
 
-  const initialState = TestSubjectFactory.createTestSubject_initial()
-  let store: Store<TestSubject>
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    store = provider.StoresFactory.createStore<TestSubject>(initialState, `TEST-STORE`)
+    StoresFactory = provider.StoresFactory
   })
 
-  afterEach(() => {
-    jest.resetModules()
-  })
-
-  it(`should disconnect reference.`, () => {
-    const value = store.value
-    assertNotNullable(value)
-    value.booleanValue = !value.booleanValue
+  it(`should return a cloned state's value.`, () => {
+    const initialState = { foo: `foo` }
+    const store = StoresFactory.createStore(initialState, { name: `TEST-STORE` })
+    const cloneSpy = jest.spyOn(store, `_clone` as any)
     expect(store.value).toStrictEqual(initialState)
+    expect(cloneSpy).toBeCalledTimes(1)
+    expect(store.value).not.toBe(initialState)
+    expect(cloneSpy).toBeCalledTimes(2)
   })
 })

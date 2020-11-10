@@ -15,15 +15,20 @@ describe(`Base Store - state:`, () => {
 
   it(`should return a cloned state.`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
+    const cloneSpy = jest.spyOn(store, `_clone` as any)
     expect(store.state).toStrictEqual(store[`_stateSource`])
+    expect(cloneSpy).toBeCalledTimes(1)
     expect(store.state).not.toBe(store[`_stateSource`])
+    expect(cloneSpy).toBeCalledTimes(2)
   })
 
   it(`should return a cloned state from an observable.`, done => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
+    const cloneSpy = jest.spyOn(store, `_clone` as any)
     store.state$.subscribe(state => {
       expect(state).toStrictEqual(store[`_stateSource`])
       expect(state).not.toBe(store[`_stateSource`])
+      expect(cloneSpy).toBeCalledTimes(1)
       done()
     })
   })
