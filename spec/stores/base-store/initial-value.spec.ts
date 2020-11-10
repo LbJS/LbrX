@@ -1,41 +1,31 @@
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { Store, TestSubject, TestSubjectFactory } from 'provider'
-import { assertNotNullable } from '__test__/functions'
+import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
+describe(`Base Store - initialValue:`, () => {
 
-describe(`Store initial value:`, () => {
-
-  const initialValue = TestSubjectFactory.createTestSubject_initial()
-  let store: Store<TestSubject>
-  let nullStore: Store<TestSubject>
-  let LbrXManager: typeof LbrXManager_type
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    store = provider.StoresFactory.createStore<TestSubject>(initialValue, `TEST-STORE`)
-    nullStore = provider.StoresFactory.createStore<TestSubject>(null, `NULL-STORE`)
-    LbrXManager = provider.LbrXManager
-  })
-
-  afterEach(() => {
-    jest.resetModules()
+    StoresFactory = provider.StoresFactory
   })
 
   it(`should be null before initialization.`, () => {
-    expect(nullStore.initialValue).toBeNull()
+    const store = StoresFactory.createStore(null)
+    expect(store.initialValue).toBeNull()
   })
 
   it(`should have value after initialization.`, () => {
-    nullStore.initialize(initialValue)
-    expect(nullStore.initialValue).toStrictEqual(initialValue)
+    const store = StoresFactory.createStore(null)
+    const initialValue = { foo: `foo` }
+    store.initialize(initialValue)
+    expect(store.initialValue).toStrictEqual(initialValue)
   })
 
-  it(`should return a readonly value on dev mode.`, () => {
-    const value = store.initialValue
+  it(`should return a readonly value.`, () => {
+    const store = StoresFactory.createStore({ foo: `foo` })
     expect(() => {
-      assertNotNullable(value)
-      assertNotNullable(value.innerTestObject)
-      value.innerTestObject.booleanValue = !value.innerTestObject.booleanValue
+      const value: any = store.initialValue
+      value.foo = `foo2`
     }).toThrow()
   })
 })
