@@ -529,7 +529,7 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#region update-methods
 
   public setInstancedValue(value: T): void {
-    this._instancedValue = deepFreeze(this._clone(value))
+    this._instancedValue = this._freeze(this._clone(value))
   }
 
   /**

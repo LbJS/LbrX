@@ -2,7 +2,7 @@ import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { StoreTags } from 'lbrx/internal/stores/store-accessories'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
-describe(`Store Is Loading State`, () => {
+describe(`Base Store - isLoading:`, () => {
 
   let StoresFactory: typeof StoresFactory_type
   let LbrXManager: typeof LbrXManager_type

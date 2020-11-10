@@ -1,6 +1,6 @@
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
-describe(`Store value:`, () => {
+describe(`Base Store - value:`, () => {
 
   let StoresFactory: typeof StoresFactory_type
 
