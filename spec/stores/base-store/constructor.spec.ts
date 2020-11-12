@@ -462,7 +462,7 @@ describe(`Base Store - constructor():`, () => {
   it(`should initialize the store if value is provided.`, () => {
     const store = StoresFactory.createStore({ foo: `Foo` }, { name: `TEST-STORE` })
     expect(store.storeTag).toBe(StoreTags.active)
-    expect(store[`_isInitialized`]).toBeTruthy()
+    expect(store.isInitialized).toBeTruthy()
   })
 
   it(`should set the store into loading state if null is provided as a value.`, () => {
