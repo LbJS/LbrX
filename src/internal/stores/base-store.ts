@@ -314,10 +314,10 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
     this._storageKey = config.storageKey
     this._storageDebounce = config.storageDebounceTime
-    this._storage = this.resolveStorageType(config.storageType, config.customStorageApi)
-    this._compare = this.resolveObjectCompareType(config.objectCompareType)
-    this._clone = !config.isImmutable ? x => x : config.isSimpleCloning ? shallowCloneObject : cloneObject
-    this._freeze = config.isImmutable ? deepFreeze : x => x
+    this._storage = this._resolveStorageType(config.storageType, config.customStorageApi)
+    this._compare = this._resolveObjectCompareType(config.objectCompareType)
+    this._clone = !config.isImmutable ? this.baseClone : config.isSimpleCloning ? shallowCloneObject : cloneObject
+    this._freeze = config.isImmutable ? deepFreeze : this.baseFreeze
     this._stringify = config.stringify
     this._parse = config.parse
     this._handleTypes = handleObjectTypes
@@ -334,7 +334,7 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
     //#endregion configuration-initialization
     //#region pre-state initialization procedure
-    this._queryContextList.push = this.pushToQueryContext.bind(this)
+    this._queryContextList.push = this._pushToQueryContext.bind(this)
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
     if (isNull(initialValueOrNull)) {
       this._setState({ isLoading: true }, Actions.loading)
@@ -347,8 +347,23 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#endregion constructor
   //#region helper-methods
 
+  /** @virtual */
+  protected baseClone<V extends object | null>(value: V): V {
+    return value
+  }
+
+  /** @virtual */
+  protected baseFreeze<V extends object>(value: V): Readonly<V> {
+    return value
+  }
+
+  /** @virtual */
+  protected baseCompare(objA: object | any[], objB: object | any[]): boolean {
+    return objA === objB
+  }
+
   /** @internal */
-  protected pushToQueryContext(...items: QueryContext[]): number {
+  protected _pushToQueryContext(...items: QueryContext[]): number {
     const lazyInitContext = this._lazyInitContext
     if (lazyInitContext) {
       this.initializeAsync(lazyInitContext.value)
@@ -363,16 +378,16 @@ export abstract class BaseStore<T extends object, E = any> implements
   }
 
   /** @internal */
-  protected resolveObjectCompareType(objectCompareType: ObjectCompareTypes): Compare {
+  protected _resolveObjectCompareType(objectCompareType: ObjectCompareTypes): Compare {
     switch (objectCompareType) {
       case ObjectCompareTypes.advanced: return compareObjects
       case ObjectCompareTypes.simple: return shallowCompareObjects
-      case ObjectCompareTypes.reference: return (a: object | any[], b: object | any[]) => a === b
+      case ObjectCompareTypes.reference: return this.baseCompare
     }
   }
 
   /** @internal */
-  protected resolveStorageType(storageType: Storages, customStorageApi: Storage | null): Storage | null {
+  protected _resolveStorageType(storageType: Storages, customStorageApi: Storage | null): Storage | null {
     switch (storageType) {
       case Storages.none: return null
       case Storages.local: return localStorage
