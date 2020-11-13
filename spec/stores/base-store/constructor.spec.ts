@@ -2,6 +2,7 @@ import { AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as Store_typ
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { isDev as isDev_type } from 'lbrx/internal/core'
 import { DevToolsAdapter as DevToolsAdapter_type } from 'lbrx/internal/dev-tools'
+import { QueryContextList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
 import { parse as parse_type, stringify as stringify_type } from 'lbrx/utils'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 import MockBuilder from '__test__/mock-builder'
@@ -15,6 +16,7 @@ describe(`Base Store - constructor():`, () => {
   let LbrXManager: typeof LbrXManager_type
   let StoresFactory: typeof StoresFactory_type
   let DevToolsAdapter: typeof DevToolsAdapter_type
+  let QueryContextList: typeof QueryContextList_type
   let Store: typeof Store_type
   let isDev: typeof isDev_type
   let stringify: typeof stringify_type
@@ -25,6 +27,7 @@ describe(`Base Store - constructor():`, () => {
     LbrXManager = provider.LbrXManager
     StoresFactory = provider.StoresFactory
     DevToolsAdapter = provider.DevToolsAdapter
+    QueryContextList = provider.QueryContextList
     Store = provider.Store
     isDev = provider.isDev
     stringify = provider.stringify
@@ -436,12 +439,6 @@ describe(`Base Store - constructor():`, () => {
     expect(store[`_merge`]).toBe(advanced.merge)
   })
 
-  it(`should overwrite _queryContextList push method.`, () => {
-    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
-    expect(store[`_queryContextList`].push).not.toBe([].push)
-    expect(store[`_queryContextList`].push.prototype).toBe((store as any).prototype)
-  })
-
   it(`should set the store to DevToolsAdapter stores object.`, () => {
     const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE` })
     expect(DevToolsAdapter.stores[store.config.name]).toBe(store)
@@ -467,5 +464,10 @@ describe(`Base Store - constructor():`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
     expect(store.storeTag).toBe(StoreTags.loading)
     expect(store.state.isLoading).toBeTruthy()
+  })
+
+  it(`should have _queryContextList prop with an instance of QueryContextList.`, () => {
+    const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
+    expect(store[`_queryContextList`]).toBeInstanceOf(QueryContextList)
   })
 })

@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContextList, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
 
 export abstract class BaseStore<T extends object, E = any> implements
   WriteableStore<T, E>,
@@ -252,13 +252,13 @@ export abstract class BaseStore<T extends object, E = any> implements
   //#region helper
 
   /** @internal */
+  protected readonly _queryContextList = new QueryContextList(this)
+
+  /** @internal */
   protected _valueToStorageSub: Subscription | null = null
 
   /** @internal */
   protected _asyncInitPromiseContext: PromiseContext | null = null
-
-  /** @internal */
-  protected readonly _queryContextList: QueryContext[] = []
 
   /** @internal */
   protected _lastAction: string | null = null
@@ -334,7 +334,6 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
     //#endregion configuration-initialization
     //#region pre-state initialization procedure
-    this._queryContextList.push = this._pushToQueryContext.bind(this)
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
     if (isNull(initialValueOrNull)) {
       this._setState({ isLoading: true }, Actions.loading)
@@ -360,21 +359,6 @@ export abstract class BaseStore<T extends object, E = any> implements
   /** @virtual */
   protected baseCompare(objA: object | any[], objB: object | any[]): boolean {
     return objA === objB
-  }
-
-  /** @internal */
-  protected _pushToQueryContext(...items: QueryContext[]): number {
-    const lazyInitContext = this._lazyInitContext
-    if (lazyInitContext) {
-      this.initializeAsync(lazyInitContext.value)
-        .then(d => lazyInitContext.resolve(d))
-        .catch(e => lazyInitContext.reject(e))
-      this._lazyInitContext = null
-    }
-    items.forEach(item => {
-      this._queryContextList[this._queryContextList.length] = item
-    })
-    return this._queryContextList.length
   }
 
   /** @internal */
@@ -665,11 +649,11 @@ export abstract class BaseStore<T extends object, E = any> implements
   }
 
   public disposeQueryContext(observable: Observable<T>): void {
-    const queryContexts = this._queryContextList
-    const i = queryContexts.findIndex(x => x.observable = observable)
+    const queryContextList = this._queryContextList
+    const i = queryContextList.findIndex(x => x.observable == observable)
     if (i > -1) {
-      queryContexts[i].isDisposed = true
-      queryContexts.splice(i, 1)
+      queryContextList.disposeByIndex(i)
+      queryContextList.splice(i, 1)
     }
   }
 
