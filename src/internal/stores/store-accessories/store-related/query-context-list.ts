@@ -36,9 +36,11 @@ export class QueryContextList {
 
   public disposeByIndex(index: number): void {
     this._queryContextList[index].isDisposed = true
+    this._queryContextList.splice(index, 1)
   }
 
-  public splice(start: number, deleteCount?: number): QueryContext[] {
-    return this._queryContextList.splice(start, deleteCount)
+  public disposeAll(): void {
+    this._queryContextList.forEach(x => x.isDisposed = true)
+    this._queryContextList.splice(0, this._queryContextList.length)
   }
 }
