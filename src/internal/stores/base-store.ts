@@ -649,12 +649,8 @@ export abstract class BaseStore<T extends object, E = any> implements
   }
 
   public disposeQueryContext(observable: Observable<T>): void {
-    const queryContextList = this._queryContextList
-    const i = queryContextList.findIndex(x => x.observable == observable)
-    if (i > -1) {
-      queryContextList.disposeByIndex(i)
-      queryContextList.splice(i, 1)
-    }
+    const i = this._queryContextList.findIndex(x => x.observable == observable)
+    if (i > -1) this._queryContextList.disposeByIndex(i)
   }
 
   public destroy(): Promise<void> {
@@ -671,7 +667,7 @@ export abstract class BaseStore<T extends object, E = any> implements
         delete DevToolsAdapter.values[storeName]
         if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
         if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryContextList.forEach(x => x.isDisposed = true)
+        this._queryContextList.disposeAll()
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
