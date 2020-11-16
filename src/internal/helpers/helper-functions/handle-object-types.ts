@@ -8,8 +8,8 @@ import { isObject } from './is-object'
 import { isString } from './is-string'
 
 export function handleObjectTypes<T extends object>(instancedObj: T, plainObj: object): T
-export function handleObjectTypes<T extends object[]>(instancedObjs: T, plainObjs: object[]): T
-export function handleObjectTypes<T extends object>(instanced: T, plain: object | object[]): T {
+export function handleObjectTypes<T extends object>(instancedObj: T, plainObjs: object[]): T[]
+export function handleObjectTypes<T extends object>(instanced: T, plain: object | object[]): T | T[] {
   if (isEmpty(plain)) return plain
   if (isClass(instanced) && !isClass(plain)) {
     if (isString(plain) && plain.length > 0) {
@@ -32,12 +32,12 @@ export function handleObjectTypes<T extends object>(instanced: T, plain: object 
         new instanced.constructor(plain) :
         objectAssign(new instanced.constructor(), plain)
     }
-  } else if (isArray(instanced)
-    && instanced[0]
-    && isArray(plain)
-  ) {
-    for (let i = 0; i < plain.length; i++) {
-      plain[i] = handleObjectTypes(instanced[0], plain[i])
+  } else if (isArray(plain)) {
+    const instancedValue = isArray(instanced) ? instanced[0] : instanced
+    if (instancedValue) {
+      for (let i = 0; i < plain.length; i++) {
+        plain[i] = handleObjectTypes(instancedValue, plain[i])
+      }
     }
     return plain as T
   }

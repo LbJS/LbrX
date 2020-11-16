@@ -1,2 +1,2 @@
 
-export type HandleTypes = <T extends object | object[]>(instanced: T, plain: object | object[]) => T
+export type HandleTypes = <T extends object, P extends object | object[]>(instanced: T, plain: P) => P extends P[] ? T[] : T
