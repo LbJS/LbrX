@@ -9,9 +9,9 @@ export class QueryContextList {
   }
 
   private readonly _queryContextList: QueryContext[] = []
-  private readonly _store: BaseStore<any>
+  private readonly _store: BaseStore<any, any>
 
-  constructor(store: BaseStore<any>) {
+  constructor(store: BaseStore<any, any>) {
     this._store = store
   }
 
