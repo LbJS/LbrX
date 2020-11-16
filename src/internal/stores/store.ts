@@ -120,65 +120,118 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
    */
   public select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<R>
   public select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    return this._select$<R, K>()(projectsOrKeys || [] as any)
+    return this._select$<R, K>(projectsOrKeys)
   }
 
-  public onAction(action: Actions | string): Pick<Store<T, E>, 'select$'> {
-    return { select$: this._select$<any, any>(action) }
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<T, E>, 'select$'> {
+    return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, action) }
   }
 
-  protected _select$<R, K extends keyof T>(action?: Actions | string):
-    (projectsOrKeys?: ProjectsOrKeys<T, R>) => Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    return (projectsOrKeys?: ProjectsOrKeys<T, R>) => {
-      const tillLoaded$ = this._isLoading$.asObservable()
-        .pipe(
-          filter(x => !x),
-          distinctUntilChanged(),
-          switchMap(() => this._value$),
-        )
-      const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
-        if (isArray(projectsOrKeys)) {
-          if (isFunction(projectsOrKeys[0])) {
-            return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
-          }
-          if (isString(projectsOrKeys[0])) {
-            return (value: Readonly<T>) => {
-              const result = {};
-              (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
-              return result
-            }
+  protected _select$<R, K extends keyof T>(
+    projectsOrKeys?: ProjectsOrKeys<T, R>,
+    action?: Actions | string
+  ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    const tillLoaded$ = this._isLoading$.asObservable()
+      .pipe(
+        filter(x => !x),
+        distinctUntilChanged(),
+        switchMap(() => this._value$),
+      )
+    const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
+      if (isArray(projectsOrKeys)) {
+        if (isFunction(projectsOrKeys[0])) {
+          return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
+        }
+        if (isString(projectsOrKeys[0])) {
+          return (value: Readonly<T>) => {
+            const result = {};
+            (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
+            return result
           }
         }
-        if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-        if (isFunction(projectsOrKeys)) return projectsOrKeys
-        return (x: Readonly<T>) => x
-      })()
-      const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
-        return !this.isPaused
-          && !queryContext.isDisposed
-          && (!action || action === this._lastAction)
-          && !!value
       }
-      const queryContext: QueryContext = {
-        wasHardReset: false,
-        isDisposed: false,
-        observable: this._value$.asObservable()
-          .pipe(
-            mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
-            filter(filterPredicate),
-            map(mapPredicate),
-            distinctUntilChanged((prev, curr) => {
-              if (queryContext.wasHardReset) return false
-              return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-            }),
-            tap(() => queryContext.wasHardReset = false),
-            map(x => isObject(x) ? this._clone(x) : x),
-          )
-      }
-      this._queryContextList.push(queryContext)
-      return queryContext.observable
+      if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+      if (isFunction(projectsOrKeys)) return projectsOrKeys
+      return (x: Readonly<T>) => x
+    })()
+    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+      return !this.isPaused
+        && !queryContext.isDisposed
+        && (!action || action === this._lastAction)
+        && !!value
     }
+    const queryContext: QueryContext = {
+      wasHardReset: false,
+      isDisposed: false,
+      observable: this._value$.asObservable()
+        .pipe(
+          mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
+          filter(filterPredicate),
+          map(mapPredicate),
+          distinctUntilChanged((prev, curr) => {
+            if (queryContext.wasHardReset) return false
+            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+          }),
+          tap(() => queryContext.wasHardReset = false),
+          map(x => isObject(x) ? this._clone(x) : x),
+        )
+    }
+    this._queryContextList.push(queryContext)
+    return queryContext.observable
   }
+
+  // protected _select$<R, K extends keyof T>(action?: Actions | string):
+  //   (projectsOrKeys?: ProjectsOrKeys<T, R>) => Observable<T | R | R[] | T[K] | Pick<T, K>> {
+  //   return (projectsOrKeys?: ProjectsOrKeys<T, R>) => {
+  //     const tillLoaded$ = this._isLoading$.asObservable()
+  //       .pipe(
+  //         filter(x => !x),
+  //         distinctUntilChanged(),
+  //         switchMap(() => this._value$),
+  //       )
+  //     const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
+  //       if (isArray(projectsOrKeys)) {
+  //         if (isFunction(projectsOrKeys[0])) {
+  //           return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
+  //         }
+  //         if (isString(projectsOrKeys[0])) {
+  //           return (value: Readonly<T>) => {
+  //             const result = {};
+  //             (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
+  //             return result
+  //           }
+  //         }
+  //       }
+  //       if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+  //       if (isFunction(projectsOrKeys)) return projectsOrKeys
+  //       return (x: Readonly<T>) => x
+  //     })()
+  //     const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+  //       return !this.isPaused
+  //         && !queryContext.isDisposed
+  //         && (!action || action === this._lastAction)
+  //         && !!value
+  //     }
+  //     const queryContext: QueryContext = {
+  //       wasHardReset: false,
+  //       isDisposed: false,
+  //       observable: this._value$.asObservable()
+  //         .pipe(
+  //           mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
+  //           filter(filterPredicate),
+  //           map(mapPredicate),
+  //           distinctUntilChanged((prev, curr) => {
+  //             if (queryContext.wasHardReset) return false
+  //             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+  //           }),
+  //           tap(() => queryContext.wasHardReset = false),
+  //           map(x => isObject(x) ? this._clone(x) : x),
+  //         )
+  //     }
+  //     this._queryContextList.push(queryContext)
+  //     return queryContext.observable
+  //   }
+  // }
 
   //#endregion query-methods
 }
