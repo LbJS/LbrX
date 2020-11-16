@@ -1,4 +1,4 @@
-import { BaseStore } from '../../base-store'
+import { Store } from '../../store'
 
 // tslint:disable-next-line: quotemark
-export interface WriteableStore<T extends object, E = any> extends Pick<BaseStore<T, E>, 'override' | 'update' | 'setInstancedValue'> { }
+export interface WriteableStore<T extends object, E = any> extends Pick<Store<T, E>, 'override' | 'update'> { }

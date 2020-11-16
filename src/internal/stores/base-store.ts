@@ -2,16 +2,14 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContextList, State, StoreTags, Stringify, WriteableStore } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContextList, State, StoreTags, Stringify } from './store-accessories'
 
-export abstract class BaseStore<T extends object, E = any> implements
-  WriteableStore<T, E>,
-  DestroyableStore<T, E>,
-  InitializableStore<T, E>
-{
+export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
+  DestroyableStore<T, S, E>,
+  InitializableStore<T, S, E> {
 
   //#region static
 
@@ -126,12 +124,12 @@ export abstract class BaseStore<T extends object, E = any> implements
   }
 
   /** @internal */
-  protected _instancedValue: Readonly<T> | null = null
+  protected _instancedValue: Readonly<S> | null = null
 
   /**
    * @get Returns the instanced value.
    */
-  public get instancedValue(): Readonly<T> | null {
+  public get instancedValue(): Readonly<S> | null {
     return this._instancedValue
   }
 
@@ -413,7 +411,18 @@ export abstract class BaseStore<T extends object, E = any> implements
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isInstanceHandler ? this._handleTypes(this._instancedValue || initialValue, storedValue) : storedValue
+        if (this._isInstanceHandler) {
+          const instancedValue = this._instancedValue
+          if (instancedValue) {
+            initialValue = this._handleTypes(instancedValue, initialValue) as T
+          } else if (isArray(initialValue)) {
+            if (initialValue[0]) initialValue = this._handleTypes(initialValue[0], storedValue)
+          } else {
+            initialValue = this._handleTypes(initialValue, storedValue)
+          }
+        } else {
+          initialValue = storedValue
+        }
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -430,7 +439,13 @@ export abstract class BaseStore<T extends object, E = any> implements
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     initialValue = this._freeze(initialValue)
     if (this._isResettable) this._initialValue = initialValue
-    if (!this._instancedValue) this._instancedValue = initialValue
+    if (!this._instancedValue) {
+      if (isArray(initialValue)) {
+        if (initialValue[0]) this._instancedValue = initialValue[0]
+      } else {
+        this._instancedValue = initialValue as Readonly<S>
+      }
+    }
     this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" state could not be set durning initialization.`)
     if (isFunction(this.onAfterInit)) {
@@ -524,70 +539,11 @@ export abstract class BaseStore<T extends object, E = any> implements
     }
   }
 
-  //#endregion state-methods
-  //#region update-methods
-
-  public setInstancedValue(value: T): void {
+  public setInstancedValue(value: S): void {
     this._instancedValue = this._freeze(this._clone(value))
   }
 
-  /**
-   * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
-   * - If you want to override the current store's state, use the `override` method.
-   * @example
-   *  weatherStore.update({ isWindy: true });
-   */
-  public update(value: Partial<T>, actionName?: string): void
-  /**
-   * Updates the store's state using a function that will be called by the store.
-   * The function will be provided with the current state as a parameter and it must return a new partial state.
-   * The returned partial state will be then merged with current store's state.
-   * - If you want to override the current store's state, use the `override` method.
-   * @example
-   * weatherStore.update(state => ({
-   *    isSunny: !state.isRaining
-   * }));
-   */
-  public update(valueFunction: (value: Readonly<T>) => Partial<T>, actionName?: string): void
-  public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
-    if (this.isPaused) return
-    this._setState(value => {
-      assert(value && this._isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
-      const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
-      if (this._isInstanceHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
-        newValue = this._handleTypes(this._instancedValue, newValue)
-      }
-      if (isFunction(this.onUpdate)) {
-        const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
-        if (newModifiedValue) newValue = this._clone(newModifiedValue)
-      }
-      return newValue
-    }, actionName || Actions.update)
-  }
-
-  /**
-   * Overrides the current state's value completely.
-   */
-  public override(value: T, actionName?: string): void {
-    if (this.isPaused) return
-    assert(this._value && this._isInitialized && !this.isLoading,
-      `Store: "${this._storeName}" can't be overridden before it was initialized`)
-    if (this._isInstanceHandler) {
-      assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
-      value = this._handleTypes(this._instancedValue, this._clone(value))
-    }
-    let modifiedValue: T | void
-    if (isFunction(this.onOverride)) {
-      modifiedValue = this.onOverride(this._clone(value), this._value)
-      if (modifiedValue) value = this._clone(modifiedValue)
-    }
-    const isCloned = this._isInstanceHandler || !!modifiedValue
-    this._setState(() => isCloned ? value : this._clone(value), actionName || Actions.override)
-  }
-
-  //#endregion update-methods
+  //#endregion state-methods
   //#region reset-dispose-destroy-methods
 
   /**

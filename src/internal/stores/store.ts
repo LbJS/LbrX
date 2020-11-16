@@ -1,9 +1,9 @@
 import { iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
-import { isArray, isFunction, isObject, isString } from '../helpers'
+import { assert, isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, ProjectsOrKeys, QueryableStore, QueryContext } from './store-accessories'
+import { Actions, ProjectsOrKeys, QueryableStore, QueryContext, WriteableStore } from './store-accessories'
 
 /**
  * @example
@@ -27,7 +27,7 @@ import { Actions, ProjectsOrKeys, QueryableStore, QueryContext } from './store-a
  *   }
  * }
  */
-export class Store<T extends object, E = any> extends BaseStore<T, E> implements QueryableStore<T, E> {
+export class Store<T extends object, E = any> extends BaseStore<T, T, E> implements QueryableStore<T, E>, WriteableStore<T, E> {
 
   //#region constructor
 
@@ -50,6 +50,59 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
 
   //#endregion constructor
   //#region query-methods
+
+  protected _select$<R, K extends keyof T>(
+    projectsOrKeys?: ProjectsOrKeys<T, R>,
+    action?: Actions | string
+  ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    const tillLoaded$ = this._isLoading$.asObservable()
+      .pipe(
+        filter(x => !x),
+        distinctUntilChanged(),
+        switchMap(() => this._value$),
+      )
+    const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
+      if (isArray(projectsOrKeys)) {
+        if (isFunction(projectsOrKeys[0])) {
+          return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
+        }
+        if (isString(projectsOrKeys[0])) {
+          return (value: Readonly<T>) => {
+            const result = {};
+            (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
+            return result
+          }
+        }
+      }
+      if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+      if (isFunction(projectsOrKeys)) return projectsOrKeys
+      return (x: Readonly<T>) => x
+    })()
+    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+      return !this.isPaused
+        && !queryContext.isDisposed
+        && (!action || action === this._lastAction)
+        && !!value
+    }
+    const queryContext: QueryContext = {
+      wasHardReset: false,
+      isDisposed: false,
+      observable: this._value$.asObservable()
+        .pipe(
+          mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
+          filter(filterPredicate),
+          map(mapPredicate),
+          distinctUntilChanged((prev, curr) => {
+            if (queryContext.wasHardReset) return false
+            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+          }),
+          tap(() => queryContext.wasHardReset = false),
+          map(x => isObject(x) ? this._clone(x) : x),
+        )
+    }
+    this._queryContextList.push(queryContext)
+    return queryContext.observable
+  }
 
   /**
    * Returns the state's value as an Observable.
@@ -127,111 +180,64 @@ export class Store<T extends object, E = any> extends BaseStore<T, E> implements
     return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, action) }
   }
 
-  protected _select$<R, K extends keyof T>(
-    projectsOrKeys?: ProjectsOrKeys<T, R>,
-    action?: Actions | string
-  ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    const tillLoaded$ = this._isLoading$.asObservable()
-      .pipe(
-        filter(x => !x),
-        distinctUntilChanged(),
-        switchMap(() => this._value$),
-      )
-    const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
-      if (isArray(projectsOrKeys)) {
-        if (isFunction(projectsOrKeys[0])) {
-          return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
-        }
-        if (isString(projectsOrKeys[0])) {
-          return (value: Readonly<T>) => {
-            const result = {};
-            (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
-            return result
-          }
-        }
+  //#endregion query-methods
+  //#region write-methods
+
+  /**
+   * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
+   * - If you want to override the current store's state, use the `override` method.
+   * @example
+   *  weatherStore.update({ isWindy: true });
+   */
+  public update(value: Partial<T>, actionName?: string): void
+  /**
+   * Updates the store's state using a function that will be called by the store.
+   * The function will be provided with the current state as a parameter and it must return a new partial state.
+   * The returned partial state will be then merged with current store's state.
+   * - If you want to override the current store's state, use the `override` method.
+   * @example
+   * weatherStore.update(state => ({
+   *    isSunny: !state.isRaining
+   * }));
+   */
+  public update(valueFunction: (value: Readonly<T>) => Partial<T>, actionName?: string): void
+  public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
+    if (this.isPaused) return
+    this._setState(value => {
+      assert(value && this._isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
+      const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
+      let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
+      if (this._isInstanceHandler) {
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
+        newValue = this._handleTypes(this._instancedValue, newValue)
       }
-      if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-      if (isFunction(projectsOrKeys)) return projectsOrKeys
-      return (x: Readonly<T>) => x
-    })()
-    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
-      return !this.isPaused
-        && !queryContext.isDisposed
-        && (!action || action === this._lastAction)
-        && !!value
-    }
-    const queryContext: QueryContext = {
-      wasHardReset: false,
-      isDisposed: false,
-      observable: this._value$.asObservable()
-        .pipe(
-          mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
-          filter(filterPredicate),
-          map(mapPredicate),
-          distinctUntilChanged((prev, curr) => {
-            if (queryContext.wasHardReset) return false
-            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-          }),
-          tap(() => queryContext.wasHardReset = false),
-          map(x => isObject(x) ? this._clone(x) : x),
-        )
-    }
-    this._queryContextList.push(queryContext)
-    return queryContext.observable
+      if (isFunction(this.onUpdate)) {
+        const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
+        if (newModifiedValue) newValue = this._clone(newModifiedValue)
+      }
+      return newValue
+    }, actionName || Actions.update)
   }
 
-  // protected _select$<R, K extends keyof T>(action?: Actions | string):
-  //   (projectsOrKeys?: ProjectsOrKeys<T, R>) => Observable<T | R | R[] | T[K] | Pick<T, K>> {
-  //   return (projectsOrKeys?: ProjectsOrKeys<T, R>) => {
-  //     const tillLoaded$ = this._isLoading$.asObservable()
-  //       .pipe(
-  //         filter(x => !x),
-  //         distinctUntilChanged(),
-  //         switchMap(() => this._value$),
-  //       )
-  //     const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
-  //       if (isArray(projectsOrKeys)) {
-  //         if (isFunction(projectsOrKeys[0])) {
-  //           return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
-  //         }
-  //         if (isString(projectsOrKeys[0])) {
-  //           return (value: Readonly<T>) => {
-  //             const result = {};
-  //             (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
-  //             return result
-  //           }
-  //         }
-  //       }
-  //       if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-  //       if (isFunction(projectsOrKeys)) return projectsOrKeys
-  //       return (x: Readonly<T>) => x
-  //     })()
-  //     const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
-  //       return !this.isPaused
-  //         && !queryContext.isDisposed
-  //         && (!action || action === this._lastAction)
-  //         && !!value
-  //     }
-  //     const queryContext: QueryContext = {
-  //       wasHardReset: false,
-  //       isDisposed: false,
-  //       observable: this._value$.asObservable()
-  //         .pipe(
-  //           mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
-  //           filter(filterPredicate),
-  //           map(mapPredicate),
-  //           distinctUntilChanged((prev, curr) => {
-  //             if (queryContext.wasHardReset) return false
-  //             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-  //           }),
-  //           tap(() => queryContext.wasHardReset = false),
-  //           map(x => isObject(x) ? this._clone(x) : x),
-  //         )
-  //     }
-  //     this._queryContextList.push(queryContext)
-  //     return queryContext.observable
-  //   }
-  // }
+  /**
+   * Overrides the current state's value completely.
+   */
+  public override(value: T, actionName?: string): void {
+    if (this.isPaused) return
+    assert(this._value && this._isInitialized && !this.isLoading,
+      `Store: "${this._storeName}" can't be overridden before it was initialized`)
+    if (this._isInstanceHandler) {
+      assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
+      value = this._handleTypes(this._instancedValue, this._clone(value))
+    }
+    let modifiedValue: T | void
+    if (isFunction(this.onOverride)) {
+      modifiedValue = this.onOverride(this._clone(value), this._value)
+      if (modifiedValue) value = this._clone(modifiedValue)
+    }
+    const isCloned = this._isInstanceHandler || !!modifiedValue
+    this._setState(() => isCloned ? value : this._clone(value), actionName || Actions.override)
+  }
 
-  //#endregion query-methods
+  //#endregion write-methods
 }
