@@ -134,7 +134,7 @@ export class DevToolsManager {
         const reduxDevToolsState = parse<object>(message.state)
         const reduxStoreNames = objectKeys(reduxDevToolsState)
         objectKeys(DevToolsAdapter.stores).forEach((storeName: string) => {
-          const store: BaseStore<any> = DevToolsAdapter.stores[storeName]
+          const store: BaseStore<any, any> = DevToolsAdapter.stores[storeName]
           if (!store) return
           const getReduxDevToolsState = (): State<any> => {
             const reduxDevToolsStoreState: State<any> | {} = reduxDevToolsState[storeName]
@@ -155,7 +155,7 @@ export class DevToolsManager {
     })
   }
 
-  private _setState(store: BaseStore<any> | any, state: State<any>): void {
+  private _setState(store: BaseStore<any, any> | any, state: State<any>): void {
     const storeDevApi: StoreDevToolsApi = store._devToolsApi
     if (storeDevApi.isInstanceHandler && storeDevApi.instancedValue) {
       state.value = storeDevApi.handleTypes(storeDevApi.instancedValue, state.value!)
