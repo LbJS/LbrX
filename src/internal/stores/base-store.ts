@@ -314,8 +314,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._storageDebounce = config.storageDebounceTime
     this._storage = this._resolveStorageType(config.storageType, config.customStorageApi)
     this._compare = this._resolveObjectCompareType(config.objectCompareType)
-    this._clone = !config.isImmutable ? this.baseClone : config.isSimpleCloning ? shallowCloneObject : cloneObject
-    this._freeze = config.isImmutable ? deepFreeze : this.baseFreeze
+    this._clone = !config.isImmutable ? this._noClone : config.isSimpleCloning ? shallowCloneObject : cloneObject
+    this._freeze = config.isImmutable ? deepFreeze : this._noFreeze
     this._stringify = config.stringify
     this._parse = config.parse
     this._handleTypes = handleObjectTypes
@@ -345,17 +345,17 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region helper-methods
 
   /** @virtual */
-  protected baseClone<V extends object | null>(value: V): V {
+  protected _noClone<V extends object | null>(value: V): V {
     return value
   }
 
   /** @virtual */
-  protected baseFreeze<V extends object>(value: V): Readonly<V> {
+  protected _noFreeze<V extends object>(value: V): Readonly<V> {
     return value
   }
 
   /** @virtual */
-  protected baseCompare(objA: object | any[], objB: object | any[]): boolean {
+  protected _refCompare(objA: object | any[], objB: object | any[]): boolean {
     return objA === objB
   }
 
@@ -364,7 +364,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     switch (objectCompareType) {
       case ObjectCompareTypes.advanced: return compareObjects
       case ObjectCompareTypes.simple: return shallowCompareObjects
-      case ObjectCompareTypes.reference: return this.baseCompare
+      case ObjectCompareTypes.reference: return this._refCompare
     }
   }
 
