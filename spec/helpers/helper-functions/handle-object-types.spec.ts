@@ -27,7 +27,7 @@ describe(`Helper Function - handleObjectTypes():`, () => {
   })
 
   it(`should create an instance for the root object and all nested objects for arrays.`, () => {
-    const results: TestSubject[] = handleObjectTypes([createInstancedObjA()], [createPlainObjA(), createPlainObjA()])
+    const results: TestSubject[] = handleObjectTypes(createInstancedObjA(), [createPlainObjA(), createPlainObjA()])
     results.forEach(result => {
       assertNotNullable(result.innerTestObject)
       assertNotNullable(result.innerTestObjectGetSet?.deepNestedObj?.objectList)
