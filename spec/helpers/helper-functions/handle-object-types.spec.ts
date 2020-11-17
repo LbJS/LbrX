@@ -26,6 +26,22 @@ describe(`Helper Function - handleObjectTypes():`, () => {
     expect(result.innerTestObjectGetSet.deepNestedObj.objectList[0]?.date).toBeInstanceOf(Date)
   })
 
+  it(`should create an instance for the root object and all nested objects for arrays.`, () => {
+    const results: TestSubject[] = handleObjectTypes([createInstancedObjA()], [createPlainObjA(), createPlainObjA()])
+    results.forEach(result => {
+      assertNotNullable(result.innerTestObject)
+      assertNotNullable(result.innerTestObjectGetSet?.deepNestedObj?.objectList)
+      expect(result).toBeInstanceOf(TestSubject)
+      expect(result.dateValue).toBeInstanceOf(Date)
+      expect(result.innerTestObject).toBeInstanceOf(InnerTestSubject)
+      expect(result.innerTestObject.dateValue).toBeInstanceOf(Date)
+      expect(result.innerTestObjectGetSet).toBeInstanceOf(InnerTestSubject)
+      expect(result.innerTestObjectGetSet.dateValue).toBeInstanceOf(Date)
+      expect(result.innerTestObjectGetSet.deepNestedObj).toBeInstanceOf(DeepNestedTestSubject)
+      expect(result.innerTestObjectGetSet.deepNestedObj.objectList[0]?.date).toBeInstanceOf(Date)
+    })
+  })
+
   it(`should create a moment object if it is moment.`, () => {
     let objWithMoment = createObjWithMomentA()
     let plainObj = toPlainObject(objWithMoment)
