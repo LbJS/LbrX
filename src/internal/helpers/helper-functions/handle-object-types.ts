@@ -7,19 +7,18 @@ import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 import { isString } from './is-string'
 
-export function handleObjectTypes<T extends object>(instancedObj: T, plainObj: object): T
-export function handleObjectTypes<T extends object>(instancedObj: T, plainObjs: object[]): T[]
-export function handleObjectTypes<T extends object>(instanced: T, plain: object | object[]): T | T[] {
+export function handleObjectTypes<T extends object | object[], P extends object | object[]>(instanced: T, plain: P):
+  P extends object[] ? T extends object[] ? T : T[] : T extends object[] ? never : T {
   if (isEmpty(plain)) return plain
   if (isClass(instanced) && !isClass(plain)) {
     if (isString(plain) && plain.length > 0) {
       if (isDate(instanced)) {
-        plain = newDate(plain)
+        plain = newDate(plain) as P
       } else if (isMoment(instanced)) {
         const clonedMoment = instanced.clone()
         clonedMoment._d = newDate(plain)
         if (instanced._i) clonedMoment._i = newDate(plain)
-        plain = clonedMoment
+        plain = clonedMoment as P
       }
     } else if (isObject(plain)) {
       if (instanced.constructor.length) {
@@ -39,7 +38,7 @@ export function handleObjectTypes<T extends object>(instanced: T, plain: object 
         plain[i] = handleObjectTypes(instancedValue, plain[i])
       }
     }
-    return plain as T
+    return plain as any
   }
   if (isObject(instanced) && isObject(plain)) {
     for (let i = 0, keys = objectKeys(instanced); i < keys.length; i++) {
@@ -50,5 +49,5 @@ export function handleObjectTypes<T extends object>(instanced: T, plain: object 
       }
     }
   }
-  return plain as T
+  return plain as any
 }

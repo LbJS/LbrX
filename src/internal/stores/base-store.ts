@@ -411,18 +411,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        if (this._isInstanceHandler) {
-          const instancedValue = this._instancedValue
-          if (instancedValue) {
-            initialValue = this._handleTypes(instancedValue, initialValue) as T
-          } else if (isArray(initialValue)) {
-            if (initialValue[0]) initialValue = this._handleTypes(initialValue[0], storedValue)
-          } else {
-            initialValue = this._handleTypes(initialValue, storedValue)
-          }
-        } else {
-          initialValue = storedValue
-        }
+        initialValue = this._isInstanceHandler ? this._handleTypes(<T>this._instancedValue || initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -439,12 +428,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     initialValue = this._freeze(initialValue)
     if (this._isResettable) this._initialValue = initialValue
-    if (!this._instancedValue) {
+    if (this._isInstanceHandler && !this._instancedValue) {
       if (isArray(initialValue)) {
         if (initialValue[0]) this._instancedValue = initialValue[0]
       } else {
         this._instancedValue = initialValue as Readonly<S>
       }
+      if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
     this._setState(() => this._clone(initialValue), isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" state could not be set durning initialization.`)
