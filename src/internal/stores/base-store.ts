@@ -449,7 +449,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * Method used for delayed initialization.
    */
   public initialize(initialValue: T): void {
-    if (this._assertInitializable()) this._initializeStore(initialValue, false)
+    this._assertInitializable()
+    this._initializeStore(initialValue, false)
   }
 
   /**
