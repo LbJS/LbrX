@@ -1,77 +1,106 @@
-import { Store } from 'lbrx'
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { TestSubjectFactory } from '__test__/factories'
+import { Storages } from 'lbrx'
+import { timer } from 'rxjs'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import MockBuilder from '__test__/mock-builder'
 import { TestSubject } from '__test__/test-subjects'
 
 describe(`Store initialize(): `, () => {
 
-  const initialState = TestSubjectFactory.createTestSubject_initial()
-  const pureInitialState = TestSubjectFactory.createTestSubject_initial()
-  const stateA = TestSubjectFactory.createTestSubject_configA()
-  let store: Store<TestSubject>
-  let loadingStore: Store<TestSubject>
-  let LbrXManager: typeof LbrXManager_type
-  let isDev: () => boolean
+  const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
+  const createValueA = () => TestSubjectFactory.createTestSubject_configA()
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    store = provider.StoresFactory.createStore(initialState)
-    loadingStore = provider.StoresFactory.createStore<TestSubject>(null, `LOADING-STORE`)
-    LbrXManager = provider.LbrXManager
-    isDev = provider.isDev
-  })
-
-  afterEach(() => {
-    jest.resetModules()
+    StoresFactory = provider.StoresFactory
+    MockBuilder.addWindowMock()
+      .addLocalStorageMock()
+      .buildMocks()
   })
 
   it(`should set the initial value as the first state.`, () => {
-    expect(store.value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(createInitialValue())
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should set the initial value to store's initial value property.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
     expect(store.value).toStrictEqual(store.initialValue)
   })
 
-  it(`should return the initial state from observable.`, done => {
+  it(`should return the initial state from an observable.`, done => {
+    const store = StoresFactory.createStore(createInitialValue())
     store.select$().subscribe(value => {
-      expect(value).toStrictEqual(pureInitialState)
+      expect(value).toStrictEqual(createInitialValue())
       done()
     })
-  }, 100)
+  })
 
   it(`should have null as an initial value.`, () => {
-    expect(loadingStore.value).toBeNull()
+    const store = StoresFactory.createStore(null)
+    expect(store.value).toBeNull()
   })
 
   it(`should set the initial value after initialization.`, () => {
-    loadingStore.initialize(initialState)
-    expect(loadingStore.value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(null)
+    store.initialize(createInitialValue())
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should return the initial state from observable after initialization.`, done => {
-    loadingStore.select$().subscribe(value => {
-      expect(value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(null)
+    store.select$().subscribe(value => {
+      expect(value).toStrictEqual(createInitialValue())
       done()
     })
-    loadingStore.initialize(initialState)
-  }, 100)
+    store.initialize(createInitialValue())
+  })
 
   it(`should throw an error on second initialization.`, () => {
-    loadingStore.initialize(initialState)
-    expect(isDev()).toBeTruthy()
+    const store = StoresFactory.createStore(null)
+    store.initialize(createInitialValue())
     expect(() => {
-      loadingStore.initialize(initialState)
+      store.initialize(createInitialValue())
     }).toThrow()
   })
 
   it(`should have value after loading is finished.`, done => {
-    loadingStore.isLoading$.subscribe(value => {
-      if (!value) {
-        expect(loadingStore.value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(null)
+    store.isLoading$.subscribe(isLoading => {
+      if (!isLoading) {
+        expect(store.value).toStrictEqual(createInitialValue())
         done()
       }
     })
-    loadingStore.initialize(initialState)
-  }, 100)
+    store.initialize(createInitialValue())
+  })
+
+  it(`should use stored value if so configured.`, async () => {
+    localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, storageType: Storages.local })
+    store.setInstancedValue(createInitialValue())
+    store.initialize(createValueA())
+    await timer(store.config.storageDebounceTime).toPromise()
+    expect(store.value).toStrictEqual(createInitialValue())
+  })
+
+  it(`should ignore instance handler when using stored data if so configured.`, async () => {
+    localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
+    const store = StoresFactory.createStore<TestSubject>(null,
+      { name: `TEST-STORE`, storageType: Storages.local, isInstanceHandler: false })
+    store.setInstancedValue(createInitialValue())
+    store.initialize(createValueA())
+    await timer(store.config.storageDebounceTime).toPromise()
+    expect(store.value).toStrictEqual(JSON.parse(localStorage.getItem(`TEST-STORE`) as string))
+  })
+
+  it(`should use initial value for instanced handling for stored value if so configured.`, async () => {
+    localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
+    const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, storageType: Storages.local })
+    const instancedValue = createInitialValue()
+    instancedValue.numberValue = -9999
+    store.initialize(instancedValue)
+    await timer(store.config.storageDebounceTime).toPromise()
+    expect(store.value).toStrictEqual(createInitialValue())
+  })
 })
