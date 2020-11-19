@@ -568,7 +568,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._setState({ isHardResettings: true }, Actions.hardResetting)
     const asyncInitPromiseContext = this._asyncInitPromiseContext
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
-      asyncInitPromiseContext && asyncInitPromiseContext.promise ?
+      (asyncInitPromiseContext && asyncInitPromiseContext.promise) ?
         getPromiseState(asyncInitPromiseContext.promise) :
         Promise.resolve()
     return new Promise((resolve) => {

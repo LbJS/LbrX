@@ -1,75 +1,113 @@
-import { Store } from 'lbrx'
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { of, throwError, timer } from 'rxjs'
-import { TestSubjectFactory } from '__test__/factories'
-import { TestSubject } from '__test__/test-subjects'
+import { createPromiseContext } from 'lbrx/internal/stores/store-accessories'
+import fetch from 'node-fetch'
+import { from, of, throwError, timer } from 'rxjs'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assert } from '__test__/functions'
+import { Todo } from '__test__/test-subjects'
 
 describe(`Store initializeAsync():`, () => {
 
-  const initialState = TestSubjectFactory.createTestSubject_initial()
-  const pureInitialState = TestSubjectFactory.createTestSubject_initial()
-  let store: Store<TestSubject>
-  let LbrXManager: typeof LbrXManager_type
-  let isDev: () => boolean
+  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
+  const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
-    const providerModule = await import(`provider`)
-    store = providerModule.StoresFactory.createStore<TestSubject>(null)
-    LbrXManager = providerModule.LbrXManager
-    isDev = providerModule.isDev
-  })
-
-  afterEach(() => {
-    jest.resetModules()
+    const provider = await import(`provider`)
+    StoresFactory = provider.StoresFactory
   })
 
   it(`should have null as an initial value.`, () => {
+    const store = StoresFactory.createStore(null)
     expect(store.value).toBeNull()
   })
 
   it(`should set the initial value after async initialization with observable.`, async () => {
-    await store.initializeAsync(of(initialState))
-    expect(store.value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(null)
+    await store.initializeAsync(of(createInitialValue()))
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should set the initial value after async initialization with promise.`, async () => {
-    await store.initializeAsync(Promise.resolve(initialState))
-    expect(store.value).toStrictEqual(pureInitialState)
+    const store = StoresFactory.createStore(null)
+    await store.initializeAsync(Promise.resolve(createInitialValue()))
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should return the initial state from observable after async initialization.`, done => {
+    const store = StoresFactory.createStore(null)
     store.select$().subscribe(value => {
-      expect(value).toStrictEqual(pureInitialState)
+      expect(value).toStrictEqual(createInitialValue())
       done()
     })
-    store.initializeAsync(of(initialState))
+    store.initializeAsync(of(createInitialValue()))
   })
 
   it(`should throw an error on second initialization.`, async () => {
-    store.initializeAsync(of(initialState))
-    expect(isDev()).toBeTruthy()
-    await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
+    const store = StoresFactory.createStore(null)
+    store.initializeAsync(of(createInitialValue()))
+    await expect(store.initializeAsync(of(createInitialValue()))).rejects.toBeDefined()
   })
 
-  it(`should throw an error on second initialization with delay.`, async () => {
-    store.initializeAsync(of(initialState))
+  it(`should throw an error on second initialization after delay.`, async () => {
+    const store = StoresFactory.createStore(null)
+    store.initializeAsync(of(createInitialValue()))
     await timer(100).toPromise()
-    expect(isDev()).toBeTruthy()
-    await expect(store.initializeAsync(of(initialState))).rejects.toBeDefined()
-  }, 200)
+    await expect(store.initializeAsync(of(createInitialValue()))).rejects.toBeDefined()
+  })
 
   it(`should reject if an observable throws an error.`, async () => {
-    expect(isDev()).toBeTruthy()
+    const store = StoresFactory.createStore(null)
     await expect(store.initializeAsync(throwError(`Error`))).rejects.toBeDefined()
   })
 
   it(`should have value after loading is finished.`, done => {
+    const store = StoresFactory.createStore(null)
     store.isLoading$.subscribe(value => {
       if (!value) {
-        expect(store.value).toStrictEqual(pureInitialState)
+        expect(store.value).toStrictEqual(createInitialValue())
         done()
       }
     })
-    store.initializeAsync(Promise.resolve(initialState))
-  }, 100)
+    store.initializeAsync(Promise.resolve(createInitialValue()))
+  })
+
+  it(`should create asyncInitPromiseContext.`, () => {
+    const store = StoresFactory.createStore(null)
+    const expectedResult = createPromiseContext()
+    expectedResult.promise = store.initializeAsync(Promise.resolve(createInitialValue()))
+    expect(store[`_asyncInitPromiseContext`]).toStrictEqual(expectedResult)
+  })
+
+  it(`should not finish initializing the store if the promise context was canceled.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const initializationPromise = store.initializeAsync(Promise.resolve(createInitialValue()))
+    assert(store[`_asyncInitPromiseContext`])
+    store[`_asyncInitPromiseContext`].isCancelled = true
+    await expect(initializationPromise).resolves.toBeUndefined()
+    expect(store.value).toBeNull()
+  })
+
+  it(`should not finish initializing the store if the promise context was canceled even if the promise rejects.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const initializationPromise = store.initializeAsync(Promise.reject())
+    assert(store[`_asyncInitPromiseContext`])
+    store[`_asyncInitPromiseContext`].isCancelled = true
+    await expect(initializationPromise).resolves.toBeUndefined()
+  })
+
+  jest.retryTimes(5)
+  it(`should get todo item from promise ajax call.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const expectedResult = await geTodoItem()
+    await store.initializeAsync(geTodoItem())
+    expect(store.value).toStrictEqual(expectedResult)
+  })
+
+  jest.retryTimes(5)
+  it(`should get todo item from observable ajax call.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const expectedResult = await geTodoItem()
+    await store.initializeAsync(from(geTodoItem()))
+    expect(store.value).toStrictEqual(expectedResult)
+  })
 })
