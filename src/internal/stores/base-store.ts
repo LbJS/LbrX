@@ -492,6 +492,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    */
   public initializeLazily(promise: Promise<T>): Promise<void>
   public initializeLazily(observable: Observable<T>): Promise<void>
+  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
   public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
     if (this._queryContextList.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {

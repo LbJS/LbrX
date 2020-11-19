@@ -4,7 +4,7 @@ import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test_
 import MockBuilder from '__test__/mock-builder'
 import { TestSubject } from '__test__/test-subjects'
 
-describe(`Store initialize(): `, () => {
+describe(`Base Store - initialize(): `, () => {
 
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
   const createValueA = () => TestSubjectFactory.createTestSubject_configA()
