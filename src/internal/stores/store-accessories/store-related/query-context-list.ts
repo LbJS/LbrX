@@ -2,7 +2,6 @@ import { BaseStore } from '../../base-store'
 import { LazyInitContext } from './lazy-init-context.interface'
 import { QueryContext } from './query-context.interface'
 
-// TODO: fix array type
 export class QueryContextList extends Array<QueryContext> {
 
   constructor(private readonly _store: BaseStore<any, any>) {

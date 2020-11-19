@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContextList, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextList, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
   DestroyableStore<T, S, E>,
@@ -250,7 +250,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region helper
 
   /** @internal */
-  protected readonly _queryContextList = new QueryContextList(this)
+  protected readonly _queryContextList: Array<QueryContext> & QueryContextList = new QueryContextList(this)
 
   /** @internal */
   protected _valueToStorageSub: Subscription | null = null
