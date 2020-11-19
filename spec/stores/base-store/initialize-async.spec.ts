@@ -5,7 +5,7 @@ import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test_
 import { assert } from '__test__/functions'
 import { Todo } from '__test__/test-subjects'
 
-describe(`Store initializeAsync():`, () => {
+describe(`Base Store - initializeAsync():`, () => {
 
   const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
