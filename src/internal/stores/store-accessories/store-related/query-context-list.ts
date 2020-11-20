@@ -1,5 +1,4 @@
 import { BaseStore } from '../../base-store'
-import { LazyInitContext } from './lazy-init-context.interface'
 import { QueryContext } from './query-context.interface'
 
 export class QueryContextList extends Array<QueryContext> {
@@ -9,13 +8,7 @@ export class QueryContextList extends Array<QueryContext> {
   }
 
   public push(...items: QueryContext[]): number {
-    const lazyInitContext: LazyInitContext<any> | null = this._store[`_lazyInitContext`]
-    if (lazyInitContext) {
-      this._store.initializeAsync(lazyInitContext.value)
-        .then(d => lazyInitContext.resolve(d))
-        .catch(e => lazyInitContext.reject(e))
-      this._store[`_lazyInitContext`] = null
-    }
+    this._store[`_initializeLazily`]()
     return super.push(...items)
   }
 

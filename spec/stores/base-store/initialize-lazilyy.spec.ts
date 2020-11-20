@@ -1,6 +1,6 @@
 import { getPromiseState, PromiseStates } from 'lbrx/utils'
 import fetch from 'node-fetch'
-import { of, timer } from 'rxjs'
+import { from, of, timer } from 'rxjs'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { Todo } from '__test__/test-subjects'
 
@@ -73,11 +73,52 @@ describe(`Base Store - initializeLazily():`, () => {
     await lazyInitPromise
   })
 
-  it(`should reject if invoked twice.`, async () => {
+  it(`should reject if invoked twice - scenario 1.`, async () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
     store.select$().subscribe(() => { })
     await lazyInitPromise
     await expect(store.initializeLazily(Promise.resolve(createInitialValue()))).rejects.toBeDefined()
+  })
+
+  it(`should reject if invoked twice - scenario 2.`, async () => {
+    const store = StoresFactory.createStore(null)
+    store.select$().subscribe(() => { })
+    store.initializeLazily(Promise.resolve(createInitialValue()))
+    await expect(store.initializeLazily(Promise.resolve(createInitialValue()))).rejects.toBeDefined()
+  })
+
+  it(`should reject if invoked twice - scenario 3.`, async () => {
+    const store = StoresFactory.createStore(null)
+    store.initializeLazily(Promise.resolve(createInitialValue()))
+    const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
+    store.select$().subscribe(() => { })
+    await expect(lazyInitPromise).rejects.toBeDefined()
+  })
+
+  it(`should reject if invoked twice - scenario 4.`, async () => {
+    const store = StoresFactory.createStore(null)
+    store.initialize(createInitialValue())
+    await expect(store.initializeLazily(Promise.resolve(createInitialValue()))).rejects.toBeDefined()
+  })
+
+  jest.retryTimes(5)
+  it(`should get todo item from promise ajax call.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const expectedResult = await geTodoItem()
+    const lazyInitPromise = store.initializeLazily(geTodoItem())
+    store.select$().subscribe(() => { })
+    await lazyInitPromise
+    expect(store.value).toStrictEqual(expectedResult)
+  })
+
+  jest.retryTimes(5)
+  it(`should get todo item from observable ajax call.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const expectedResult = await geTodoItem()
+    const lazyInitPromise = store.initializeLazily(from(geTodoItem()))
+    store.select$().subscribe(() => { })
+    await lazyInitPromise
+    expect(store.value).toStrictEqual(expectedResult)
   })
 })
