@@ -1,3 +1,4 @@
+import { Actions, StoreTags } from 'lbrx'
 import { createPromiseContext } from 'lbrx/internal/stores/store-accessories'
 import fetch from 'node-fetch'
 import { from, of, throwError, timer } from 'rxjs'
@@ -109,5 +110,18 @@ describe(`Base Store - initializeAsync():`, () => {
     const expectedResult = await geTodoItem()
     await store.initializeAsync(from(geTodoItem()))
     expect(store.value).toStrictEqual(expectedResult)
+  })
+
+  it(`should set the last action to initAsync.`, async () => {
+    const store = StoresFactory.createStore(null)
+    await store.initializeAsync(Promise.resolve(createInitialValue()))
+    expect(store[`_lastAction`]).toBe(Actions.initAsync)
+  })
+
+  it(`should set the store tag to active.`, async () => {
+    const store = StoresFactory.createStore(null)
+    expect(store.storeTag).toBe(StoreTags.loading)
+    await store.initializeAsync(Promise.resolve(createInitialValue()))
+    expect(store.storeTag).toBe(StoreTags.active)
   })
 })

@@ -1,4 +1,4 @@
-import { AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as Store_type, StoreConfigCompleteInfo, StoreTags } from 'lbrx'
+import { Actions, AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as Store_type, StoreConfigCompleteInfo, StoreTags } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { isDev as isDev_type } from 'lbrx/internal/core'
 import { DevToolsAdapter as DevToolsAdapter_type } from 'lbrx/internal/dev-tools'
@@ -457,12 +457,14 @@ describe(`Base Store - constructor():`, () => {
   it(`should initialize the store if value is provided.`, () => {
     const store = StoresFactory.createStore({ foo: `Foo` }, { name: `TEST-STORE` })
     expect(store.storeTag).toBe(StoreTags.active)
+    expect(store[`_lastAction`]).toBe(Actions.init)
     expect(store.isInitialized).toBeTruthy()
   })
 
   it(`should set the store into loading state if null is provided as a value.`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
     expect(store.storeTag).toBe(StoreTags.loading)
+    expect(store[`_lastAction`]).toBe(Actions.loading)
     expect(store.state.isLoading).toBeTruthy()
   })
 

@@ -1,4 +1,4 @@
-import { Storages } from 'lbrx'
+import { Actions, Storages, StoreTags } from 'lbrx'
 import { timer } from 'rxjs'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import MockBuilder from '__test__/mock-builder'
@@ -102,5 +102,18 @@ describe(`Base Store - initialize(): `, () => {
     store.initialize(instancedValue)
     await timer(store.config.storageDebounceTime).toPromise()
     expect(store.value).toStrictEqual(createInitialValue())
+  })
+
+  it(`should set the last action to init.`, () => {
+    const store = StoresFactory.createStore(null)
+    store.initialize(createInitialValue())
+    expect(store[`_lastAction`]).toBe(Actions.init)
+  })
+
+  it(`should set the store tag to active.`, () => {
+    const store = StoresFactory.createStore(null)
+    expect(store.storeTag).toBe(StoreTags.loading)
+    store.initialize(createInitialValue())
+    expect(store.storeTag).toBe(StoreTags.active)
   })
 })

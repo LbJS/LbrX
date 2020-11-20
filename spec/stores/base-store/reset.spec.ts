@@ -1,56 +1,76 @@
-import { Store, StoreConfigOptions } from 'lbrx'
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { TestSubjectFactory } from '__test__/factories'
-import { TestSubject } from '__test__/test-subjects'
+import { Actions, StoreTags } from 'lbrx'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
-describe(`Store reset():`, () => {
+describe(`Base Store - reset():`, () => {
 
-  const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
+  const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
-  let store: Store<TestSubject>
-  let notResettableStore: Store<TestSubject>
-  let LbrXManager: typeof LbrXManager_type
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    LbrXManager = provider.LbrXManager
-    store = provider.StoresFactory.createStore(createInitialState())
-    const notResettableStoreConfig: StoreConfigOptions = {
-      name: `NOT-RESETTABLE-STORE`,
-      isResettable: false
-    }
-    notResettableStore = provider.StoresFactory.createStore(createInitialState(), notResettableStoreConfig)
+    StoresFactory = provider.StoresFactory
   })
 
-  it(`should reset the store's state to its initial value.`, () => {
+  it(`should reset the store's value to its initial value.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
     store.update(createStateA())
     store.reset()
-    expect(store.value).toStrictEqual(createInitialState())
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should throw if the store is in loading state.`, () => {
-    (store as any)._state.isLoading = true
+    const store = StoresFactory.createStore(null)
     expect(() => {
       store.reset()
     }).toThrow()
   })
 
-  it(`should throw if the store is not resettable .`, () => {
+  it(`should throw if the store is not resettable.`, () => {
+    const store = StoresFactory.createStore(createInitialValue(), { name: `TEST-STORE`, isResettable: false })
     expect(() => {
-      notResettableStore.reset()
+      store.reset()
     }).toThrow()
   })
 
-  it(`should throw if there is no initial state.`, () => {
-    (store as any)._initialValue = null
+  it(`should throw if the store was not initialized.`, () => {
+    const store = StoresFactory.createStore(null)
     expect(() => {
       store.reset()
     }).toThrow()
   })
 
   it(`should reset the store's state to its initial value with different reference.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
     store.update(createStateA())
     store.reset()
-    expect(store.value).not.toBe(store.initialValue)
+    expect(store[`_value`]).not.toBe(store.initialValue)
+  })
+
+  it(`should not reset the store if the store is in paused state.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
+    store.update(createStateA())
+    store.isPaused = true
+    store.reset()
+    expect(store.value).toStrictEqual(createStateA())
+  })
+
+  it(`should set the last action to reset.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
+    store.reset()
+    expect(store[`_lastAction`]).toBe(Actions.reset)
+  })
+
+  it(`should set the last action to the provided string.`, () => {
+    const store = StoresFactory.createStore(createInitialValue())
+    store.reset(`CUSTOM-RESET`)
+    expect(store[`_lastAction`]).toBe(`CUSTOM-RESET`)
+  })
+
+  it(`should keep the store tag active.`, () => {
+    const store = StoresFactory.createStore(null)
+    store.initialize(createInitialValue())
+    expect(store.storeTag).toBe(StoreTags.active)
   })
 })
+
