@@ -394,7 +394,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   /** @internal */
   protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
-    if (!this._isInitialized && !this._value && this.isLoading) return true
+    if (!this._isInitialized) return true
     const errMsg = `Store: "${this._storeName}" has already been initialized. You can hard reset the store if you want to reinitialize it.`
     if (!reject) throwError(errMsg)
     reject(newError(errMsg))
@@ -443,6 +443,17 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       if (modifiedValue) this._setState(() => this._clone(modifiedValue), Actions.afterInitUpdate)
     }
     this._isInitialized = true
+  }
+
+  /** @internal */
+  protected _initializeLazily(): void {
+    const lazyInitContext: LazyInitContext<any> | null = this._lazyInitContext
+    if (lazyInitContext && !lazyInitContext.isCanceled) {
+      this.initializeAsync(lazyInitContext.value)
+        .then(d => lazyInitContext.resolve(d))
+        .catch(e => lazyInitContext.reject(e))
+      this._lazyInitContext = null
+    }
   }
 
   /**
@@ -497,8 +508,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (this._queryContextList.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
+      if (this._lazyInitContext) {
+        reject(`Store: "${this._storeName}" has multiple calls for lazy initialization.`)
+        return
+      }
       this._lazyInitContext = {
         value: promiseOrObservable,
+        isCanceled: false,
         resolve,
         reject,
       }
@@ -580,6 +596,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
+        if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
+        this._lazyInitContext = null
         this._setState({
           value: null,
           error: null,
@@ -619,6 +637,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         this._initialValue = null
         this._instancedValue = null
         this._isInitialized = false
+        if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
         this._lazyInitContext = null
         for (const key in this) {
           if (!this.hasOwnProperty(key)) continue
