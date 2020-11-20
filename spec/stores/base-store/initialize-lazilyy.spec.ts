@@ -1,3 +1,4 @@
+import { Actions, StoreTags } from 'lbrx'
 import { getPromiseState, PromiseStates } from 'lbrx/utils'
 import fetch from 'node-fetch'
 import { from, of, timer } from 'rxjs'
@@ -120,5 +121,20 @@ describe(`Base Store - initializeLazily():`, () => {
     store.select$().subscribe(() => { })
     await lazyInitPromise
     expect(store.value).toStrictEqual(expectedResult)
+  })
+
+  it(`should set the last action to initAsync.`, async () => {
+    const store = StoresFactory.createStore(null)
+    store.select$().subscribe(() => { })
+    await store.initializeLazily(Promise.resolve(createInitialValue()))
+    expect(store[`_lastAction`]).toBe(Actions.initAsync)
+  })
+
+  it(`should set the store tag to active.`, async () => {
+    const store = StoresFactory.createStore(null)
+    expect(store.storeTag).toBe(StoreTags.loading)
+    store.select$().subscribe(() => { })
+    await store.initializeLazily(Promise.resolve(createInitialValue()))
+    expect(store.storeTag).toBe(StoreTags.active)
   })
 })

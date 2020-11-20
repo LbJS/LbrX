@@ -1,5 +1,5 @@
+import { Actions, StoreTags } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { StoreTags } from 'lbrx/internal/stores/store-accessories'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Base Store - isPaused:`, () => {
@@ -28,9 +28,11 @@ describe(`Base Store - isPaused:`, () => {
     store.isPaused = true
     expect(store.isPaused).toBeTruthy()
     expect(store.storeTag).toBe(StoreTags.paused)
+    expect(store[`_lastAction`]).toBe(Actions.paused)
     store.isPaused = false
     expect(store.isPaused).toBeFalsy()
     expect(store.storeTag).toBe(StoreTags.active)
+    expect(store[`_lastAction`]).toBe(Actions.unpause)
   })
 
   it(`should emit only distinct values.`, async () => {

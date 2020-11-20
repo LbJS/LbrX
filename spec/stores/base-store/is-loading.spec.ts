@@ -1,5 +1,5 @@
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { StoreTags } from 'lbrx/internal/stores/store-accessories'
+import { Actions, StoreTags } from 'lbrx/internal/stores/store-accessories'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Base Store - isLoading:`, () => {
@@ -27,6 +27,7 @@ describe(`Base Store - isLoading:`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
     expect(store.isLoading).toBeTruthy()
     expect(store.storeTag).toBe(StoreTags.loading)
+    expect(store[`_lastAction`]).toBe(Actions.loading)
     store.isLoading$.subscribe(isLoading => {
       expect(isLoading).toBeTruthy()
       done()
