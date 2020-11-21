@@ -1,16 +1,13 @@
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { Actions, StoreTags } from 'lbrx/internal/stores/store-accessories'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Base Store - isLoading:`, () => {
 
   let StoresFactory: typeof StoresFactory_type
-  let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     StoresFactory = provider.StoresFactory
-    LbrXManager = provider.LbrXManager
   })
 
   it(`should return false if initial state is provided.`, done => {

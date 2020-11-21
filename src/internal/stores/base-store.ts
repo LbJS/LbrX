@@ -555,6 +555,14 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region reset-dispose-destroy-methods
 
   /**
+   * Disposes the observable by completing the observable and removing it from query context list.
+   */
+  public disposeQueryContext(observable: Observable<T>): void {
+    const i = this._queryContextList.findIndex(x => x.observable == observable)
+    if (i > -1) this._queryContextList.disposeByIndex(i)
+  }
+
+  /**
    * Resets the state's value to it's initial value.
    */
   public reset(actionName?: string): void | never {
@@ -583,81 +591,68 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       return Promise.reject(new Error(`Store: "${this._storeName}" is not configured as resettable.`))
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
+    return this._hardResetOrDestroy(() => {
+      this._queryContextList.forEach(x => x.wasHardReset = true)
+      this._partialHardReset(Actions.loading)
+    })
+  }
+
+  /**
+   * There is no reason to use this method other then debugging.
+   * This method will do everything that hard and also:
+   * - Remove the store from DevTools.
+   * - Complete all source observables.
+   * - Dispose all query contexts.
+   */
+  public destroy(): Promise<this> {
+    return this._hardResetOrDestroy(() => {
+      const storeName = this._storeName
+      delete DevToolsAdapter.stores[storeName]
+      delete DevToolsAdapter.states[storeName]
+      delete DevToolsAdapter.values[storeName]
+      for (const key in this) {
+        if (!this.hasOwnProperty(key)) continue
+        const prop = this[key]
+        if (prop instanceof Subject) prop.complete()
+      }
+      this._queryContextList.disposeAll()
+      this._partialHardReset(Actions.destroy, /*isLoading*/ false)
+      this._isDestroyed = true
+    })
+  }
+
+  protected _partialHardReset(action: Actions, isLoading: boolean = true): void {
+    if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
+    if (this._storage) this._storage.removeItem(this._storageKey)
+    this._initialValue = null
+    this._instancedValue = null
+    this._isInitialized = false
+    if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
+    this._lazyInitContext = null
+    this._setState({
+      value: null,
+      error: null,
+      isPaused: false,
+      isHardResettings: false,
+      isLoading,
+    }, action)
+  }
+
+  protected _hardResetOrDestroy(executor: (value?: void | PromiseLike<void> | undefined) => void): Promise<this> {
     const asyncInitPromiseContext = this._asyncInitPromiseContext
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
       (asyncInitPromiseContext && asyncInitPromiseContext.promise) ?
         getPromiseState(asyncInitPromiseContext.promise) :
         Promise.resolve()
-    return new Promise((resolve) => {
-      const reset = () => {
-        if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
-        if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryContextList.forEach(x => x.wasHardReset = true)
-        this._initialValue = null
-        this._instancedValue = null
-        this._isInitialized = false
-        if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
-        this._lazyInitContext = null
-        this._setState({
-          value: null,
-          error: null,
-          isPaused: false,
-          isHardResettings: false,
-          isLoading: true,
-        }, Actions.loading)
+    return new Promise(resolve => {
+      const callback = () => {
+        executor()
         resolve(this)
       }
       initializeAsyncPromiseState.then(state => {
         if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
-        reset()
-      }).catch(() => reset())
-    })
-  }
-
-  public disposeQueryContext(observable: Observable<T>): void {
-    const i = this._queryContextList.findIndex(x => x.observable == observable)
-    if (i > -1) this._queryContextList.disposeByIndex(i)
-  }
-
-  public destroy(): Promise<void> {
-    const asyncInitPromiseContext = this._asyncInitPromiseContext
-    const initializeAsyncPromiseState: Promise<void | PromiseStates> =
-      asyncInitPromiseContext && asyncInitPromiseContext.promise ?
-        getPromiseState(asyncInitPromiseContext.promise) :
-        Promise.resolve()
-    return new Promise((resolve) => {
-      const destroy = () => {
-        const storeName = this._storeName
-        delete DevToolsAdapter.stores[storeName]
-        delete DevToolsAdapter.states[storeName]
-        delete DevToolsAdapter.values[storeName]
-        if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
-        if (this._storage) this._storage.removeItem(this._storageKey)
-        this._queryContextList.disposeAll()
-        this._initialValue = null
-        this._instancedValue = null
-        this._isInitialized = false
-        if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
-        this._lazyInitContext = null
-        for (const key in this) {
-          if (!this.hasOwnProperty(key)) continue
-          const prop = this[key]
-          if (prop instanceof Subject) prop.complete()
-        }
-        this._setState({
-          value: null,
-          error: null,
-          isPaused: false,
-          isHardResettings: false,
-          isLoading: false,
-        }, Actions.destroy)
-        this._isDestroyed = true
-        resolve()
-      }
-      initializeAsyncPromiseState.then(state => {
-        if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
-        destroy()
-      }).catch(() => destroy())
+        callback()
+      }).catch(callback)
     })
   }
 
