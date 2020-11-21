@@ -4,8 +4,8 @@ import { TestSubject } from '__test__/test-subjects'
 
 describe(`Base Store - Error API:`, () => {
 
-  let StoresFactory: typeof StoresFactory_type
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
