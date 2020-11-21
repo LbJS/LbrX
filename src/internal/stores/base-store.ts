@@ -2,7 +2,7 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextList, State, StoreTags, Stringify } from './store-accessories'
@@ -606,17 +606,16 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    */
   public destroy(): Promise<this> {
     return this._hardResetOrDestroy(() => {
+      objectKeys(this).forEach(key => {
+        const prop = this[key]
+        if (prop instanceof Subject) prop.complete()
+      })
+      this._queryContextList.disposeAll()
+      this._partialHardReset(Actions.destroy, /*isLoading*/ false)
       const storeName = this._storeName
       delete DevToolsAdapter.stores[storeName]
       delete DevToolsAdapter.states[storeName]
       delete DevToolsAdapter.values[storeName]
-      for (const key in this) {
-        if (!this.hasOwnProperty(key)) continue
-        const prop = this[key]
-        if (prop instanceof Subject) prop.complete()
-      }
-      this._queryContextList.disposeAll()
-      this._partialHardReset(Actions.destroy, /*isLoading*/ false)
       this._isDestroyed = true
     })
   }
@@ -638,7 +637,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }, action)
   }
 
-  protected _hardResetOrDestroy(executor: (value?: void | PromiseLike<void> | undefined) => void): Promise<this> {
+  protected _hardResetOrDestroy(executor: () => void): Promise<this> {
     const asyncInitPromiseContext = this._asyncInitPromiseContext
     const initializeAsyncPromiseState: Promise<void | PromiseStates> =
       (asyncInitPromiseContext && asyncInitPromiseContext.promise) ?
