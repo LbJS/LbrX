@@ -402,6 +402,26 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   }
 
   //#endregion helper-methods
+  //#region utility-methods
+
+  /**
+   * Setts an instanced value to be used by the instanced handler for resolving types
+   * if "isInstanceHandler" is set to true at the store's configurations.
+   * - If an instanced value was not set  by this method, the initial value will be used for resolving types.
+   */
+  public setInstancedValue(value: S): void {
+    this._instancedValue = this._freeze(this._clone(value))
+  }
+
+  /**
+   * Disposes the observable by completing the observable and removing it from query context list.
+   */
+  public disposeQueryContext(observable: Observable<T>): void {
+    const i = this._queryContextList.findIndex(x => x.observable == observable)
+    if (i > -1) this._queryContextList.disposeByIndex(i)
+  }
+
+  //#endregion utility-methods
   //#region initialization-methods
 
   /** @internal */
@@ -547,20 +567,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
   }
 
-  public setInstancedValue(value: S): void {
-    this._instancedValue = this._freeze(this._clone(value))
-  }
-
   //#endregion state-methods
   //#region reset-dispose-destroy-methods
-
-  /**
-   * Disposes the observable by completing the observable and removing it from query context list.
-   */
-  public disposeQueryContext(observable: Observable<T>): void {
-    const i = this._queryContextList.findIndex(x => x.observable == observable)
-    if (i > -1) this._queryContextList.disposeByIndex(i)
-  }
 
   /**
    * Resets the state's value to it's initial value.
