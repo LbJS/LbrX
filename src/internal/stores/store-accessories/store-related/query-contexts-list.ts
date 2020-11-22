@@ -1,7 +1,7 @@
 import { BaseStore } from '../../base-store'
 import { QueryContext } from './query-context.interface'
 
-export class QueryContextList extends Array<QueryContext> {
+export class QueryContextsList extends Array<QueryContext> {
 
   constructor(private readonly _store: BaseStore<any, any>) {
     super()
