@@ -91,6 +91,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
         .pipe(
           // filter(filterPredicate),
           // TODO: check this filter
+          // TODO: use takeWhile for is disposed parameter
           mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
           filter(filterPredicate),
           map(mapPredicate),
