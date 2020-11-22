@@ -1,4 +1,4 @@
-import { QueryContext, QueryContextList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
+import { QueryContext, QueryContextsList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
 import { Observable } from 'rxjs'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
@@ -11,7 +11,7 @@ describe(`Store Accessories - QueryContextList:`, () => {
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    QueryContextList = provider.QueryContextList
+    QueryContextList = provider.QueryContextsList
     StoresFactory = provider.StoresFactory
   })
 

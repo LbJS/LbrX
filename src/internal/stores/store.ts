@@ -64,12 +64,12 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
       if (isArray(projectsOrKeys)) {
         if (isFunction(projectsOrKeys[0])) {
-          return (value: Readonly<T>) => (projectsOrKeys as ((value: Readonly<T>) => R)[]).map(x => x(value))
+          return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
         }
         if (isString(projectsOrKeys[0])) {
           return (value: Readonly<T>) => {
             const result = {};
-            (projectsOrKeys as string[]).forEach((x: string) => result[x] = value[x])
+            (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
             return result
           }
         }
@@ -89,6 +89,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       isDisposed: false,
       observable: this._value$.asObservable()
         .pipe(
+          // filter(filterPredicate),
+          // TODO: check this filter
           mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
           filter(filterPredicate),
           map(mapPredicate),
@@ -100,7 +102,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
           map(x => isObject(x) ? this._clone(x) : x),
         )
     }
-    this._queryContextList.push(queryContext)
+    this._queryContextsList.push(queryContext)
     return queryContext.observable
   }
 

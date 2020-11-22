@@ -2,7 +2,7 @@ import { Actions, AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as 
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { isDev as isDev_type } from 'lbrx/internal/core'
 import { DevToolsAdapter as DevToolsAdapter_type } from 'lbrx/internal/dev-tools'
-import { QueryContextList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
+import { QueryContextsList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
 import { parse as parse_type, stringify as stringify_type } from 'lbrx/utils'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 import MockBuilder from '__test__/mock-builder'
@@ -27,7 +27,7 @@ describe(`Base Store - constructor():`, () => {
     LbrXManager = provider.LbrXManager
     StoresFactory = provider.StoresFactory
     DevToolsAdapter = provider.DevToolsAdapter
-    QueryContextList = provider.QueryContextList
+    QueryContextList = provider.QueryContextsList
     Store = provider.Store
     isDev = provider.isDev
     stringify = provider.stringify
@@ -470,6 +470,6 @@ describe(`Base Store - constructor():`, () => {
 
   it(`should have _queryContextList prop with an instance of QueryContextList.`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
-    expect(store[`_queryContextList`]).toBeInstanceOf(QueryContextList)
+    expect(store[`_queryContextsList`]).toBeInstanceOf(QueryContextList)
   })
 })

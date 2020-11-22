@@ -137,7 +137,7 @@ describe(`Base Store - destroy():`, () => {
 
   it(`should invoke dispose all on query context list.`, async () => {
     const store = StoresFactory.createStore(null)
-    const disposeAllSpy = jest.spyOn(store[`_queryContextList`], `disposeAll`)
+    const disposeAllSpy = jest.spyOn(store[`_queryContextsList`], `disposeAll`)
     await store.destroy()
     expect(disposeAllSpy).toBeCalledTimes(1)
   })
