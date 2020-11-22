@@ -63,10 +63,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       )
     const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
       if (isArray(projectsOrKeys)) {
-        if (isFunction(projectsOrKeys[0])) {
+        if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
           return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
         }
-        if (isString(projectsOrKeys[0])) {
+        if ((<string[]>projectsOrKeys).every(x => isString(x))) {
           return (value: Readonly<T>) => {
             const result = {};
             (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
@@ -146,7 +146,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *     // do something...
    *  });
    */
-  public select$<R>(projects: ((value: Readonly<T>) => any)[]): Observable<R[]>
+  public select$<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
   /**
    * Returns as single the state's value property based on the provided key.
    * @example
