@@ -416,9 +416,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /**
    * Disposes the observable by completing the observable and removing it from query context list.
    */
-  public disposeQueryContext(observable: Observable<T>): void {
-    const i = this._queryContextsList.findIndex(x => x.observable == observable)
-    if (i > -1) this._queryContextsList.disposeByIndex(i)
+  public disposeQueryContext(observable: Observable<any>): boolean {
+    return this._queryContextsList.disposeByObservable(observable)
   }
 
   //#endregion utility-methods
@@ -600,7 +599,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
     return this._hardResetOrDestroy(() => {
-      this._queryContextsList.forEach(x => x.wasHardReset = true)
+      this._queryContextsList.wasHardReset = true
       this._partialHardReset(Actions.loading)
     })
   }
