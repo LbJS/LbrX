@@ -3,7 +3,7 @@ import { Observable } from 'rxjs'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 
-describe(`Store Accessories - QueryContextList:`, () => {
+describe(`Store Accessories - QueryContextsList:`, () => {
 
   const createQueryContext = () => ({ isDisposed: false, wasHardReset: false, observable: new Observable() })
   let QueryContextList: typeof QueryContextList_type
