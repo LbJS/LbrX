@@ -207,11 +207,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
-      assert(value && this._isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
+      assert(value && this.isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
       if (this._isInstanceHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
         newValue = this._handleTypes(this._instancedValue, newValue)
       }
       if (isFunction(this.onUpdate)) {
@@ -227,7 +227,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public override(value: T, actionName?: string): void {
     if (this.isPaused) return
-    assert(this._value && this._isInitialized && !this.isLoading,
+    assert(this._value && this.isInitialized && !this.isLoading,
       `Store: "${this._storeName}" can't be overridden before it was initialized`)
     if (this._isInstanceHandler) {
       assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)

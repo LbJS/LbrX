@@ -142,13 +142,11 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     return this._isDestroyed
   }
 
-  /** @internal */
-  protected _isInitialized = false
   /**
    * @get Returns whether or not the store is initialized.
    */
   public get isInitialized(): boolean {
-    return this._isInitialized
+    return !!this._value && !this.isLoading
   }
 
   //#endregion state
@@ -394,7 +392,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   /** @internal */
   protected _assertInitializable(reject?: (reason: any) => void): boolean | never {
-    if (!this._isInitialized) return true
+    if (!this.isInitialized) return true
     const errMsg = `Store: "${this._storeName}" has already been initialized. You can hard reset the store if you want to reinitialize it.`
     if (!reject) throwError(errMsg)
     reject(newError(errMsg))
@@ -461,7 +459,6 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
       if (modifiedValue) this._setState(() => this._clone(modifiedValue), Actions.afterInitUpdate)
     }
-    this._isInitialized = true
   }
 
   /** @internal */
@@ -632,7 +629,6 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (this._storage) this._storage.removeItem(this._storageKey)
     this._initialValue = null
     this._instancedValue = null
-    this._isInitialized = false
     if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
     this._lazyInitContext = null
     this._setState({
