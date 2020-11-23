@@ -29,7 +29,7 @@ describe(`Store update():`, () => {
   })
 
   it(`should throw if the state's value is \`null\`.`, () => {
-    (store as any)._state.value = null
+    store[`_stateSource`].value = null
     expect(store.value).toBeNull()
     expect(() => {
       store.update(partialState)
@@ -37,7 +37,7 @@ describe(`Store update():`, () => {
   })
 
   it(`should throw if the store is in 'LOADING' state.`, () => {
-    (store as any)._state.isLoading = true
+    store[`_stateSource`].isLoading = true
     expect(() => {
       store.update(partialState)
     }).toThrow()
@@ -45,7 +45,7 @@ describe(`Store update():`, () => {
   })
 
   it(`should throw if the store wasn't initialized.`, () => {
-    (store as any)._state.isLoading = false
+    store[`_stateSource`].isLoading = false
     expect(() => {
       asyncStore.update(partialState)
     }).toThrow()
