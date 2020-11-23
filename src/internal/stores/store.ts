@@ -207,7 +207,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
     if (this.isPaused) return
     this._setState(value => {
-      assert(value && this.isInitialized && !this.isLoading, `Store: "${this._storeName}" can't be updated before it was initialized`)
+      assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
       const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
       if (this._isInstanceHandler) {
@@ -227,14 +227,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public override(value: T, actionName?: string): void {
     if (this.isPaused) return
-    assert(this._value && this.isInitialized && !this.isLoading,
-      `Store: "${this._storeName}" can't be overridden before it was initialized`)
+    assert(this.isInitialized, `Store: "${this._storeName}" can't be overridden before it was initialized`)
     if (this._isInstanceHandler) {
       assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
       value = this._handleTypes(this._instancedValue, this._clone(value))
     }
     let modifiedValue: T | void
     if (isFunction(this.onOverride)) {
+      assert(this._value, `Store: "${this._storeName}" had an error durning override. Could not resolve value.`)
       modifiedValue = this.onOverride(this._clone(value), this._value)
       if (modifiedValue) value = this._clone(modifiedValue)
     }
