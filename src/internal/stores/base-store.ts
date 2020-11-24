@@ -550,9 +550,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (isFunction(valueFnOrState)) {
       assert(this._value, `Store: "${this._storeName}" is missing state's value. This is usually caused by improper initialization of the store.`)
       valueFnOrState = {
-        value: this._freeze(valueFnOrState(this._value))
+        value: valueFnOrState(this._value)
       }
-    } else if (valueFnOrState.value) {
+    }
+    if (valueFnOrState.value) {
       valueFnOrState.value = this._freeze(valueFnOrState.value)
     }
     this._lastAction = actionName
