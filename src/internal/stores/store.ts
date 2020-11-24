@@ -205,41 +205,38 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public update(valueFunction: (value: Readonly<T>) => Partial<T>, actionName?: string): void
   public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
-    if (this.isPaused) return
-    this._setState(value => {
-      assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
-      const newPartialValue = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      let newValue = this._merge(this._clone(value), this._clone(newPartialValue))
-      if (this._isInstanceHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
-        newValue = this._handleTypes(this._instancedValue, newValue)
-      }
-      if (isFunction(this.onUpdate)) {
-        const newModifiedValue: T | void = this.onUpdate(this._clone(newValue), value)
-        if (newModifiedValue) newValue = this._clone(newModifiedValue)
-      }
-      return newValue
-    }, actionName || Actions.update)
+    this._update(valueOrFunction, /** isMerge */ true, actionName || Actions.update, this.onUpdate)
   }
 
   /**
    * Overrides the current state's value completely.
    */
-  public override(value: T, actionName?: string): void {
+  public override(newValue: T, actionName?: string): void {
+    this._update(newValue, /** isMerge */ false, actionName || Actions.override, this.onOverride)
+  }
+
+  protected _update(
+    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
+    isMerge: boolean,
+    actionName: string,
+    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
+  ): void {
     if (this.isPaused) return
-    assert(this.isInitialized, `Store: "${this._storeName}" can't be overridden before it was initialized`)
-    if (this._isInstanceHandler) {
-      assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but instanced value was not provided.`)
-      value = this._handleTypes(this._instancedValue, this._clone(value))
-    }
-    let modifiedValue: T | void
-    if (isFunction(this.onOverride)) {
-      assert(this._value, `Store: "${this._storeName}" had an error durning override. Could not resolve value.`)
-      modifiedValue = this.onOverride(this._clone(value), this._value)
-      if (modifiedValue) value = this._clone(modifiedValue)
-    }
-    const isCloned = this._isInstanceHandler || !!modifiedValue
-    this._setState(() => isCloned ? value : this._clone(value), actionName || Actions.override)
+    assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
+    this._setState(value => {
+      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
+      const tmpValue = valueOrFunction
+      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
+      if (this._isInstanceHandler) {
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
+        newValue = this._handleTypes(this._instancedValue, this._clone(newValue))
+      }
+      if (isFunction(onUpdate)) {
+        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
+        if (newModifiedValue) newValue = this._clone(newModifiedValue)
+      }
+      return tmpValue == newValue ? this._clone(newValue) : newValue
+    }, actionName)
   }
 
   //#endregion write-methods
