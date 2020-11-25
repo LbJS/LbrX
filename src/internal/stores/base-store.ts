@@ -2,10 +2,10 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleObjectTypes, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleTypes, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextsList, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextsList, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
   DestroyableStore<T, S, E>,
@@ -206,7 +206,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected readonly _isSimpleCloning: boolean
 
   /** @internal */
-  protected readonly _isInstanceHandler: boolean
+  protected readonly _isClassHandler: boolean
 
   /** @internal */
   protected readonly _objectCompareType: ObjectCompareTypes
@@ -230,7 +230,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected readonly _freeze: Freeze
 
   /** @internal */
-  protected readonly _handleTypes: HandleTypes
+  protected readonly _handleClasses: HandleClasses
 
   /** @internal */
   protected readonly _stringify: Stringify
@@ -265,9 +265,9 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /** @internal */
   protected get _devToolsApi(): StoreDevToolsApi {
     return {
-      isInstanceHandler: this._isInstanceHandler,
+      isClassHandler: this._isClassHandler,
       instancedValue: this._instancedValue,
-      handleTypes: this._handleTypes,
+      handleClasses: this._handleClasses,
       setState: (value: State<T>) => {
         this._state = value
       }
@@ -302,7 +302,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._storeName = config.name
     this._isResettable = config.isResettable
     this._isSimpleCloning = config.isSimpleCloning
-    this._isInstanceHandler = config.isInstanceHandler
+    this._isClassHandler = config.isClassHandler
     this._objectCompareType = config.objectCompareType
     if (this._config.storageType != Storages.none) {
       this._assertStorageKeyValid(config.storageKey, storeName)
@@ -316,14 +316,14 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._freeze = config.isImmutable ? deepFreeze : this._noFreeze
     this._stringify = config.stringify
     this._parse = config.parse
-    this._handleTypes = handleObjectTypes
+    this._handleClasses = handleClasses
     this._cloneError = cloneError
     this._merge = mergeObjects
     const advanced = config.advanced
     if (advanced) {
       if (advanced.clone) this._clone = advanced.clone
       if (advanced.freeze) this._freeze = advanced.freeze
-      if (advanced.handleTypes) this._handleTypes = advanced.handleTypes
+      if (advanced.handleClasses) this._handleClasses = advanced.handleClasses
       if (advanced.compare) this._compare = advanced.compare
       if (advanced.cloneError) this._cloneError = advanced.cloneError
       if (advanced.merge) this._merge = advanced.merge
@@ -404,7 +404,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   /**
    * Setts an instanced value to be used by the instanced handler for resolving types
-   * if "isInstanceHandler" is set to true at the store's configurations.
+   * if "isClassHandler" is set to true at the store's configurations.
    * - If an instanced value was not set  by this method, the initial value will be used for resolving types.
    */
   public setInstancedValue(value: S): void {
@@ -428,7 +428,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (storage) {
       const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isInstanceHandler ? this._handleTypes(<T>this._instancedValue || initialValue, storedValue) : storedValue
+        initialValue = this._isClassHandler ? this._handleClasses(<T>this._instancedValue || initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
@@ -445,7 +445,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
     initialValue = this._freeze(initialValue)
     if (this._isResettable) this._initialValue = initialValue
-    if (this._isInstanceHandler && !this._instancedValue) {
+    if (this._isClassHandler && !this._instancedValue) {
       if (isArray(initialValue)) {
         if (initialValue[0]) this._instancedValue = initialValue[0]
       } else {
@@ -463,12 +463,16 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   /** @internal */
   protected _initializeLazily(): void {
-    const lazyInitContext: LazyInitContext<any> | null = this._lazyInitContext
-    if (lazyInitContext && !lazyInitContext.isCanceled) {
-      this.initializeAsync(lazyInitContext.value)
-        .then(d => lazyInitContext.resolve(d))
-        .catch(e => lazyInitContext.reject(e))
-      this._lazyInitContext = null
+    const lazyInitContext = this._lazyInitContext
+    if (lazyInitContext) {
+      if (lazyInitContext.isCanceled) {
+        lazyInitContext.resolve()
+      } else {
+        this.initializeAsync(lazyInitContext.value)
+          .then(d => lazyInitContext.resolve(d))
+          .catch(e => lazyInitContext.reject(e))
+        this._lazyInitContext = null
+      }
     }
   }
 
@@ -634,8 +638,11 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (this._storage) this._storage.removeItem(this._storageKey)
     this._initialValue = null
     this._instancedValue = null
-    if (this._lazyInitContext) this._lazyInitContext.isCanceled = true
-    this._lazyInitContext = null
+    if (this._lazyInitContext) {
+      this._lazyInitContext.isCanceled = true
+      this._lazyInitContext.resolve()
+      this._lazyInitContext = null
+    }
     this._setState({
       value: null,
       error: null,

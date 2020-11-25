@@ -11,7 +11,7 @@ export function getDefaultGlobalStoreConfig(): Required<GlobalStoreConfigOptions
     customStorageApi: null,
     objectCompareType: ObjectCompareTypes.advanced,
     isSimpleCloning: false,
-    isInstanceHandler: true,
+    isClassHandler: true,
     isImmutable: true,
     stringify,
     parse,

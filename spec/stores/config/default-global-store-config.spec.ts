@@ -12,7 +12,7 @@ describe(`Store Accessories - default global store config:`, () => {
       customStorageApi: null,
       objectCompareType: ObjectCompareTypes.advanced,
       isSimpleCloning: false,
-      isInstanceHandler: true,
+      isClassHandler: true,
       isImmutable: true,
       stringify,
       parse,

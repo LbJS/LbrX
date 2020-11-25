@@ -1,54 +1,87 @@
-import { Store } from 'lbrx'
-import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { TestSubjectFactory } from '__test__/factories'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { TestSubject } from '__test__/test-subjects'
 
 describe(`Store update():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
-  let LbrXManager: typeof LbrXManager_type
-  let store: Store<TestSubject>
-  let asyncStore: Store<TestSubject>
-  let partialState: Partial<TestSubject>
-
+  const createPartialState = () => ({ stringValue: `some other string` }) as Partial<TestSubject>
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    store = provider.StoresFactory.createStore(createInitialState())
-    asyncStore = provider.StoresFactory.createStore<TestSubject>(null, `ASYNC-STORE`)
-    LbrXManager = provider.LbrXManager
-    partialState = { stringValue: `some other string` }
+    StoresFactory = provider.StoresFactory
   })
 
-  it(`should update the store's state.`, () => {
-    expect(store.value).toStrictEqual(createInitialState())
-    store.update(partialState)
+  it(`should update the store's state value with object.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store.update(createPartialState())
     const expectedState = createInitialState()
-    expectedState.stringValue = partialState.stringValue!
+    expectedState.stringValue = createPartialState().stringValue!
     expect(store.value).toStrictEqual(expectedState)
   })
 
-  it(`should throw if the state's value is \`null\`.`, () => {
-    store[`_stateSource`].value = null
-    expect(store.value).toBeNull()
-    expect(() => {
-      store.update(partialState)
-    }).toThrow()
+  it(`should update the store's state value with method.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store.update(createPartialState)
+    const expectedState = createInitialState()
+    expectedState.stringValue = createPartialState().stringValue!
+    expect(store.value).toStrictEqual(expectedState)
   })
 
-  it(`should throw if the store is in 'LOADING' state.`, () => {
-    store[`_stateSource`].isLoading = true
-    expect(() => {
-      store.update(partialState)
-    }).toThrow()
-    expect(store.value).toStrictEqual(createInitialState())
+  it(`should clone the provided value.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const partialState = createPartialState()
+    store.update(partialState)
+    partialState.stringValue = `Some new value...`
+    const expectedState = createInitialState()
+    expectedState.stringValue = createPartialState().stringValue!
+    expect(store.value).toStrictEqual(expectedState)
+  })
+
+  it(`should clone the provided value if class handler is disabled.`, () => {
+    const store = StoresFactory.createStore(createInitialState(), { name: `TEST-STORE`, isClassHandler: false })
+    const partialState = createPartialState()
+    store.update(partialState)
+    partialState.stringValue = `Some new value...`
+    const expectedState = createInitialState()
+    expectedState.stringValue = createPartialState().stringValue!
+    expect(store.value).toStrictEqual(expectedState)
   })
 
   it(`should throw if the store wasn't initialized.`, () => {
-    store[`_stateSource`].isLoading = false
+    const store = StoresFactory.createStore(null)
     expect(() => {
-      asyncStore.update(partialState)
+      store.update(createInitialState())
     }).toThrow()
-    expect(asyncStore.value).toBeNull()
+  })
+
+  it(`should throw if instanced value is missing and class handler is configured.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store[`_instancedValue`] = null
+    expect(() => {
+      store.update(createPartialState)
+    }).toThrow()
+  })
+
+  it(`should throw if store's state value is missing.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store[`_stateSource`].value = null
+    expect(() => {
+      store.update(createPartialState)
+    }).toThrow()
+  })
+
+  it(`should ignore if the store is in paused state.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store.isPaused = true
+    store.update(createPartialState())
+    expect(store.value).toStrictEqual(createInitialState())
+  })
+
+  it(`should allow passing custom action name.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const actionName = `myAction`
+    store.update(createPartialState(), actionName)
+    expect(store[`_lastAction`]).toBe(actionName)
   })
 })

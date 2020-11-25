@@ -1,8 +1,8 @@
-import { HandleTypes, State } from '../stores/store-accessories'
+import { HandleClasses, State } from '../stores/store-accessories'
 
 export interface StoreDevToolsApi {
-  isInstanceHandler: boolean
+  isClassHandler: boolean
   instancedValue: Readonly<object> | null
-  handleTypes: HandleTypes
+  handleClasses: HandleClasses
   setState(state: State<any>): void
 }
