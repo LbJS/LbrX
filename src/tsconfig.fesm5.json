@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "ESNext",
+    "outDir": "../build/fesm5",
+    "sourceRoot": "../src"
+  }
+}

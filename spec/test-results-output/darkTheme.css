@@ -1,0 +1,201 @@
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+  color: #ffffff;
+  background-color: #282828;
+}
+body {
+  padding: 2rem 1rem;
+  font-size: 0.85rem;
+}
+#jesthtml-content {
+  margin: 0 auto;
+  max-width: 70rem;
+}
+header {
+  display: flex;
+  align-items: center;
+}
+#title {
+  margin: 0;
+  flex-grow: 1;
+}
+#logo {
+  height: 4rem;
+}
+#timestamp {
+  color: #ffffff;
+  margin-top: 0.5rem;
+}
+
+/** SUMMARY */
+#summary {
+  color: #ffffff;
+  margin: 2rem 0;
+  display: flex;
+  font-family: monospace;
+  font-size: 1rem;
+}
+#summary > div {
+  margin-right: 2rem;
+  background: #464646;
+  padding: 1rem;
+  min-width: 15rem;
+}
+#summary > div:last-child {
+  margin-right: 0;
+}
+@media only screen and (max-width: 720px) {
+  #summary {
+    flex-direction: column;
+  }
+  #summary > div {
+    margin-right: 0;
+    margin-top: 2rem;
+  }
+  #summary > div:first-child {
+    margin-top: 0;
+  }
+}
+
+.summary-total {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.summary-passed {
+  color: #2ab156;
+  border-left: 0.4rem solid #2ab156;
+  padding-left: 0.5rem;
+}
+.summary-failed {
+  color: #e6636b;
+  border-left: 0.4rem solid #e6636b;
+  padding-left: 0.5rem;
+}
+.summary-pending {
+  color: #efc52e;
+  border-left: 0.4rem solid #efc52e;
+  padding-left: 0.5rem;
+}
+.summary-empty {
+  color: #d9d9d9;
+  border-left: 0.4rem solid #d9d9d9;
+}
+
+.test-result {
+  padding: 1rem;
+  margin-bottom: 0.25rem;
+}
+.test-result:last-child {
+  border: 0;
+}
+.test-result.passed {
+  background-color: rgba(42, 177, 87, 0.055);
+  color: #2ab156;
+}
+.test-result.failed {
+  background-color: rgba(230, 99, 107, 0.055);
+  color: #e6636b;
+}
+.test-result.pending {
+  background-color: rgba(239, 197, 46, 0.055);
+  color: #efc52e;
+}
+
+.test-info {
+  display: flex;
+  justify-content: space-between;
+}
+.test-suitename {
+  width: 20%;
+  text-align: left;
+  font-weight: bold;
+  word-break: break-word;
+}
+.test-title {
+  width: 40%;
+  text-align: left;
+  font-style: italic;
+}
+.test-status {
+  width: 20%;
+  text-align: right;
+}
+.test-duration {
+  width: 10%;
+  text-align: right;
+  font-size: 0.75rem;
+}
+
+.failureMessages {
+  padding: 0 1rem;
+  margin-top: 1rem;
+  border-top: 1px dashed #d8000c;
+}
+.failureMsg {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+.suite-container {
+  margin-bottom: 2rem;
+}
+.suite-info {
+  padding: 1rem;
+  background-color: #4d4d4d;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.suite-info .suite-path {
+  word-break: break-all;
+  flex-grow: 1;
+  font-family: monospace;
+  font-size: 1rem;
+}
+.suite-info .suite-time {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.75rem;
+}
+.suite-info .suite-time.warn {
+  background-color: #d8000c;
+  color: #ffffff;
+}
+
+/* CONSOLE LOGS */
+.suite-consolelog {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #353535;
+}
+.suite-consolelog-header {
+  font-weight: bold;
+}
+.suite-consolelog-item {
+  padding: 0.5rem;
+}
+.suite-consolelog-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-consolelog-item-origin {
+  color: #a0a0a0;
+  font-weight: bold;
+}
+.suite-consolelog-item-message {
+  color: #e0e0e0;
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}

@@ -1,7 +1,7 @@
 
 export enum TestSubjectConfigurations {
-	initial,
-	configurationA,
-	configurationB,
-	configurationA_plain,
+  initial,
+  configurationA,
+  configurationB,
+  configurationA_plain,
 }

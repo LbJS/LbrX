@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "lbrx": [
+        "../src",
+        "../src/*"
+      ],
+      "lbrx/hooks": [
+        "../src/hooks",
+        "../src/hooks/*"
+      ],
+    }
+  },
+  "include": [
+    "../src/**/*.ts",
+    "./ts/**/*.ts"
+  ]
+}

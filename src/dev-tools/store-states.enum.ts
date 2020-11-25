@@ -1,5 +1,5 @@
 
 export const enum StoreStates {
-	loading = 'LOADING',
-	hardResetting = 'HARD RESETTING'
+  loading = 'LOADING',
+  hardResetting = 'HARD RESETTING'
 }

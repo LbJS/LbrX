@@ -1,5 +1,5 @@
-import { stringify, parse } from 'lbrx/helpers'
+import { parse, stringify } from '../short-hand-functions'
 
 export function simpleCloneObject<T extends object>(obj: T): T {
-	return parse(stringify(obj))
+  return parse(stringify(obj))
 }

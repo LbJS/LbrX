@@ -1,49 +1,52 @@
 {
-	"extends": "../tsconfig.json",
-	"compilerOptions": {
-		"baseUrl": ".",
-		"esModuleInterop": true,
-		"paths": {
-			"lbrx": [
-				"../src",
-			],
-			"lbrx/dev-tools": [
-				"../src/dev-tools",
-			],
-			"lbrx/hooks": [
-				"../src/hooks",
-			],
-			"lbrx/helpers": [
-				"../src/helpers",
-			],
-			"lbrx/mode": [
-				"../src/mode",
-			],
-			"lbrx/types": [
-				"../src/types",
-			],
-			"lbrx/stores/config": [
-				"../src/stores/config",
-			],
-			"test-subjects": [
-				"test-subjects"
-			],
-			"provider.module": [
-				"provider.module"
-			],
-			"mock-builder": [
-				"mock-builder"
-			],
-			"types": [
-				"types"
-			],
-			"helpers": [
-				"helpers"
-			],
-		}
-	},
-	"include": [
-		"../src/**/*.ts",
-		"**/*.ts"
-	]
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "paths": {
+      "lbrx": [
+        "../src",
+      ],
+      "lbrx/dev-tools": [
+        "../src/dev-tools",
+      ],
+      "lbrx/hooks": [
+        "../src/hooks",
+      ],
+      "lbrx/helpers": [
+        "../src/helpers",
+      ],
+      "lbrx/mode": [
+        "../src/mode",
+      ],
+      "lbrx/types": [
+        "../src/types",
+      ],
+      "lbrx/stores/config": [
+        "../src/stores/config",
+      ],
+      "test-subjects": [
+        "test-subjects"
+      ],
+      "provider": [
+        "module-provider"
+      ],
+      "mock-builder": [
+        "mock-builder"
+      ],
+      "factories": [
+        "factories"
+      ],
+      "types": [
+        "types"
+      ],
+      "helpers": [
+        "helpers"
+      ],
+    }
+  },
+  "include": [
+    "../src/**/*.ts",
+    "**/*.ts"
+  ]
 }

@@ -1,6 +1,6 @@
 
 export interface DevToolsDataStruct {
-	name: string,
-	state: {},
-	updateName?: string,
+  name: string,
+  state: {},
+  updateName?: string,
 }

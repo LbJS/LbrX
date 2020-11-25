@@ -1,78 +1,72 @@
-import { Person, BetterPerson } from '../test-subjects'
-import { deepFreeze, isArray } from 'lbrx/helpers'
+import { TestSubjectFactory } from 'factories'
+import { assertIsArray, assertNotNullable } from 'helpers'
+import { deepFreeze } from 'lbrx/helpers'
+import { TestSubject, TestSubjectConfigurations } from 'test-subjects'
 
 describe('Helper Function - deepFreeze():', () => {
 
-	let person: Person
+  let testSubject: TestSubject
 
-	beforeEach(() => {
-		person = new Person({
-			firstName: 'Leon',
-			emails: [
-				'someEmail@email.com'
-			],
-			address: {
-				city: 'some city'
-			},
-			birthday: new Date(),
-			nestedObject: {
-				nestedValue: {
-					randomList: []
-				}
-			}
-		})
-		deepFreeze(person)
-	})
+  beforeEach(() => {
+    testSubject = TestSubjectFactory.createTestSubject_configA()
+    deepFreeze(testSubject)
+  })
 
-	it("should cause person's firstName property to throw on modification.", () => {
-		expect(() => {
-			person.firstName = 'Something Else'
-		}).toThrow()
-	})
+  it('should cause test subject to throw on string value modification.', () => {
+    expect(() => {
+      testSubject.stringValue = 'some other string'
+    }).toThrow()
+  })
 
-	it("should cause person's lastName property to throw on modification.", () => {
-		expect(() => {
-			person.lastName = 'Something Else'
-		}).toThrow()
-	})
+  it("should cause test subject to throw on date's modification.", () => {
+    assertNotNullable(testSubject.dateValue)
+    expect(() => {
+      testSubject.dateValue!.setFullYear(1986)
+    }).toThrow()
+  })
 
-	it("should cause person's emails list to throw throw on adding a new item.", () => {
-		expect(() => {
-			if (isArray(person.emails)) person.emails.push('newEmail@email.com')
-		}).toThrow()
-	})
+  it("should cause test subject to throw on inner object's date modification.", () => {
+    assertNotNullable(testSubject.innerTestObject?.dateValue)
+    expect(() => {
+      testSubject.innerTestObject!.dateValue!.setFullYear(1986)
+    }).toThrow()
+  })
 
-	it("should cause person's emails list to throw on item's modification.", () => {
-		expect(() => {
-			if (isArray(person.emails)) person.emails[0] = 'newEmail@email.com'
-		}).toThrow()
-	})
+  it('should cause test subject to throw on inners object modification.', () => {
+    assertNotNullable(testSubject.innerTestObject)
+    expect(() => {
+      const newInnerTestObject = TestSubjectFactory.createInnerTestSubject(TestSubjectConfigurations.configurationB)
+      testSubject.innerTestObject = newInnerTestObject
+    }).toThrow()
+  })
 
-	it("should cause person's address to throw on modification.", () => {
-		expect(() => {
-			if (person.address) person.address.city = 'some other city'
-		}).toThrow()
-	})
+  it('should cause test subject to throw on adding a new item to a list.', () => {
+    assertIsArray(testSubject.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    expect(() => {
+      const newObjForList = {
+        value: 'string',
+        date: new Date()
+      }
+      testSubject.innerTestObjectGetSet!.deepNestedObj!.objectList!.push(newObjForList)
+    }).toThrow()
+  })
 
-	it("should cause person's deep nested value to throw on modification.", () => {
-		expect(() => {
-			if (person.nestedObject?.nestedValue) {
-				person.nestedObject.nestedValue.randomList = ['some other value']
-			}
-		}).toThrow()
-	})
+  it("should cause test subject to throw on modification an item's list.", () => {
+    assertIsArray(testSubject.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    assertNotNullable(testSubject.innerTestObjectGetSet.deepNestedObj.objectList[0])
+    expect(() => {
+      const newObjForReplacement = {
+        value: 'string',
+        date: new Date()
+      }
+      testSubject.innerTestObjectGetSet!.deepNestedObj!.objectList![0] = newObjForReplacement
+    }).toThrow()
+  })
 
-	it("should cause person's birthday to throw on modification.", () => {
-		expect(() => {
-			person.birthday?.setFullYear(2677)
-		}).toThrow()
-	})
-
-	it("should cause better person's firstName property to throw on modification.", () => {
-		const betterPerson = new BetterPerson({})
-		deepFreeze(betterPerson)
-		expect(() => {
-			betterPerson.firstName = 'better first name'
-		}).toThrow()
-	})
+  it('should cause test subject to throw on list replacement.', () => {
+    assertIsArray(testSubject.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    expect(() => {
+      testSubject.innerTestObjectGetSet!.deepNestedObj!.objectList = []
+    }).toThrow()
+  })
 })

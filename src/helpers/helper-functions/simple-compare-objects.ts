@@ -1,5 +1,5 @@
-import { stringify } from 'lbrx/helpers'
+import { stringify } from '../short-hand-functions'
 
 export function simpleCompareObjects(objA: object | any[], objB: object | any[]): boolean {
-	return stringify(objA) == stringify(objB)
+  return stringify(objA) == stringify(objB)
 }

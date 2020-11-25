@@ -1,2 +1,3 @@
-export * from './constructable'
 export * from './class'
+export * from './constructable'
+

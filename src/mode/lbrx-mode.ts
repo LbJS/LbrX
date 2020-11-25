@@ -2,9 +2,9 @@
 let isDevMode: boolean = true
 
 export function isDev(): boolean {
-	return isDevMode
+  return isDevMode
 }
 
 export function enableProdMode(): void {
-	isDevMode = false
+  isDevMode = false
 }
