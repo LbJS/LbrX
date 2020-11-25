@@ -1,7 +1,7 @@
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { TestSubject } from '__test__/test-subjects'
 
-describe(`Store update():`, () => {
+describe(`Store - update():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createPartialState = () => ({ stringValue: `some other string` }) as Partial<TestSubject>
