@@ -20,7 +20,7 @@ describe(`LbrXManager setGlobalStoreConfig():`, () => {
     defaultGlobalConfig = {
       isResettable: true,
       isSimpleCloning: false,
-      isInstanceHandler: true,
+      isClassHandler: true,
       objectCompareType: ObjectCompareTypes.advanced,
       storageDebounceTime: 2000,
       storageType: Storages.none,

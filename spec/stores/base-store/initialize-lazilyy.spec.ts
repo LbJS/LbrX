@@ -137,4 +137,22 @@ describe(`Base Store - initializeLazily():`, () => {
     await store.initializeLazily(Promise.resolve(createInitialValue()))
     expect(store.storeTag).toBe(StoreTags.active)
   })
+
+  it(`should not initialize if the lazy init context is canceled.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
+    store[`_lazyInitContext`]!.isCanceled = true
+    store.select$().subscribe(() => { })
+    await expect(lazyInitPromise).resolves.toBeUndefined()
+    expect(store.value).toBeNull()
+  })
+
+  it(`should not invoke init async if lazy init context is null.`, () => {
+    const store = StoresFactory.createStore(null)
+    store.initializeLazily(Promise.resolve(createInitialValue()))
+    store[`_lazyInitContext`] = null
+    expect(() => {
+      store[`_initializeLazily`]()
+    }).not.toThrowError()
+  })
 })

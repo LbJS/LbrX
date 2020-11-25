@@ -137,11 +137,12 @@ describe(`Base Store - hardReset():`, () => {
     await expect(store.hardReset()).rejects.toBeInstanceOf(Error)
   })
 
-  it(`should cancel and set to null the lazy init context if it exists.`, async () => {
+  it(`should cancel, resolve and set to null the lazy init context if it exists.`, async () => {
     const store = StoresFactory.createStore(null)
-    store.initializeLazily(Promise.resolve(createInitialState()))
+    const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialState()))
     const lazyInitContext = store[`_lazyInitContext`]
     await store.hardReset()
+    await expect(lazyInitPromise).resolves.toBeUndefined()
     assert(lazyInitContext)
     expect(lazyInitContext.isCanceled).toBeTruthy()
     expect(store[`_lazyInitContext`]).toBeNull()

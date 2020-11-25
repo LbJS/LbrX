@@ -243,7 +243,7 @@ describe(`Dev Tools Manager - on monitor message:`, () => {
     expect(store.value).toBeInstanceOf(TestSubject)
   })
 
-  it(`should not handle types if instance handler is not configured at the store.`, () => {
+  it(`should not handle types if class handler is not configured at the store.`, () => {
     LbrXManager.initializeDevTools()
     const devtoolsManager: DevToolsManager_type = LbrXManager[`_devToolsManager`] as DevToolsManager_type
     const reduxMonitor: ReduxDevToolsMonitorWithEmit = devtoolsManager[`_reduxMonitor`] as ReduxDevToolsMonitorWithEmit
@@ -251,7 +251,7 @@ describe(`Dev Tools Manager - on monitor message:`, () => {
     const zoneRunSpy = jest.spyOn(devtoolsManager[`_zone`], `run`)
     const store = StoresFactory.createStore(
       TestSubjectFactory.createTestSubject_initial(),
-      { name: `TEST-STORE`, isInstanceHandler: false }
+      { name: `TEST-STORE`, isClassHandler: false }
     )
     const storeState = store.state
     store.update(TestSubjectFactory.createTestSubject_configA())

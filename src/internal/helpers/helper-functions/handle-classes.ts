@@ -7,7 +7,7 @@ import { isMoment } from './is-moment'
 import { isObject } from './is-object'
 import { isString } from './is-string'
 
-export function handleObjectTypes<T extends object | object[], P extends object | object[]>(instanced: T, plain: P):
+export function handleClasses<T extends object | object[], P extends object | object[]>(instanced: T, plain: P):
   P extends object[] ? T extends object[] ? T : T[] : T extends object[] ? never : T {
   if (isEmpty(plain)) return plain
   if (isClass(instanced) && !isClass(plain)) {
@@ -35,7 +35,7 @@ export function handleObjectTypes<T extends object | object[], P extends object 
     const instancedValue = isArray(instanced) ? instanced[0] : instanced
     if (instancedValue) {
       for (let i = 0; i < plain.length; i++) {
-        plain[i] = handleObjectTypes(instancedValue, plain[i])
+        plain[i] = handleClasses(instancedValue, plain[i])
       }
     }
     return plain as any
@@ -45,7 +45,7 @@ export function handleObjectTypes<T extends object | object[], P extends object 
       const key = keys[i]
       const instancedProp = instanced[key]
       if (isObject(instancedProp)) {
-        plain[key] = handleObjectTypes(instancedProp, plain[key])
+        plain[key] = handleClasses(instancedProp, plain[key])
       }
     }
   }

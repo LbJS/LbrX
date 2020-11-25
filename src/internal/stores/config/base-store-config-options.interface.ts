@@ -44,14 +44,14 @@ export interface BaseStoreConfigOptions {
    */
   isSimpleCloning?: boolean
   /**
-   * Defines whether or not the store should handle object and object's properties instances. Explanation:
-   * - Any objects or properties that were an `instanceOf ClassName` at the initial value, will be
-   * converted to to the same type of instance.
-   * - This logic can also handle date and moment objects.
+   * Defines whether or not the store should handle classes. Explanation:
+   * - All objects or properties that were an `instanceOf ClassName` at the initial value, will be
+   * instantiated to to the same object type.
+   * - This will also handle Date and Moment objects.
    * @default
-   * isInstanceHandler = true
+   * isClassHandler = true
    */
-  isInstanceHandler?: boolean
+  isClassHandler?: boolean
   /**
    * Defines whether or not the store's state in immutable.
    * - Disabling immutability will skip all state's cloning and freezing.

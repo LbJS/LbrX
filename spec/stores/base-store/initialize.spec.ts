@@ -84,10 +84,10 @@ describe(`Base Store - initialize(): `, () => {
     expect(store.value).toStrictEqual(createInitialValue())
   })
 
-  it(`should ignore instance handler when using stored data if so configured.`, async () => {
+  it(`should ignore class handler when using stored data if so configured.`, async () => {
     localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
     const store = StoresFactory.createStore<TestSubject>(null,
-      { name: `TEST-STORE`, storageType: Storages.local, isInstanceHandler: false })
+      { name: `TEST-STORE`, storageType: Storages.local, isClassHandler: false })
     store.setInstancedValue(createInitialValue())
     store.initialize(createValueA())
     await timer(store.config.storageDebounceTime).toPromise()

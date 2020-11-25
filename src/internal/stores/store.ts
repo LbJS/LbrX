@@ -227,9 +227,9 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
       const tmpValue = valueOrFunction
       let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
-      if (this._isInstanceHandler) {
+      if (this._isClassHandler) {
         assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
-        newValue = this._handleTypes(this._instancedValue, this._clone(newValue))
+        newValue = this._handleClasses(this._instancedValue, this._clone(newValue))
       }
       if (isFunction(onUpdate)) {
         const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
