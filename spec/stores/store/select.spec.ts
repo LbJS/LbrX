@@ -1,8 +1,10 @@
-import { InnerTestSubject, Store, TestSubject, TestSubjectFactory } from 'provider'
+import { ProjectsOrKeys } from 'lbrx/query'
 import { Observable } from 'rxjs'
+import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { sleep } from '__test__/functions'
+import { InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
-describe(`Store select$():`, () => {
+describe(`Store - select$():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -10,17 +12,16 @@ describe(`Store select$():`, () => {
   const customObjA = () => Object.assign(createStateA(), { stringValue: `new string 1` } as TestSubject)
   const customObjB = () => Object.assign(createStateA(),
     { innerTestObject: Object.assign(createStateA().innerTestObject, { numberValue: 777 } as InnerTestSubject) } as TestSubject)
-  let store: Store<TestSubject>
-  let asyncStore: Store<TestSubject>
+  let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    store = provider.StoresFactory.createStore<TestSubject>(createInitialState())
-    asyncStore = provider.StoresFactory.createStore<TestSubject>(null, `ASYNC-STORE`)
+    StoresFactory = provider.StoresFactory
   })
 
 
-  it(`should distribute store's state on subscribe.`, done => {
+  it(`should emit store's state value on subscribe.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
     store.select$().subscribe(state => {
       expect(state).toStrictEqual(createInitialState())
@@ -28,7 +29,8 @@ describe(`Store select$():`, () => {
     })
   })
 
-  it(`should distribute store's state when it's updated.`, async done => {
+  it(`should emit store's state value when it's updated.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     expect.assertions(2)
     const jestMatcherState = expect.getState()
     const expectedStates = [
@@ -39,11 +41,11 @@ describe(`Store select$():`, () => {
       expect(state).toStrictEqual(expectedStates[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == 2) done()
     })
-    await sleep()
     store.update(createStateA())
   })
 
-  it(`should distribute store's state when it's updated but only when it changes.`, async done => {
+  it(`should emit store's state value only when it changes.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedStates = [
       createInitialState(),
@@ -58,25 +60,18 @@ describe(`Store select$():`, () => {
       expect(state).toStrictEqual(expectedStates[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await sleep()
     store.update(createInitialState())
-    await sleep()
     store.update(createStateA())
-    await sleep()
     store.update(createStateA())
-    await sleep()
     store.update(createStateB())
-    await sleep()
     store.update(createStateB())
-    await sleep()
     store.update(customObjA())
-    await sleep()
     store.update(customObjA())
-    await sleep()
     store.update(customObjB())
   })
 
-  it(`should distribute the selected property based on the provided projection method.`, done => {
+  it(`should emit the selected property based on the provided projection method.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
     store.select$(state => state.stringValue).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().stringValue)
@@ -84,7 +79,8 @@ describe(`Store select$():`, () => {
     })
   })
 
-  it(`should distribute the selected property based on the provided projection method only when it changes.`, async done => {
+  it(`should emit the selected property based on the provided projection method only when it changes.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
       createInitialState().stringValue,
@@ -97,19 +93,15 @@ describe(`Store select$():`, () => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await sleep()
     store.update(createInitialState())
-    await sleep()
     store.update(customObjA())
-    await sleep()
     store.update(customObjA())
-    await sleep()
     store.update({ stringValue: expectedValues[2] } as TestSubject)
-    await sleep()
     store.update({ stringValue: expectedValues[2] } as TestSubject)
   })
 
-  it(`should distribute the selected nested property based on the provided projection method.`, done => {
+  it(`should emit the selected nested property based on the provided projection method.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
     store.select$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().innerTestObject!.deepNestedObj!.objectList)
@@ -117,7 +109,8 @@ describe(`Store select$():`, () => {
     })
   })
 
-  it(`should distribute the selected property based on the provided projection method only when it changes.`, async done => {
+  it(`should emit the selected property based on the provided projection method only when it changes.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
       createInitialState().innerTestObject!.deepNestedObj!.objectList,
@@ -129,15 +122,13 @@ describe(`Store select$():`, () => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await sleep()
     store.update(createInitialState())
-    await sleep()
     store.update(createStateA())
-    await sleep()
     store.update(createStateA())
   })
 
-  it(`should allow casting to newly defined object.`, async done => {
+  it(`should allow casting to newly defined object.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
     const expectedValue = {
       s: createInitialState().stringValue,
@@ -152,7 +143,8 @@ describe(`Store select$():`, () => {
     })
   })
 
-  it(`should distribute the newly casted object only when one if its properties changed.`, async done => {
+  it(`should emit the newly casted object only when one if its properties changed.`, done => {
+    const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
       {
@@ -185,41 +177,69 @@ describe(`Store select$():`, () => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await sleep()
     store.update({ stringValue: `a777a` })
-    await sleep()
     store.update({ stringValue: `a777a` })
-    await sleep()
     store.update(createInitialState())
-    await sleep()
     store.update(createInitialState())
-    await sleep()
     store.update({ stringValue: `a777a` })
-    await sleep()
     store.update({ stringValue: `a777a` })
-    await sleep()
     store.update({ numberValue: 123454321 })
-    await sleep()
     store.update({ numberValue: 123454321 })
   })
 
-  it(`shouldn't distribute null as a state on async store before initialization.`, async () => {
+  it(`should emit a value based on an array of projection methods.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const initialState = createInitialState()
+    const expectedResult = [initialState.dateValue, initialState.innerTestObject]
+    store.select$([
+      value => value.dateValue,
+      value => value.innerTestObject
+    ]).subscribe(value => {
+      expect(value).toStrictEqual(expectedResult)
+    })
+  })
+
+  it(`should emit a value based on a key value.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store.select$(`stringValue`).subscribe(value => {
+      expect(value).toStrictEqual(createInitialState().stringValue)
+    })
+  })
+
+  it(`should emit a value based on an array of key values.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const initialState = createInitialState()
+    const expectedResult: Partial<TestSubject> = {
+      stringValue: initialState.stringValue,
+      numberValue: initialState.numberValue,
+      dateValue: initialState.dateValue,
+    }
+    store.select$([`stringValue`, `numberValue`, `dateValue`]).subscribe(value => {
+      expect(value).toStrictEqual(expectedResult)
+    })
+  })
+
+  it(`shouldn't emit null before initialization.`, async () => {
+    const store = StoresFactory.createStore(null)
     const mockCb = jest.fn()
-    asyncStore.select$().subscribe(mockCb)
-    expect(mockCb).not.toBeCalled()
+    store.select$().subscribe(mockCb)
     await sleep(100)
+    expect(mockCb).not.toBeCalled()
   })
 
-  it(`shouldn't distribute null on hard reset.`, async () => {
+  it(`shouldn't emit null after hard reset.`, async () => {
+    const store = StoresFactory.createStore(createInitialState())
     const mockCb = jest.fn()
     store.select$().subscribe(mockCb)
     expect(mockCb).toBeCalledTimes(1)
     await sleep()
     await store.hardReset()
     await sleep(100)
+    expect(mockCb).toBeCalledTimes(1)
   })
 
-  it(`should distribute the initial state after hard reset even if it is the same state.`, async done => {
+  it(`should emit the initial state after hard reset even if it is the same state.`, async done => {
+    const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
       createInitialState(),
@@ -231,18 +251,59 @@ describe(`Store select$():`, () => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await sleep()
     await store.hardReset()
-    await sleep(1)
     store.initialize(createInitialState())
-    await sleep()
+  })
+
+  it(`should emit a value after the store is initialized.`, done => {
+    const store = StoresFactory.createStore(null)
+    expect.assertions(2)
+    store.select$().subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+    })
+    store.select$().subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+      done()
+    })
+    store.initialize(createInitialState())
+  })
+
+  it(`should emit a value after the store is initialized after hard reset.`, async done => {
+    const store = StoresFactory.createStore(null)
+    expect.assertions(4)
+    store.select$().subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+    })
+    store.select$().subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+      const jestState = expect.getState()
+      if (jestState.assertionCalls == jestState.expectedAssertionsNumber) done()
+    })
+    store.initialize(createInitialState())
+    await store.hardReset()
+    await store.initializeLazily(Promise.resolve(createInitialState()))
   })
 
   it(`should compile when provided with an optional parameter.`, () => {
-    function stateProjectionFactory<R>(optionalProjection?: (state: Readonly<TestSubject>) => R): Observable<TestSubject | R> {
+    const store = StoresFactory.createStore(createInitialState())
+    function stateProjectionFactory<R, K extends keyof TestSubject>(optionalProjection?: ProjectsOrKeys<TestSubject, R>):
+      Observable<TestSubject | R | R[] | TestSubject[K] | Pick<TestSubject, K>> {
       return store.select$(optionalProjection)
     }
     stateProjectionFactory()
     stateProjectionFactory(state => state.booleanValue)
+    stateProjectionFactory([
+      value => value.dateValue,
+      value => value.dateValue
+    ])
+    stateProjectionFactory(`numberValue`)
+    stateProjectionFactory([`stringValue`, `numberValue`, `dateValue`])
+  })
+
+  it(`it should emit the whole value if the provided paramter is invalid array.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    store.select$([]).subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+    })
   })
 })

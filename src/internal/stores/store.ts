@@ -62,7 +62,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
         switchMap(() => this._value$),
       )
     const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
-      if (isArray(projectsOrKeys)) {
+      if (isArray(projectsOrKeys) && projectsOrKeys.length) {
         if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
           return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
         }
@@ -105,6 +105,30 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     }
     this._queryContextsList.push(queryContext)
     return queryContext.observable
+  }
+
+  protected _update(
+    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
+    isMerge: boolean,
+    actionName: string,
+    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
+  ): void {
+    if (this.isPaused) return
+    assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
+    this._setState(value => {
+      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
+      const tmpValue = valueOrFunction
+      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
+      if (this._isClassHandler) {
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
+        newValue = this._handleClasses(this._instancedValue, this._clone(newValue))
+      }
+      if (isFunction(onUpdate)) {
+        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
+        if (newModifiedValue) newValue = this._clone(newModifiedValue)
+      }
+      return tmpValue == newValue ? this._clone(newValue) : newValue
+    }, actionName)
   }
 
   /**
@@ -213,30 +237,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public override(newValue: T, actionName?: string): void {
     this._update(newValue, /** isMerge */ false, actionName || Actions.override, this.onOverride)
-  }
-
-  protected _update(
-    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
-    isMerge: boolean,
-    actionName: string,
-    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
-  ): void {
-    if (this.isPaused) return
-    assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
-    this._setState(value => {
-      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      const tmpValue = valueOrFunction
-      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
-      if (this._isClassHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
-        newValue = this._handleClasses(this._instancedValue, this._clone(newValue))
-      }
-      if (isFunction(onUpdate)) {
-        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
-        if (newModifiedValue) newValue = this._clone(newModifiedValue)
-      }
-      return tmpValue == newValue ? this._clone(newValue) : newValue
-    }, actionName)
   }
 
   //#endregion write-methods
