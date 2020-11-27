@@ -1,5 +1,5 @@
 import { iif, Observable, of } from 'rxjs'
-import { distinctUntilChanged, filter, map, mergeMap, switchMap, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
 import { assert, isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
@@ -29,6 +29,12 @@ import { Actions, ProjectsOrKeys, QueryableStore, QueryContext, WriteableStore }
  */
 export class Store<T extends object, E = any> extends BaseStore<T, T, E> implements QueryableStore<T, E>, WriteableStore<T, E> {
 
+  protected readonly _whenLoaded$: Observable<Readonly<T> | null> = this.isLoading$
+    .pipe(
+      filter(x => !x),
+      switchMap(() => this._value$),
+    )
+
   //#region constructor
 
   /**
@@ -55,13 +61,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     projectsOrKeys?: ProjectsOrKeys<T, R>,
     action?: Actions | string
   ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    const tillLoaded$ = this._isLoading$.asObservable()
-      .pipe(
-        filter(x => !x),
-        distinctUntilChanged(),
-        switchMap(() => this._value$),
-      )
-    const mapPredicate: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
+    const mapProject: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
       if (isArray(projectsOrKeys) && projectsOrKeys.length) {
         if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
           return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
@@ -78,10 +78,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       if (isFunction(projectsOrKeys)) return projectsOrKeys
       return (x: Readonly<T>) => x
     })()
-    const filterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+    const takeWhilePredicate = () => {
+      return !queryContext.isDisposed
+    }
+    const actionFilterPredicate = () => !action || action === this._lastAction
+    const iffCondition = () => this.isLoading && action != Actions.loading
+    const mainFilterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
       return !this.isPaused
         && !queryContext.isDisposed
-        && (!action || action === this._lastAction)
         && !!value
     }
     const queryContext: QueryContext = {
@@ -89,12 +93,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       isDisposed: false,
       observable: this._value$.asObservable()
         .pipe(
-          // filter(filterPredicate),
-          // TODO: check this filter
-          // TODO: use takeWhile for is disposed parameter
-          mergeMap(x => iif(() => this.isLoading && action != Actions.loading, tillLoaded$, of(x))),
-          filter(filterPredicate),
-          map(mapPredicate),
+          takeWhile(takeWhilePredicate),
+          filter(actionFilterPredicate),
+          mergeMap(x => iif(iffCondition, this._whenLoaded$, of(x))),
+          filter(mainFilterPredicate),
+          map(mapProject),
           distinctUntilChanged((prev, curr) => {
             if (queryContext.wasHardReset) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
