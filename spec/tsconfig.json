@@ -13,6 +13,9 @@
       "lbrx/utils": [
         "../src/utils",
       ],
+      "lbrx/query": [
+        "../src/query",
+      ],
       "lbrx/dev-tools": [
         "../src/dev-tools",
       ],

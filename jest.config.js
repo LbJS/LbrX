@@ -16,6 +16,7 @@ module.exports = {
     "^lbrx/core$": "<rootDir>/src/core",
     "^lbrx/dev-tools$": "<rootDir>/src/dev-tools",
     "^lbrx/utils$": "<rootDir>/src/utils",
+    "^lbrx/query$": "<rootDir>/src/query",
     "^lbrx/internal/core$": "<rootDir>/src/internal/core",
     "^lbrx/internal/helpers$": "<rootDir>/src/internal/helpers",
     "^lbrx/internal/helpers/helper-functions$": "<rootDir>/src/internal/helpers/helper-functions",

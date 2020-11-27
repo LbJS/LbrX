@@ -81,7 +81,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * @get Returns whether ot not the store is in loading state.
    */
   public get isLoading(): boolean {
-    return this._stateSource.isLoading
+    return this._isLoading$.value
   }
 
   /** @internal */
@@ -104,7 +104,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    */
   public get storeTag(): StoreTags {
     const state = this._state
-    if (this.isDestroyed) return StoreTags.destroyed
+    if (this._isDestroyed) return StoreTags.destroyed
     if (state.isHardResettings) return StoreTags.hardResetting
     if (state.isLoading) return StoreTags.loading
     if (state.isPaused) return StoreTags.paused

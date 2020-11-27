@@ -20,7 +20,7 @@ describe(`Store - onAction():`, () => {
     expect(Object.keys(result).length).toBe(1)
   })
 
-  it(`should emit the subscriber only on the provided action.`, () => {
+  it(`should emit the subscriber only on the provided action.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     const actionsName = `myActions`
     expect.assertions(2)
@@ -31,6 +31,7 @@ describe(`Store - onAction():`, () => {
       const expectedState = createStateA()
       expectedState.stringValue = `value value value`
       expect(value).toStrictEqual(expectedState)
+      done()
     })
     store.update({ stringValue: `value value value` })
     store.override(createStateA())
