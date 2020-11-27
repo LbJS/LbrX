@@ -300,10 +300,36 @@ describe(`Store - select$():`, () => {
     stateProjectionFactory([`stringValue`, `numberValue`, `dateValue`])
   })
 
-  it(`it should emit the whole value if the provided paramter is invalid array.`, () => {
+  it(`it should emit the whole value if the provided paramter is invalid array.`, done => {
     const store = StoresFactory.createStore(createInitialState())
+    expect.assertions(2)
     store.select$([]).subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
+    store.select$([`stringValue`, (value: any) => value.stringValue] as any).subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+      done()
+    })
+  })
+
+  it(`should stope emitting values if the query context has been disposed.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const observable = store.select$()
+    expect.assertions(1)
+    observable.subscribe(value => {
+      expect(value).toStrictEqual(createInitialState())
+    })
+    store.disposeQueryContext(observable)
+    store.update(createStateA())
+  })
+
+  it(`should complete the subscription on update when disposing the query context.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const observable = store.select$()
+    const sub = observable.subscribe(() => { })
+    expect(sub.closed).toBeFalsy()
+    store.disposeQueryContext(observable)
+    store.update(createStateA())
+    expect(sub.closed).toBeTruthy()
   })
 })
