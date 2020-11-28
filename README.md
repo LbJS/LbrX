@@ -24,8 +24,8 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Store destroy api
 - [x] Advanced store config that allows methods override like `objectClone`, `objectCompare`, etc.
 - [x] Select with string literals
-- [ ] Full spec coverage of the above - wip
-- [ ] **List Store**
+- [x] Full spec coverage of the above
+- [x] **List Store - wip**
 - [ ] Full spec coverage of the above
 - [ ] Playground
 - [ ] Full documentation
