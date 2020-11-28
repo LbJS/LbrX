@@ -5,5 +5,5 @@ export function mockSessionStorage(): void {
 }
 
 export function deleteSessionStorageMock(): void {
-  delete globalThis.sessionStorage
+  delete (globalThis as any).sessionStorage
 }

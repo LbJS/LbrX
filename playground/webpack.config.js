@@ -1,7 +1,7 @@
 const path = require('path')
-const merge = require('webpack-merge')
+const { merge } = require('webpack-merge')
 const TerserPlugin = require('terser-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
+//const CopyPlugin = require('copy-webpack-plugin')
 
 /** @type {import('webpack').Configuration} */
 const COMMON_CONFIG = {
@@ -47,7 +47,7 @@ const PROD_CONFIG = {
       new TerserPlugin({
         test: /\.js(\?.*)?$/i,
         extractComments: false,
-        sourceMap: false,
+        // sourceMap: false,
         terserOptions: {
           mangle: true
         },
