@@ -5,5 +5,5 @@ export function mockLocalStorage(): void {
 }
 
 export function deleteLocalStorageMock(): void {
-  delete globalThis.localStorage
+  delete (globalThis as any).localStorage
 }
