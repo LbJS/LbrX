@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   globals: {
     'ts-jest': {
-      tsConfig: './spec/tsconfig.json'
+      tsconfig: './spec/tsconfig.json'
     }
   },
   collectCoverageFrom: [
