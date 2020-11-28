@@ -1,6 +1,7 @@
 import { removeSync } from 'fs-extra'
 import { resolvePath } from '../extensions'
-import { runCommand, testRelativeImports } from '../handlers'
+import { runCommand, testRelativeImports, verifyRollupInputs } from '../handlers'
+import { sleep } from '../helpers'
 import { Provider } from '../provider'
 
 export default async function main(): Promise<void> {
@@ -10,6 +11,10 @@ export default async function main(): Promise<void> {
   removeSync(resolvePath(config.buildFolder))
   testRelativeImports(config.relativeImportsVerifier)
   logger.logSuccess(`Relative path verification`)
+  verifyRollupInputs(config.rollupInputsVerifierConfig)
+  logger.logSuccess(`Rollup inputs verification`)
+  return
+  await sleep(1000)
   await Promise.all(config.buildSets.map(async set => {
     return runCommand(set.command, set.startInfoLog).then(() => logger.logInfo(set.endInfoLog))
   }))

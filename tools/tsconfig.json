@@ -6,6 +6,8 @@
     "lib": [
       "ESNext"
     ],
+    "outDir": "../tmp",
+    "allowJs": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -13,5 +15,5 @@
   },
   "include": [
     "**/*.ts"
-  ]
+  ],
 }

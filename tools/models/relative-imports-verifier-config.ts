@@ -1,7 +1,7 @@
 
 export interface RelativeImportsVerifierConfig {
   rootFolder: string,
-  fileExtension: string,
+  includedFileExtensions: string[],
   excludedFiles: string[],
   excludedImports: string[],
 }
