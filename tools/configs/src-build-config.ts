@@ -1,3 +1,4 @@
+import { getRollupBaseOptions } from '../../src/rollup-base.config'
 import { SrcBuildConfig } from '../models'
 import { LOGGER_CONFIG } from './logger-config'
 
@@ -82,11 +83,26 @@ export const SRC_BUILD_CONFIG: SrcBuildConfig = {
   ],
   relativeImportsVerifier: {
     rootFolder: `src`,
-    fileExtension: `.ts`,
+    includedFileExtensions: [
+      `.ts`
+    ],
     excludedFiles: [],
     excludedImports: [
       `rxjs`,
       `rxjs/operators`
     ],
+  },
+  rollupInputsVerifierConfig: {
+    rootFolder: `src`,
+    includedFileExtensions: [
+      `.ts`
+    ],
+    excludedFilePatterns: [
+      /config\.js$/
+    ],
+    excludedFolders: [
+      `internal`,
+    ],
+    rollupInputs: getRollupBaseOptions().input as string[],
   }
 }

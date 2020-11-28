@@ -1,5 +1,6 @@
 import { LoggerConfig } from './logger-config'
 import { RelativeImportsVerifierConfig } from './relative-imports-verifier-config'
+import { RollupInputsVerifierConfig } from './rollup-inputs-verifier-config'
 
 export interface SrcBuildConfig {
   logger: LoggerConfig,
@@ -10,5 +11,6 @@ export interface SrcBuildConfig {
     startInfoLog: string,
     endInfoLog: string,
   }[],
-  relativeImportsVerifier: RelativeImportsVerifierConfig
+  relativeImportsVerifier: RelativeImportsVerifierConfig,
+  rollupInputsVerifierConfig: RollupInputsVerifierConfig,
 }

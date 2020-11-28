@@ -8,5 +8,6 @@ export * from './package-json-config'
 export * from './pg-build-config'
 export * from './post-src-build-config'
 export * from './relative-imports-verifier-config'
+export * from './rollup-inputs-verifier-config'
 export * from './src-build-config'
 

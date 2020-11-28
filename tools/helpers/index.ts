@@ -7,4 +7,5 @@ export * from './is-number'
 export * from './is-promise'
 export * from './is-string'
 export * from './is-undefined'
+export * from './sleep'
 

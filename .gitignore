@@ -19,4 +19,4 @@ spec/test-report.html
 playground/www/*.js
 
 # Temp / Cache folders
-Temp
+temp
