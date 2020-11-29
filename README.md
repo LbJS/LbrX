@@ -54,10 +54,10 @@ npm i lbrx rxjs
 
 | URL                                                                         | ES     | Minified |
 | --------------------------------------------------------------------------- | ------ | -------- |
-| <https://cdn.jsdelivr.net/npm/lbrx@0.3.7-alpha/bundles/lbrx.umd.js>         | ES2015 | No       |
-| <https://cdn.jsdelivr.net/npm/lbrx@0.3.7-alpha/bundles/lbrx.umd.min.js>     | ES2015 | Yes      |
-| <https://cdn.jsdelivr.net/npm/lbrx@0.3.7-alpha/bundles/lbrx.umd.es5.js>     | ES5    | No       |
-| <https://cdn.jsdelivr.net/npm/lbrx@0.3.7-alpha/bundles/lbrx.umd.es5.min.js> | ES5    | Yes      |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.8-alpha/bundles/lbrx.umd.js>         | ES2015 | No       |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.8-alpha/bundles/lbrx.umd.min.js>     | ES2015 | Yes      |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.8-alpha/bundles/lbrx.umd.es5.js>     | ES5    | No       |
+| <https://cdn.jsdelivr.net/npm/lbrx@0.3.8-alpha/bundles/lbrx.umd.es5.min.js> | ES5    | Yes      |
 
 ## Example
 
