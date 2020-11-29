@@ -94,11 +94,12 @@ export const SRC_BUILD_CONFIG: SrcBuildConfig = {
   },
   rollupInputsVerifierConfig: {
     rootFolder: `src`,
+    scanLevel: 1,
     includedFileExtensions: [
       `.ts`
     ],
     excludedFilePatterns: [
-      /config\.js$/
+      `config\\.js$`
     ],
     excludedFolders: [
       `internal`,
