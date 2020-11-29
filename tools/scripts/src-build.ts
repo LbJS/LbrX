@@ -13,7 +13,6 @@ export default async function main(): Promise<void> {
   logger.logSuccess(`Relative path verification`)
   verifyRollupInputs(config.rollupInputsVerifierConfig)
   logger.logSuccess(`Rollup inputs verification`)
-  return
   await sleep(1000)
   await Promise.all(config.buildSets.map(async set => {
     return runCommand(set.command, set.startInfoLog).then(() => logger.logInfo(set.endInfoLog))

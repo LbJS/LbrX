@@ -1,8 +1,9 @@
 
 export interface RollupInputsVerifierConfig {
   rootFolder: string,
+  scanLevel: number,
   includedFileExtensions: string[],
   excludedFolders: string[],
-  excludedFilePatterns: RegExp[],
+  excludedFilePatterns: string[],
   rollupInputs: string[],
 }
