@@ -25,7 +25,7 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Advanced store config that allows methods override like `objectClone`, `objectCompare`, etc.
 - [x] Select with string literals
 - [x] Full spec coverage of the above
-- [x] **List Store - wip**
+- [ ] **List Store - wip**
 - [ ] Full spec coverage of the above
 - [ ] Playground
 - [ ] Full documentation
