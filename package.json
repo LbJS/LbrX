@@ -25,7 +25,6 @@
     "test:watch": "jest --watch",
     "test:watchAll": "jest --watchAll",
     "test:coverage": "jest --collectCoverage",
-    "test:coverage-changed": "jest --collectCoverage --onlyChanged",
     "lint": "tslint --project tsconfig.json --config tslint.json --fix && ts-node -s tools/log-success.ts \"Linting\"",
     "_src:build-script": "ts-node -s tools/run.ts --src-build",
     "_src:post-build-script": "ts-node -s tools/run.ts --post-src-build",
