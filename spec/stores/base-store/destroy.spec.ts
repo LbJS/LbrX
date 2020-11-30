@@ -47,7 +47,7 @@ describe(`Base Store - destroy():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     expect(store.value).not.toBeNull()
     await store.destroy()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should set the store's initial value to null.`, async () => {
@@ -108,7 +108,7 @@ describe(`Base Store - destroy():`, () => {
     store.initializeAsync(testSubjectPromise)
     await store.destroy()
     await timer(500).toPromise()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should cancel and set to null the lazy init context if it exists.`, async () => {
@@ -132,7 +132,7 @@ describe(`Base Store - destroy():`, () => {
     const store = StoresFactory.createStore(null)
     await store.destroy()
     store[`_setState`]({ value: { foo: `foo` } }, Actions.update)
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should invoke dispose all on query context list.`, async () => {

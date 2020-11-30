@@ -38,7 +38,7 @@ describe(`Base Store - initialize(): `, () => {
 
   it(`should have null as an initial value.`, () => {
     const store = StoresFactory.createStore(null)
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should set the initial value after initialization.`, () => {

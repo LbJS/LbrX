@@ -19,7 +19,7 @@ describe(`Base Store - initializeAsync():`, () => {
 
   it(`should have null as an initial value.`, () => {
     const store = StoresFactory.createStore(null)
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should set the initial value after async initialization with observable.`, async () => {
@@ -85,7 +85,7 @@ describe(`Base Store - initializeAsync():`, () => {
     assert(store[`_asyncInitPromiseContext`])
     store[`_asyncInitPromiseContext`].isCancelled = true
     await expect(initializationPromise).resolves.toBeUndefined()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should not finish initializing the store if the promise context was canceled even if the promise rejects.`, async () => {

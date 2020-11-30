@@ -61,7 +61,7 @@ describe(`Base Store - hardReset():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     expect(store.value).not.toBeNull()
     await store.hardReset()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should set the store's initial value to null.`, async () => {
@@ -129,7 +129,7 @@ describe(`Base Store - hardReset():`, () => {
     store.initializeAsync(testSubjectPromise)
     await store.hardReset()
     await timer(500).toPromise()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should throw if the store is not resettable.`, async () => {

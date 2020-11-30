@@ -20,7 +20,7 @@ describe(`Base Store - initializeLazily():`, () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(of(createInitialValue()))
     await timer(100).toPromise()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
     expect(await getPromiseState(lazyInitPromise)).toBe(PromiseStates.pending)
   })
 
@@ -28,7 +28,7 @@ describe(`Base Store - initializeLazily():`, () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
     await timer(100).toPromise()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
     expect(await getPromiseState(lazyInitPromise)).toBe(PromiseStates.pending)
   })
 
@@ -144,7 +144,7 @@ describe(`Base Store - initializeLazily():`, () => {
     store[`_lazyInitContext`]!.isCanceled = true
     store.select$().subscribe(() => { })
     await expect(lazyInitPromise).resolves.toBeUndefined()
-    expect(store.value).toBeNull()
+    expect(store.rawValue).toBeNull()
   })
 
   it(`should not invoke init async if lazy init context is null.`, () => {

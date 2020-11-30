@@ -66,7 +66,16 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /**
    * @get Returns state's value.
    */
-  public get value(): T | null {
+  public get rawValue(): T | null {
+    return this._clone(this._value)
+  }
+
+  /**
+   * @get Returns state's value.
+   * - Will throw if state's value is null.
+   */
+  public get value(): T | never {
+    assert(!!this._value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
     return this._clone(this._value)
   }
 
