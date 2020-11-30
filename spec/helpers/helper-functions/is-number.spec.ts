@@ -13,5 +13,7 @@ describe(`Helper Function - isNumber():`, () => {
     expect(isNumber(``)).toBeFalsy()
     expect(isNumber(null)).toBeFalsy()
     expect(isNumber(new Date())).toBeFalsy()
+    expect(isNumber(NaN)).toBeFalsy()
+    expect(isNumber(Infinity)).toBeFalsy()
   })
 })
