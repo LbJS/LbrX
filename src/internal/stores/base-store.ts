@@ -417,7 +417,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - If an instanced value was not set  by this method, the initial value will be used for resolving types.
    */
   public setInstancedValue(value: S): void {
-    this._instancedValue = this._freeze(this._clone(value))
+    value = this._clone(value)
+    this._instancedValue = isDev() ? this._freeze(value) : value
   }
 
   /**
@@ -444,15 +445,17 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(value => storage.setItem(this._storageKey, this._stringify(value)))
     }
+    let isValueFromOnBeforeInit = false
     if (isFunction(this.onBeforeInit)) {
       const modifiedInitialValue: T | void = this.onBeforeInit(this._clone(initialValue))
       if (modifiedInitialValue) {
         initialValue = this._clone(modifiedInitialValue)
         isValueFromStorage = false
+        isValueFromOnBeforeInit = true
       }
     }
-    initialValue = isValueFromStorage ? initialValue : this._clone(initialValue)
-    initialValue = this._freeze(initialValue)
+    if (!isValueFromStorage && !isValueFromOnBeforeInit) initialValue = this._clone(initialValue)
+    if (isDev()) initialValue = this._freeze(initialValue)
     if (this._isResettable) this._initialValue = initialValue
     if (this._isClassHandler && !this._instancedValue) {
       if (isArray(initialValue)) {
@@ -462,7 +465,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
-    this._setState({ value: this._clone(initialValue) }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
+    this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
     if (isFunction(this.onAfterInit)) {
       const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
@@ -566,7 +569,11 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         value: valueFnOrState(this._value)
       }
     }
-    if (valueFnOrState.value) {
+    if (valueFnOrState.value
+      && isDev()
+      && actionName != Actions.init
+      && actionName != Actions.initAsync
+    ) {
       valueFnOrState.value = this._freeze(valueFnOrState.value)
     }
     this._lastAction = actionName
