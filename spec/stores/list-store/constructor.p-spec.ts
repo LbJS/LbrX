@@ -16,12 +16,12 @@ describe(`List Store - constructor():`, () => {
     LbrXManager.enableProdMode()
   })
 
-  it(`should initialize in under 100 ms with 100 items.`, () => {
+  it(`should initialize in under 35 ms with 100 items.`, () => {
     const data = createTestSubjects()
     const startTime = performance.now()
     StoresFactory.createListStore(data)
     const endTime = performance.now()
-    console.log(endTime - startTime)
-    expect(endTime - startTime).toBeLessThanOrEqual(100)
+    // console.log(endTime - startTime)
+    expect(endTime - startTime).toBeLessThanOrEqual(35)
   })
 })

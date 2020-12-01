@@ -24,6 +24,6 @@ describe(`List Store - value:`, () => {
     store.value
     const endTime = performance.now()
     // console.log(endTime - startTime)
-    expect(endTime - startTime).toBeLessThanOrEqual(100)
+    expect(endTime - startTime).toBeLessThanOrEqual(35)
   })
 })
