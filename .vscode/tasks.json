@@ -19,8 +19,19 @@
         "isDefault": true
       },
       "problemMatcher": [],
-      "label": "npm: test:watch",
-      "detail": "jest --watch"
-    }
+      "label": "Jest watch current file.",
+      "detail": "test:watch -- /${fileBasename}"
+    },
+    {
+      "type": "npm",
+      "script": "test:p-spec+watch -- /${fileBasename}",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "label": "Jest watch current performance file.",
+      "detail": "test:p-spec+watch -- /${fileBasename}"
+    },
   ]
 }

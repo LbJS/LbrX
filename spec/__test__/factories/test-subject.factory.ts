@@ -2,6 +2,14 @@ import { DeepNestedTestSubject, InnerTestSubject, TestSubject, TestSubjectConfig
 
 export class TestSubjectFactory {
 
+  public static createTestSubject_list_initial(amount: number = 100): TestSubject[] {
+    const result: TestSubject[] = []
+    for (let i = 0; i < amount; i++) {
+      result.push(this.createTestSubject_initial())
+    }
+    return result
+  }
+
   public static createTestSubject_initial(): TestSubject {
     return this.createTestSubject(TestSubjectConfigurations.initial)
   }

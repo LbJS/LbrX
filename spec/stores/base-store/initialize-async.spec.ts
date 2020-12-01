@@ -96,7 +96,6 @@ describe(`Base Store - initializeAsync():`, () => {
     await expect(initializationPromise).resolves.toBeUndefined()
   })
 
-  jest.retryTimes(5)
   it(`should get todo item from promise ajax call.`, async () => {
     const store = StoresFactory.createStore(null)
     const expectedResult = await geTodoItem()
@@ -104,7 +103,6 @@ describe(`Base Store - initializeAsync():`, () => {
     expect(store.value).toStrictEqual(expectedResult)
   })
 
-  jest.retryTimes(5)
   it(`should get todo item from observable ajax call.`, async () => {
     const store = StoresFactory.createStore(null)
     const expectedResult = await geTodoItem()

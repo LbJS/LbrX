@@ -8,18 +8,18 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   //#region constructor
 
   /**
-   * @param initialValue - Null as an initial state will activate stores loading state.
-   * @param storeConfig ? - Set this parameter only if you creating
-   * store's instance without extending it.
+   * Synchronous initialization.
+   */
+  constructor(initialValue: T[], storeConfig?: StoreConfigOptions)
+  /**
+   * Asynchronous or delayed initialization.
+   * The store will be set into loading state till initialization.
    */
   constructor(initialValue: null, storeConfig?: StoreConfigOptions)
   /**
-   * @param initialValue - Set all state's params for the initial value. Use Null for
-   * unneeded properties instead of undefined.
-   * @param storeConfig ?- Set this parameter only if you creating
-   * store's instance without extending it.
+   * Dynamic initialization.
    */
-  constructor(initialValue: T[], storeConfig?: StoreConfigOptions)
+  constructor(initialValue: T[] | null, storeConfig?: StoreConfigOptions)
   constructor(initialValueOrNull: T[] | null, storeConfig?: StoreConfigOptions) {
     super(initialValueOrNull, storeConfig)
   }
