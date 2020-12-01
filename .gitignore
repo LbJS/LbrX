@@ -16,7 +16,7 @@ coverage
 
 # Individual files
 spec/test-report.html
-spec/perdormance-test-report.html
+spec/performance-test-report.html
 playground/www/*.js
 
 # Temp / Cache folders
