@@ -16,7 +16,7 @@ describe(`List Store - value:`, () => {
     LbrXManager.enableProdMode()
   })
 
-  it(`should return the value in under 100 ms with 100 items.`, () => {
+  it(`should return the value in under 35 ms with 100 items.`, () => {
     const data = createTestSubjects()
     const store = StoresFactory.createListStore(data)
     const startTime = performance.now()
