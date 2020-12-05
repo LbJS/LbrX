@@ -1,7 +1,6 @@
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 
-// TODO: Work in progress...
 
 export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 

@@ -15,8 +15,9 @@ export class LbrXManager {
   private static _devToolsManager: DevToolsManager | null = null
 
   /**
-   * Enabling production mode will improve performance and
-   * will log errors instead of throwing them.
+   * Enabling production mode will improve performance.
+   * - Stores will not send the state to the development tools.
+   * - Values that were readonly at the store, will no longer be readonly in production mode.
    */
   public static enableProdMode(): typeof LbrXManager {
     enableProdMode()
