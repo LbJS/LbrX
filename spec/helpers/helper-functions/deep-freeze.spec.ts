@@ -98,4 +98,17 @@ describe(`Helper Function - deepFreeze():`, () => {
       deepFreeze(list)
     }).not.toThrow()
   })
+
+  it(`should not freeze inner props if 'Object.getOwnPropertyDescriptor' returns undefined.`, () => {
+    jest.spyOn(Object, `getOwnPropertyDescriptor`).mockReturnValue(undefined)
+    testSubject = TestSubjectFactory.createTestSubject_configA()
+    deepFreeze(testSubject)
+    expect(() => {
+      testSubject.stringValue = `some other string`
+    }).toThrow()
+    assertIsArray(testSubject.innerTestObjectGetSet?.deepNestedObj?.objectList)
+    expect(() => {
+      testSubject.innerTestObjectGetSet!.deepNestedObj!.objectList = []
+    }).toThrow()
+  })
 })
