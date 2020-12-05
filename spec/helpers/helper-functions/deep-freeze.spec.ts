@@ -69,4 +69,33 @@ describe(`Helper Function - deepFreeze():`, () => {
       testSubject.innerTestObjectGetSet!.deepNestedObj!.objectList = []
     }).toThrow()
   })
+
+  it(`should return the given object object.`, () => {
+    const list = TestSubjectFactory.createTestSubject_list_initial()
+    const returnedList = deepFreeze(list)
+    expect(returnedList).toBe(list)
+  })
+
+  it(`should not modify the values of the object.`, () => {
+    const list = TestSubjectFactory.createTestSubject_list_initial()
+    const returnedList = deepFreeze(list)
+    expect(list).toStrictEqual(TestSubjectFactory.createTestSubject_list_initial())
+    expect(returnedList).toStrictEqual(TestSubjectFactory.createTestSubject_list_initial())
+  })
+
+  it(`should freeze a list of objects.`, () => {
+    const list = TestSubjectFactory.createTestSubject_list_initial()
+    deepFreeze(list)
+    expect(() => {
+      list[5].stringValue = `123123`
+    }).toThrow()
+  })
+
+  it(`should not throw if freezing the same object twice.`, () => {
+    const list = TestSubjectFactory.createTestSubject_list_initial()
+    deepFreeze(list)
+    expect(() => {
+      deepFreeze(list)
+    }).not.toThrow()
+  })
 })
