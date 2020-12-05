@@ -104,6 +104,22 @@ describe(`Base Store - initialize(): `, () => {
     expect(store.value).toStrictEqual(createInitialValue())
   })
 
+  it(`should set the first element of the array as an instanced value when initializing a list store.`, () => {
+    const data = TestSubjectFactory.createTestSubject_list_initial()
+    data[0].stringValue = `Some Custom Value Here`
+    const store = StoresFactory.createListStore<TestSubject>(data)
+    const expectedData = TestSubjectFactory.createTestSubject_list_initial()
+    expectedData[0].stringValue = `Some Custom Value Here`
+    expect(store.instancedValue).toStrictEqual(expectedData[0])
+  })
+
+  // tslint:disable-next-line: max-line-length
+  it(`should throw if initializing a list store with an empty array, isClassHandler is configured and the instancedValue is not set.`, () => {
+    expect(() => {
+      StoresFactory.createListStore<TestSubject>([])
+    }).toThrow()
+  })
+
   it(`should set the last action to init.`, () => {
     const store = StoresFactory.createStore(null)
     store.initialize(createInitialValue())
