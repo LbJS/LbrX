@@ -1,5 +1,6 @@
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
-import { assertEqual, assertNotNullable } from '__test__/functions'
+import { assert, assertEqual, assertNotNullable } from '__test__/functions'
 import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
 describe(`Store - override():`, () => {
@@ -9,10 +10,12 @@ describe(`Store - override():`, () => {
   const createPlainStateA = () => TestSubjectFactory.createTestSubject_configA_plain()
   const createStateB = () => TestSubjectFactory.createTestSubject_configB()
   let StoresFactory: typeof StoresFactory_type
+  let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     StoresFactory = provider.StoresFactory
+    LbrXManager = provider.LbrXManager
   })
 
   it(`should override the store's state value.`, () => {
@@ -115,5 +118,30 @@ describe(`Store - override():`, () => {
     const actionName = `myAction`
     store.update(createStateA(), actionName)
     expect(store[`_lastAction`]).toBe(actionName)
+  })
+
+  it(`should freeze the new value.`, () => {
+    const store = StoresFactory.createStore(null)
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    store.initialize(createInitialState())
+    expect(freezeSpy).toBeCalledTimes(1)
+    const value = store[`_stateSource`][`value`] as TestSubject
+    assert(value)
+    expect(() => {
+      value.numberValue = -1111
+    }).toThrow()
+  })
+
+  it(`should not freeze the new value if not in devMode.`, () => {
+    LbrXManager.enableProdMode()
+    const store = StoresFactory.createStore(null)
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    store.initialize(createInitialState())
+    expect(freezeSpy).not.toBeCalled()
+    const value = store[`_stateSource`][`value`] as TestSubject
+    assert(value)
+    expect(() => {
+      value.numberValue = -1111
+    }).not.toThrow()
   })
 })

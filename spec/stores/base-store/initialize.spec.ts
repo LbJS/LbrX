@@ -1,6 +1,8 @@
 import { Actions, Storages, StoreTags } from 'lbrx'
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { timer } from 'rxjs'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
+import { assert } from '__test__/functions'
 import MockBuilder from '__test__/mock-builder'
 import { TestSubject } from '__test__/test-subjects'
 
@@ -8,11 +10,14 @@ describe(`Base Store - initialize(): `, () => {
 
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
   const createValueA = () => TestSubjectFactory.createTestSubject_configA()
+  const createInitialListValue = () => TestSubjectFactory.createTestSubject_list_initial()
   let StoresFactory: typeof StoresFactory_type
+  let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     StoresFactory = provider.StoresFactory
+    LbrXManager = provider.LbrXManager
     MockBuilder.addWindowMock()
       .addLocalStorageMock()
       .buildMocks()
@@ -75,7 +80,7 @@ describe(`Base Store - initialize(): `, () => {
     store.initialize(createInitialValue())
   })
 
-  it(`should use stored value if so configured.`, async () => {
+  it(`should use storage value if so configured.`, async () => {
     localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
     const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, storageType: Storages.local })
     store.setInstancedValue(createInitialValue())
@@ -84,7 +89,7 @@ describe(`Base Store - initialize(): `, () => {
     expect(store.value).toStrictEqual(createInitialValue())
   })
 
-  it(`should ignore class handler when using stored data if so configured.`, async () => {
+  it(`should ignore class handler when using storage data if so configured.`, async () => {
     localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
     const store = StoresFactory.createStore<TestSubject>(null,
       { name: `TEST-STORE`, storageType: Storages.local, isClassHandler: false })
@@ -94,7 +99,7 @@ describe(`Base Store - initialize(): `, () => {
     expect(store.value).toStrictEqual(JSON.parse(localStorage.getItem(`TEST-STORE`) as string))
   })
 
-  it(`should use initial value for instanced handling for stored value if so configured.`, async () => {
+  it(`should use initial value for instanced handling for storage value if so configured.`, async () => {
     localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialValue()))
     const store = StoresFactory.createStore<TestSubject>(null, { name: `TEST-STORE`, storageType: Storages.local })
     const instancedValue = createInitialValue()
@@ -104,11 +109,21 @@ describe(`Base Store - initialize(): `, () => {
     expect(store.value).toStrictEqual(createInitialValue())
   })
 
+  it(`should use initial value for instanced handling for storage value if so configured in list store.`, async () => {
+    localStorage.setItem(`TEST-STORE`, JSON.stringify(createInitialListValue()))
+    const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, storageType: Storages.local })
+    const instancedValue = createInitialListValue()
+    instancedValue[0].numberValue = -9999
+    store.initialize(instancedValue)
+    await timer(store.config.storageDebounceTime).toPromise()
+    expect(store.value).toStrictEqual(createInitialListValue())
+  })
+
   it(`should set the first element of the array as an instanced value when initializing a list store.`, () => {
-    const data = TestSubjectFactory.createTestSubject_list_initial()
+    const data = createInitialListValue()
     data[0].stringValue = `Some Custom Value Here`
     const store = StoresFactory.createListStore<TestSubject>(data)
-    const expectedData = TestSubjectFactory.createTestSubject_list_initial()
+    const expectedData = createInitialListValue()
     expectedData[0].stringValue = `Some Custom Value Here`
     expect(store.instancedValue).toStrictEqual(expectedData[0])
   })
@@ -116,8 +131,25 @@ describe(`Base Store - initialize(): `, () => {
   // tslint:disable-next-line: max-line-length
   it(`should throw if initializing a list store with an empty array, isClassHandler is configured and the instancedValue is not set.`, () => {
     expect(() => {
-      StoresFactory.createListStore<TestSubject>([])
+      const store = StoresFactory.createListStore<TestSubject>(null)
+      store.initialize([])
     }).toThrow()
+  })
+
+  // tslint:disable-next-line: max-line-length
+  it(`shouldn't throw if initializing a list store with an empty array, isClassHandler is configured and the instancedValue is set.`, () => {
+    expect(() => {
+      const store = StoresFactory.createListStore<TestSubject>(null)
+      store.setInstancedValue(createInitialValue())
+      store.initialize([])
+    }).not.toThrow()
+  })
+
+  it(`shouldn't throw if initializing a list store with an empty array and isClassHandler is not configured.`, () => {
+    expect(() => {
+      const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isClassHandler: false })
+      store.initialize([])
+    }).not.toThrow()
   })
 
   it(`should set the last action to init.`, () => {
@@ -132,4 +164,50 @@ describe(`Base Store - initialize(): `, () => {
     store.initialize(createInitialValue())
     expect(store.storeTag).toBe(StoreTags.active)
   })
+
+  it(`should freeze the value, the initial value and the instanced value if in devMode.`, () => {
+    const store = StoresFactory.createListStore<TestSubject>(null)
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    store.initialize(createInitialListValue())
+    expect(freezeSpy).toBeCalledTimes(1)
+    const value = store[`_stateSource`][`value`]
+    assert(value)
+    expect(() => {
+      value[0].numberValue = -1111
+    }).toThrow()
+    const initialValue = store[`_initialValue`]
+    assert(initialValue)
+    expect(() => {
+      initialValue[0].numberValue = -1111
+    }).toThrow()
+    const instancedValue = store[`_instancedValue`] as TestSubject
+    assert(instancedValue)
+    expect(() => {
+      instancedValue.numberValue = -1111
+    }).toThrow()
+  })
+
+  it(`shouldn't freeze the value, the initial value ot the instanced value if not in devMode.`, () => {
+    LbrXManager.enableProdMode()
+    const store = StoresFactory.createListStore<TestSubject>(null)
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    store.initialize(createInitialListValue())
+    expect(freezeSpy).not.toBeCalled()
+    const value = store[`_stateSource`][`value`]
+    assert(value)
+    expect(() => {
+      value[0].numberValue = -1111
+    }).not.toThrow()
+    const initialValue = store[`_initialValue`]
+    assert(initialValue)
+    expect(() => {
+      initialValue[0].numberValue = -1111
+    }).not.toThrow()
+    const instancedValue = store[`_instancedValue`] as TestSubject
+    assert(instancedValue)
+    expect(() => {
+      instancedValue.numberValue = -1111
+    }).not.toThrow()
+  })
 })
+

@@ -1,12 +1,15 @@
+import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Base Store - instancedValue:`, () => {
 
   let StoresFactory: typeof StoresFactory_type
+  let LbrXManager: typeof LbrXManager_type
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     StoresFactory = provider.StoresFactory
+    LbrXManager = provider.LbrXManager
   })
 
   it(`should be null before initialization.`, () => {
@@ -55,5 +58,22 @@ describe(`Base Store - instancedValue:`, () => {
       const value: any = store.instancedValue
       value.foo = `foo2`
     }).toThrow()
+  })
+
+  it(`shouldn't freeze the value if it's not devMode.`, () => {
+    LbrXManager.enableProdMode()
+    const newInstancedValue = {
+      foo: `foo`,
+      date: new Date(),
+    }
+    const store = StoresFactory.createStore({ foo: `foo` })
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    store.setInstancedValue(newInstancedValue)
+    expect(freezeSpy).not.toBeCalled()
+    expect(store.instancedValue).not.toBe(newInstancedValue)
+    expect(() => {
+      const value: any = store.instancedValue
+      value.foo = `foo2`
+    }).not.toThrow()
   })
 })

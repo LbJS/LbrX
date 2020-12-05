@@ -4,12 +4,13 @@ import fetch from 'node-fetch'
 import { from, of, throwError, timer } from 'rxjs'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { assert } from '__test__/functions'
-import { Todo } from '__test__/test-subjects'
+import { TestSubject, Todo } from '__test__/test-subjects'
 
 describe(`Base Store - initializeAsync():`, () => {
 
   const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
+  const createInitialListValue = () => TestSubjectFactory.createTestSubject_list_initial()
   let StoresFactory: typeof StoresFactory_type
 
   beforeEach(async () => {
@@ -121,5 +122,27 @@ describe(`Base Store - initializeAsync():`, () => {
     expect(store.storeTag).toBe(StoreTags.loading)
     await store.initializeAsync(Promise.resolve(createInitialValue()))
     expect(store.storeTag).toBe(StoreTags.active)
+  })
+
+  it(`should freeze the value, the initial value and the instanced value if in devMode.`, async () => {
+    const store = StoresFactory.createListStore<TestSubject>(null)
+    const freezeSpy = jest.spyOn(store, `_freeze` as any)
+    await store.initializeAsync(Promise.resolve(createInitialListValue()))
+    expect(freezeSpy).toBeCalledTimes(1)
+    const value = store[`_stateSource`][`value`]
+    assert(value)
+    expect(() => {
+      value[0].numberValue = -1111
+    }).toThrow()
+    const initialValue = store[`_initialValue`]
+    assert(initialValue)
+    expect(() => {
+      initialValue[0].numberValue = -1111
+    }).toThrow()
+    const instancedValue = store[`_instancedValue`] as TestSubject
+    assert(instancedValue)
+    expect(() => {
+      instancedValue.numberValue = -1111
+    }).toThrow()
   })
 })

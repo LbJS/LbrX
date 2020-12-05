@@ -418,7 +418,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    */
   public setInstancedValue(value: S): void {
     value = this._clone(value)
-    this._instancedValue = isDev() ? this._freeze(value) : value // TODO: spec branch
+    this._instancedValue = isDev() ? this._freeze(value) : value
   }
 
   /**
@@ -455,15 +455,15 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       }
     }
     if (!isValueFromStorage && !isValueFromOnBeforeInit) initialValue = this._clone(initialValue)
-    if (isDev()) initialValue = this._freeze(initialValue) // TODO: spec branch
+    if (isDev()) initialValue = this._freeze(initialValue)
     if (this._isResettable) this._initialValue = initialValue
     if (this._isClassHandler && !this._instancedValue) {
-      if (isArray(initialValue)) { // TODO: spec branch
+      if (isArray(initialValue)) {
         if (initialValue[0]) this._instancedValue = initialValue[0]
       } else {
         this._instancedValue = initialValue as Readonly<S>
       }
-      if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`) // TODO: spec branch
+      if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
     this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
@@ -570,7 +570,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       }
     }
     if (valueFnOrState.value
-      && isDev() // TODO: spec branch
+      && isDev()
       && actionName != Actions.init
       && actionName != Actions.initAsync
     ) {
