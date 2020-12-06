@@ -18,6 +18,7 @@ coverage
 spec/test-report.html
 spec/performance-test-report.html
 playground/www/*.js
+spec/performance-test-report.log.json
 
 # Temp / Cache folders
 temp

@@ -203,3 +203,10 @@ header {
   font-size: 1rem;
   padding: 0 0.5rem;
 }
+
+.performance-na {
+  color: #e6636b;
+}
+.performance-pending {
+  color: #efc52e;
+}

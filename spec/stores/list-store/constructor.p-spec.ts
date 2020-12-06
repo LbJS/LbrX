@@ -1,5 +1,4 @@
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { performance } from 'perf_hooks'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
 jest.retryTimes(5)
@@ -18,11 +17,8 @@ describe(`List Store - constructor():`, () => {
 
   it(`should initialize in under 35ms with 100 items.`, () => {
     const data = createTestSubjects()
-    const startTime = performance.now()
-    StoresFactory.createListStore(data)
-    const endTime = performance.now()
-    const result = endTime - startTime
-    // console.log(result)
-    expect(result).toBeLessThanOrEqual(35)
+    expect(() => {
+      StoresFactory.createListStore(data)
+    }).toFinishWithin(35)
   })
 })

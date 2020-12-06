@@ -43,7 +43,7 @@ module.exports = {
     '<rootDir>/build/'
   ],
   setupFilesAfterEnv: [
-    "<rootDir>/spec/__test__/setup/env.ts",
+    "<rootDir>/spec/__test__/setup/jasmine-env-add-reporter.ts",
     "<rootDir>/spec/__test__/setup/global-before-each.ts",
     "<rootDir>/spec/__test__/setup/global-after-each.ts",
   ],
