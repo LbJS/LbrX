@@ -38,7 +38,7 @@
           setNa(testDurationElem)
           continue
         }
-        if (!performanceLog.length) {
+        if (!performanceLog.length && !isSecondRun) {
           setPending(testDurationElem)
           continue
         }
@@ -53,7 +53,6 @@
       }
     }
   }
-
   await setPerformanceValues()
   await new Promise(resolve => setTimeout(resolve, 5000))
   await setPerformanceValues(true)

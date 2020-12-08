@@ -15,12 +15,12 @@ describe(`List Store - value:`, () => {
     LbrXManager.enableProdMode()
   })
 
-  it(`should return the value in under 35 ms with 100 items.`, () => {
+  it(`should return the value in under 15 ms with 100 items.`, () => {
     const data = createTestSubjects()
     const store = StoresFactory.createListStore(data)
     expect(() => {
       // tslint:disable-next-line: no-unused-expression
       store.value
-    }).toFinishWithin(35)
+    }).toFinishWithin(15)
   })
 })

@@ -40,7 +40,8 @@ module.exports = {
     '/spec/.*\\.spec.ts$'
   ],
   modulePathIgnorePatterns: [
-    '<rootDir>/build/'
+    '<rootDir>/build/',
+    '<rootDir>/spec/performance-test-report.log.json',
   ],
   setupFilesAfterEnv: [
     "<rootDir>/spec/__test__/setup/jasmine-env-add-reporter.ts",

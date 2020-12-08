@@ -1,5 +1,6 @@
 import { writeJsonSync } from 'fs-extra'
 import { resolve } from 'path'
+
 export default async (globalConfig: Record<string, any>) => {
   if (Array.isArray(globalConfig.reporters)
     && Array.isArray(globalConfig.reporters[1])
