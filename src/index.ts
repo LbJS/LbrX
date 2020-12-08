@@ -15,6 +15,9 @@ export { BaseStore, ListStore, Store } from './internal/stores'
 export {
   AdvancedConfigOptions,
   GlobalStoreConfigOptions,
+  ListStoreConfig,
+  ListStoreConfigCompleteInfo,
+  ListStoreConfigOptions,
   ObjectCompareTypes,
   Storages,
   StoreConfig,

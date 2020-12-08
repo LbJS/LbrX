@@ -10,8 +10,8 @@ export interface StoreConfigOptions extends BaseStoreConfigOptions {
    */
   name: string,
   /**
-   * Sets the key for the value.
-   * - If not configures, stores name will be used instead.
+   * Sets the Storage key.
+   * - If not configured, stores name will be used as a Storage key instead.
    * @default
    * key = "{storesName}"
    */

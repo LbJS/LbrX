@@ -291,6 +291,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     const config: StoreConfigCompleteInfo = cloneObject(this.constructor[STORE_CONFIG_KEY])
     if (!config) throwError(`Store must be provided with store configuration via decorator or via constructor.`)
+    // Cloning the Storage object is not desired, those reference copy is required.
     config.customStorageApi = this.constructor[STORE_CONFIG_KEY].customStorageApi
     delete this.constructor[STORE_CONFIG_KEY]
     const storeName = config.name

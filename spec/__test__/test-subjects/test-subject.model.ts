@@ -2,6 +2,7 @@ import { InnerTestSubject } from './inner-test-subject.model'
 
 export class TestSubject {
 
+  public id: any
   public stringValue: string | null
   public numberValue: number | null
   public booleanValue: boolean | null
@@ -30,6 +31,7 @@ export class TestSubject {
     getterSetterDate = null,
     innerTestObject = null,
     innerTestObjectGetSet = null,
+    id
   }: Partial<TestSubject>) {
     this.stringValue = stringValue
     this.numberValue = numberValue
@@ -38,5 +40,6 @@ export class TestSubject {
     this._getterSetterDate = getterSetterDate
     this.innerTestObject = innerTestObject
     this._innerTestObjectGetSet = innerTestObjectGetSet
+    if (typeof id != `undefined`) this.id = id
   }
 }

@@ -1,4 +1,4 @@
-import { cloneObject, isFunction, mergeObjects, throwError } from '../../helpers'
+import { isFunction, mergeObjects, throwError } from '../../helpers'
 import { Class } from '../../types'
 import { getGlobalStoreConfig } from './global-store-config'
 import { STORE_CONFIG_KEY } from './store-config-key'
@@ -8,7 +8,6 @@ export function StoreConfig(options: StoreConfigOptions): <T extends Class>(cons
   options = mergeObjects(getGlobalStoreConfig(), options) as StoreConfigOptions
   return <T extends Class>(constructor: T): void => {
     if (!isFunction(constructor)) throwError(`"@StoreConfig" decorator can decorate only a class!`)
-    constructor[STORE_CONFIG_KEY] = cloneObject(options)
-    constructor[STORE_CONFIG_KEY].customStorageApi = options.customStorageApi
+    constructor[STORE_CONFIG_KEY] = options
   }
 }

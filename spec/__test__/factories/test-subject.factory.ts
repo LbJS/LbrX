@@ -5,7 +5,9 @@ export class TestSubjectFactory {
   public static createTestSubject_list_initial(amount: number = 100): TestSubject[] {
     const result: TestSubject[] = []
     for (let i = 0; i < amount; i++) {
-      result.push(this.createTestSubject_initial())
+      const testSubject = this.createTestSubject_initial()
+      testSubject.id = i + 1
+      result.push(testSubject)
     }
     return result
   }

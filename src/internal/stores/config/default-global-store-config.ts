@@ -3,6 +3,8 @@ import { GlobalStoreConfigOptions } from './global-store-config-options.interfac
 import { ObjectCompareTypes } from './object-compare-types.enum'
 import { Storages } from './storages.enum'
 
+// TODO: default for list store
+
 export function getDefaultGlobalStoreConfig(): Required<GlobalStoreConfigOptions> {
   return {
     isResettable: true,
