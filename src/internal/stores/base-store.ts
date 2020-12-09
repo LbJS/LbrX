@@ -457,7 +457,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     if (!isValueFromStorage && !isValueFromOnBeforeInit) initialValue = this._clone(initialValue)
     if (isDev()) initialValue = this._freeze(initialValue)
-    if (this._isResettable) this._initialValue = initialValue
+    if (this._isResettable) this._initialValue = this._freeze(this._clone(initialValue))
     if (this._isClassHandler && !this._instancedValue) {
       if (isArray(initialValue)) {
         if (initialValue[0]) this._instancedValue = initialValue[0]
@@ -705,6 +705,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected onAfterInit?(currState: T): void | T
 
   /**
+   * @virtual Override to use `onAsyncInitSuccess` hook.
+   * - Will be called once data is received during async initialization.
+   * - Allows data manipulations like mapping and etc.
+   */
+  protected onAsyncInitSuccess?(result: T): void | T
+
+  /**
    * @virtual Override to use `onAsyncInitError` hook.
    * - Will be called if there is an error during async initialization.
    * - Allows error manipulation.
@@ -712,13 +719,6 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - If method returns void, the error will will not bubble further.
    */
   protected onAsyncInitError?(error: E): void | E
-
-  /**
-   * @virtual Override to use `onAsyncInitSuccess` hook.
-   * - Will be called once data is received during async initialization.
-   * - Allows data manipulations like mapping and etc.
-   */
-  protected onAsyncInitSuccess?(result: T): void | T
 
   /**
    * @virtual Override to use `onUpdate` hook.

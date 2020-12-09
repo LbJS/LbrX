@@ -1,7 +1,7 @@
 import { DevToolsManager } from '../dev-tools'
 import { DevtoolsOptions } from '../dev-tools/config'
 import { logError } from '../helpers'
-import { GlobalStoreConfigOptions, setGlobalStoreConfig } from '../stores/config'
+import { GlobalListStoreConfigOptions, GlobalStoreConfigOptions, setGlobalListStoreConfig, setGlobalStoreConfig } from '../stores/config'
 import { ZoneLike } from '../types'
 import { enableProdMode } from './lbrx-mode'
 import { enableStackTracingErrors } from './stack-tracing-errors'
@@ -69,6 +69,14 @@ export class LbrXManager {
    */
   public static setGlobalStoreConfig(options: GlobalStoreConfigOptions): typeof LbrXManager {
     setGlobalStoreConfig(options)
+    return LbrXManager
+  }
+
+  /**
+   * Sets global list store configuration for all stores.
+   */
+  public static setGlobalListStoreConfig(options: GlobalListStoreConfigOptions): typeof LbrXManager {
+    setGlobalListStoreConfig(options)
     return LbrXManager
   }
 

@@ -1,4 +1,4 @@
-import { ListStore, Store, StoreConfig, StoreConfigOptions } from 'lbrx'
+import { ListStore, ListStoreConfig, ListStoreConfigOptions, Store, StoreConfig, StoreConfigOptions } from 'lbrx'
 import { AllStoreHooks } from '__test__/types'
 
 export class StoresFactory {
@@ -88,7 +88,7 @@ export class StoresFactory {
   ): ListStore<T, E> & AllStoreHooks<T, E>
   public static createListStore<T extends object, E = any>(
     initialValue: T[] | null,
-    options: StoreConfigOptions
+    options: ListStoreConfigOptions<T>
   ): ListStore<T, E> & AllStoreHooks<T, E>
   public static createListStore<T extends object, E = any>(
     initialValue: T[] | null,
@@ -110,27 +110,27 @@ export class StoresFactory {
   ): ListStore<T, E>
   public static createListStore<T extends object, E = any>(
     initialValue: T[] | null,
-    options: StoreConfigOptions,
+    options: ListStoreConfigOptions<T>,
     withHooks: true
   ): ListStore<T, E> & AllStoreHooks<T, E>
   public static createListStore<T extends object, E = any>(
     initialValue: T[] | null,
-    options: StoreConfigOptions,
+    options: ListStoreConfigOptions<T>,
     withHooks: false
   ): ListStore<T, E>
   public static createListStore<T extends object, E = any>(
     initialValue: T[] | null,
-    storeNameOrWithHooksOrOptions?: string | boolean | StoreConfigOptions,
+    storeNameOrWithHooksOrOptions?: string | boolean | ListStoreConfigOptions<T>,
     withHooks?: boolean,
   ): ListStore<T, E> | ListStore<T, E> & AllStoreHooks<T, E> {
     const storeName = typeof storeNameOrWithHooksOrOptions == `string` ? storeNameOrWithHooksOrOptions : `TEST-STORE`
-    const options: StoreConfigOptions = typeof storeNameOrWithHooksOrOptions == `object` && storeNameOrWithHooksOrOptions ?
+    const options: ListStoreConfigOptions<T> = typeof storeNameOrWithHooksOrOptions == `object` && storeNameOrWithHooksOrOptions ?
       storeNameOrWithHooksOrOptions : { name: storeName }
     withHooks = typeof withHooks == `boolean` ?
       withHooks : typeof storeNameOrWithHooksOrOptions == `boolean` ?
         storeNameOrWithHooksOrOptions : false
     if (withHooks) {
-      @StoreConfig(options)
+      @ListStoreConfig(options)
       class TestStore extends ListStore<T, E> {
         constructor() {
           super(initialValue)
@@ -145,7 +145,7 @@ export class StoresFactory {
       }
       return new TestStore()
     } else {
-      @StoreConfig(options)
+      @ListStoreConfig(options)
       class TestStore extends ListStore<T, E> {
         constructor() {
           super(initialValue)

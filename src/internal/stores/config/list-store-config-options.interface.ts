@@ -7,20 +7,7 @@ export interface ListStoreConfigOptions<T extends object> extends StoreConfigOpt
   /**
    * Used for fast list's element access.
    * @default
-   * id = `id`
+   * id = null
    */
   id?: keyof T | null,
-  /**
-   * Enables/ disables list's `id` mapping for fast element access.
-   * @default
-   * useIdMapping = true
-   */
-  isIdMapping?: boolean,
-  /**
-   * Method for retrieving nested id value.
-   * - This method will be called only if configured.
-   * @default
-   * idRetrievalMethod = null
-   */
-  idRetrievalMethod?: ((obj: {}) => any) | null
 }

@@ -1,4 +1,4 @@
-import { assert } from '../helpers'
+import { assert, isObject, stringify, throwError } from '../helpers'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 
@@ -25,12 +25,6 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   /** @internal */
   protected readonly _id: keyof T | null
 
-  /** @internal */
-  protected readonly _idRetrievalMethod: ((obj: {}) => any) | null
-
-  /** @internal */
-  protected readonly _isIdMapping: boolean
-
   //#endregion config
   //#region constructor
 
@@ -51,20 +45,21 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
     super(initialValueOrNull, storeConfig)
     assert(this._config, `List Store configuration could not be resolved.`)
     const config = this._config
-    config.isIdMapping = !!config.isIdMapping
-    config.idRetrievalMethod = config.idRetrievalMethod ? config.idRetrievalMethod : null
     config.id = config.id ? config.id : null
-    this._isIdMapping = config.isIdMapping
-    if (config.isIdMapping) {
-      this._idRetrievalMethod = config.idRetrievalMethod
-      this._id = this._idRetrievalMethod ? null : config.id
-    } else {
-      this._id = null
-      this._idRetrievalMethod = null
-    }
+    this._id = config.id
   }
 
   //#endregion constructor
+  //#region helper-methods
+
+  /** @internal */
+  protected _assertValidId(value: any): void {
+    if (this._map.has(value)) {
+      throwError(`Store: "${this._config.name}" has been provided with duplicate id keys. Duplicate key: ${isObject(value) ? stringify(value) : value}.`)
+    }
+  }
+
+  //#endregion helper-methods
   //#region initialization-methods
 
   /** @internal */
@@ -72,24 +67,20 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
     super._initializeStore(initialValue, isAsync)
     const value = this._value
     assert(value, `Store: "${this._config.name}" could not be initialized with the given initial value.`)
-    this._mapSetList(value)
+    this._setMap(value)
   }
 
   //#endregion initialization-methods
   //#region state-methods
 
   /** @internal */
-  protected _mapSetList(initialValue: T[] | Readonly<T[]>): void {
-    if (this._isIdMapping) return
-    initialValue.forEach(x => {
-      this._mapSet(x)
+  protected _setMap(value: T[] | Readonly<T[]>): void {
+    const idKey = this._id
+    if (!idKey) return
+    value.forEach(x => {
+      this._assertValidId(x[idKey])
+      this._map.set(x[idKey], x)
     })
-  }
-
-  /** @internal */
-  protected _mapSet(value: T): void { // TODO: error handling for missing value in key
-    if (this._id) this._map.set(this._id, value)
-    else if (this._idRetrievalMethod) this._map.set(this._idRetrievalMethod(value), value)
   }
 
   //#endregion state-methods
