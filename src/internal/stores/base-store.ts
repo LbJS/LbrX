@@ -75,7 +75,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - Will throw if state's value is null.
    */
   public get value(): T | never {
-    assert(!!this._value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
+    assert(this._value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
     return this._clone(this._value)
   }
 
@@ -409,6 +409,11 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     return false
   }
 
+  /** @internal */
+  protected _cloneIfObject(value: any): any {
+    return isObject(value) ? this._clone(value) : value
+  }
+
   //#endregion helper-methods
   //#region utility-methods
 
@@ -457,7 +462,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     if (!isValueFromStorage && !isValueFromOnBeforeInit) initialValue = this._clone(initialValue)
     if (isDev()) initialValue = this._freeze(initialValue)
-    if (this._isResettable) this._initialValue = this._freeze(this._clone(initialValue))
+    if (this._isResettable) {
+      this._initialValue = this._clone(initialValue)
+      if (isDev()) this._initialValue = this._freeze(this._initialValue)
+    }
     if (this._isClassHandler && !this._instancedValue) {
       if (isArray(initialValue)) {
         if (initialValue[0]) this._instancedValue = initialValue[0]

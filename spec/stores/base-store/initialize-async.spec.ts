@@ -128,7 +128,7 @@ describe(`Base Store - initializeAsync():`, () => {
     const store = StoresFactory.createListStore<TestSubject>(null)
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     await store.initializeAsync(Promise.resolve(createInitialListValue()))
-    expect(freezeSpy).toBeCalledTimes(1)
+    expect(freezeSpy).toBeCalledTimes(2)
     const value = store[`_stateSource`][`value`]
     assert(value)
     expect(() => {

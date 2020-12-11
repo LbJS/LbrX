@@ -169,7 +169,7 @@ describe(`Base Store - initialize(): `, () => {
     const store = StoresFactory.createListStore<TestSubject>(null)
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     store.initialize(createInitialListValue())
-    expect(freezeSpy).toBeCalledTimes(1)
+    expect(freezeSpy).toBeCalledTimes(2)
     const value = store[`_stateSource`][`value`]
     assert(value)
     expect(() => {

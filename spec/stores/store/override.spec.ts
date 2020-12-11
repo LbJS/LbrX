@@ -124,7 +124,7 @@ describe(`Store - override():`, () => {
     const store = StoresFactory.createStore(null)
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     store.initialize(createInitialState())
-    expect(freezeSpy).toBeCalledTimes(1)
+    expect(freezeSpy).toBeCalledTimes(2)
     const value = store[`_stateSource`][`value`] as TestSubject
     assert(value)
     expect(() => {

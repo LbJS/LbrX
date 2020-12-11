@@ -57,27 +57,28 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion constructor
   //#region query-methods
 
+  protected _selectMapProject<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> {
+    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
+      if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
+        return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
+      }
+      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
+        return (value: Readonly<T>) => {
+          const result = {} as R;
+          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
+          return result
+        }
+      }
+    }
+    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+    if (isFunction(projectsOrKeys)) return projectsOrKeys
+    return (x: Readonly<T>) => x
+  }
+
   protected _select$<R, K extends keyof T>(
     projectsOrKeys?: ProjectsOrKeys<T, R>,
     action?: Actions | string
   ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    const mapProject: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = (() => {
-      if (isArray(projectsOrKeys) && projectsOrKeys.length) {
-        if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
-          return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
-        }
-        if ((<string[]>projectsOrKeys).every(x => isString(x))) {
-          return (value: Readonly<T>) => {
-            const result = {};
-            (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
-            return result
-          }
-        }
-      }
-      if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-      if (isFunction(projectsOrKeys)) return projectsOrKeys
-      return (x: Readonly<T>) => x
-    })()
     const takeWhilePredicate = () => {
       return !queryContext.isDisposed
     }
@@ -88,6 +89,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
         && !queryContext.isDisposed
         && !!value
     }
+    const mapProject = this._selectMapProject(projectsOrKeys)
     const queryContext: QueryContext = {
       wasHardReset: false,
       isDisposed: false,
@@ -103,35 +105,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
           }),
           tap(() => queryContext.wasHardReset = false),
-          map(x => isObject(x) ? this._clone(x) : x),
+          map(x => this._cloneIfObject(x)),
         )
     }
     this._queryContextsList.push(queryContext)
     return queryContext.observable
-  }
-
-  protected _update(
-    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
-    isMerge: boolean,
-    actionName: string,
-    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
-  ): void {
-    if (this.isPaused) return
-    assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
-    this._setState(value => {
-      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      const tmpValue = valueOrFunction
-      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
-      if (this._isClassHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
-        newValue = this._handleClasses(this._instancedValue, this._clone(newValue))
-      }
-      if (isFunction(onUpdate)) {
-        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
-        if (newModifiedValue) newValue = this._clone(newModifiedValue)
-      }
-      return tmpValue == newValue ? this._clone(newValue) : newValue
-    }, actionName)
   }
 
   /**
@@ -154,7 +132,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public select$<R>(project: (value: Readonly<T>) => R): Observable<R>
   /**
-   * Returns an array values as an Observable based on the provided projections methods.
+   * Returns an array values as an Observable based on the provided projection methods.
    * @example
    * weatherStore.select$([value => value.isRaining, value => value.precipitation])
    *   .subscribe(result => {
@@ -195,7 +173,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
   /**
-   * This is an dynamic overload. Use this approach only id necessary because it's not strongly typed.
+   * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
    * @example
    * function selectFactory(dynamic?) {
    *   return weatherStore.select$(dynamic?);
@@ -210,8 +188,84 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, action) }
   }
 
+  /**
+   * Returns the state's value.
+   * @example
+   * const value = weatherStore.select()
+   */
+  public select(): T
+  /**
+   * Returns the extracted partial state's value based on the provided projection method.
+   * @example
+   * const isRaining = weatherStore.select(value => value.isRaining)
+   */
+  public select<R>(project: (value: Readonly<T>) => R): R
+  /**
+   * Returns an array values based on the provided projection methods.
+   * @example
+   * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
+   */
+  public select<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): R[]
+  /**
+   * Returns an array values based on the provided projections methods.
+   * - This overload allows to manually define the return type.
+   * @example
+   * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
+   */
+  public select<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): R
+  /**
+   * Returns as single the state's value property based on the provided key.
+   * @example
+   * const precipitation = weatherStore.select('precipitation')
+   */
+  public select<K extends keyof T>(key: K): T[K]
+  /**
+   * Returns the extracted partial state's value based on the provided keys.
+   * @example
+   * const { precipitation, isRaining } = weatherStore.select(['precipitation', 'isRaining'])
+   */
+  public select<K extends keyof T>(keys: K[]): Pick<T, K>
+  /**
+   * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
+   * @example
+   * function selectFactory(dynamic?) {
+   *   return weatherStore.select(dynamic?);
+   * }
+   */
+  public select<R>(dynamic?: ProjectsOrKeys<T, R>): R
+  public select<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): T | R | R[] | T[K] | Pick<T, K> {
+    const mapProject = this._selectMapProject(projectsOrKeys)
+    assert(this._value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
+    const mappedValue = mapProject(this._value)
+    return this._cloneIfObject(mappedValue)
+  }
+
   //#endregion query-methods
   //#region write-methods
+
+  protected _update(
+    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
+    isMerge: boolean,
+    actionName: string,
+    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
+  ): void {
+    if (this.isPaused) return
+    assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
+    this._setState(value => {
+      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
+      const tmpValue = valueOrFunction
+      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
+      if (this._isClassHandler) {
+        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
+        newValue = this._handleClasses(this._instancedValue, this._clone(newValue))
+      }
+      if (isFunction(onUpdate)) {
+        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
+        if (newModifiedValue) newValue = this._clone(newModifiedValue)
+      }
+      return tmpValue == newValue ? this._clone(newValue) : newValue
+    }, actionName)
+  }
 
   /**
    * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
