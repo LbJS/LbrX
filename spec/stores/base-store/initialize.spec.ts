@@ -166,7 +166,7 @@ describe(`Base Store - initialize(): `, () => {
   })
 
   it(`should freeze the value, the initial value and the instanced value if in devMode.`, () => {
-    const store = StoresFactory.createListStore<TestSubject>(null)
+    const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isResettable: true })
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     store.initialize(createInitialListValue())
     expect(freezeSpy).toBeCalledTimes(2)
@@ -189,7 +189,7 @@ describe(`Base Store - initialize(): `, () => {
 
   it(`shouldn't freeze the value, the initial value ot the instanced value if not in devMode.`, () => {
     LbrXManager.enableProdMode()
-    const store = StoresFactory.createListStore<TestSubject>(null)
+    const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isResettable: true })
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     store.initialize(createInitialListValue())
     expect(freezeSpy).not.toBeCalled()

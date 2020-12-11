@@ -125,7 +125,7 @@ describe(`Base Store - initializeAsync():`, () => {
   })
 
   it(`should freeze the value, the initial value and the instanced value if in devMode.`, async () => {
-    const store = StoresFactory.createListStore<TestSubject>(null)
+    const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isResettable: true })
     const freezeSpy = jest.spyOn(store, `_freeze` as any)
     await store.initializeAsync(Promise.resolve(createInitialListValue()))
     expect(freezeSpy).toBeCalledTimes(2)
