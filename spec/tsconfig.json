@@ -70,6 +70,9 @@
       "__test__/mock-builder": [
         "__test__/mock-builder"
       ],
+      "__test__/extensions": [
+        "__test__/extensions"
+      ],
       "provider": [
         "__test__/module-provider"
       ],

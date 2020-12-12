@@ -1,6 +1,6 @@
 # ToDo ist
 
-- [ ] Refactor QueryContextList constructor dependencies.
+- [x] Refactor QueryContextList constructor dependencies.
 - [ ] Change `wasHardReset` to `doSkipOneChangeCheck`.
 - [ ] Hooks performance (remove clone).
 - [ ] Move all store's query methods to dedicated class.

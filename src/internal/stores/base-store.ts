@@ -257,7 +257,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region helper
 
   /** @internal */
-  protected readonly _queryContextsList: Array<QueryContext> & QueryContextsList = new QueryContextsList(this)
+  protected readonly _queryContextsList: Array<QueryContext> & QueryContextsList = new QueryContextsList({
+    isLazyInitContext: () => !!this._lazyInitContext,
+    initializeLazily: () => this._initializeLazily()
+  })
 
   /** @internal */
   protected _valueToStorageSub: Subscription | null = null

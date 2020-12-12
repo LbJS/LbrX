@@ -10,6 +10,7 @@ const config = Object.assign(JSON.parse(JSON.stringify(defaultConfig)), {
   setupFilesAfterEnv: [
     "<rootDir>/spec/__test__/setup/global-before-each.ts",
     "<rootDir>/spec/__test__/setup/global-after-each.ts",
+    "<rootDir>/spec/__test__/setup/global-after-each.performance.ts",
     "<rootDir>/spec/__test__/setup/global-before-all.performance.ts",
   ],
   globalSetup: '<rootDir>/spec/__test__/setup/jest-performance.setup.ts',

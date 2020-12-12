@@ -34,6 +34,7 @@ module.exports = {
     "^__test__/test-subjects$": "<rootDir>/spec/__test__/test-subjects",
     "^__test__/types$": "<rootDir>/spec/__test__/types",
     "^__test__/mock-builder$": "<rootDir>/spec/__test__/mock-builder",
+    "^__test__/extensions$": "<rootDir>/spec/__test__/extensions",
     "^provider$": "<rootDir>/spec/__test__/module-provider.ts",
   },
   testRegex: [

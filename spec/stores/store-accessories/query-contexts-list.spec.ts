@@ -1,4 +1,4 @@
-import { QueryContext, QueryContextsList as QueryContextList_type } from 'lbrx/internal/stores/store-accessories'
+import { QueryContext, QueryContextsList as QueryContextList_type, QueryContextsListApi } from 'lbrx/internal/stores/store-accessories'
 import { Observable } from 'rxjs'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
@@ -8,28 +8,31 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   const createQueryContext = () => ({ isDisposed: false, wasHardReset: false, observable: new Observable() })
   let QueryContextList: typeof QueryContextList_type
   let StoresFactory: typeof StoresFactory_type
+  let queryContextsListApi: QueryContextsListApi
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     QueryContextList = provider.QueryContextsList
     StoresFactory = provider.StoresFactory
+    queryContextsListApi = {
+      isLazyInitContext: () => false,
+      initializeLazily: () => { }
+    }
   })
 
-  it(`should require a store for the constructor.`, () => {
+  it(`should require a QueryContextsListApi for the constructor.`, () => {
     const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
-    expect(queryContextList[`_store`]).toBe(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
+    expect(queryContextList[`_queryContextsListApi`]).toBe(queryContextsListApi)
   })
 
   it(`should extend array.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     expect(queryContextList).toBeInstanceOf(Array)
   })
 
   it(`should return length of the query context list.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     expect(queryContextList.length).toBe(0)
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
@@ -37,49 +40,14 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should allow pushing query context.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     const queryContext = createQueryContext()
     queryContextList.push(queryContext)
     expect(queryContextList[0]).toBe(queryContext)
   })
 
-  it(`should invoke store's initializeAsync if lazyInitContext exists.`, () => {
-    const store = StoresFactory.createStore(null)
-    const initializeAsyncApy = jest.spyOn(store, `initializeAsync`)
-    const queryContextList = new QueryContextList(store)
-    store.initializeLazily(Promise.resolve({}))
-    const queryContext = createQueryContext()
-    queryContextList.push(queryContext)
-    expect(initializeAsyncApy).toBeCalledTimes(1)
-  })
-
-  it(`should invoke store's initializeAsync with resolve if lazyInitContext exists.`, async done => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
-    store.initializeLazily(Promise.resolve({ foo: `foo` }))
-      .then(x => {
-        expect(x).toBeUndefined()
-        done()
-      })
-    queryContextList.push(createQueryContext())
-  })
-
-  it(`should invoke store's initializeAsync with reject if lazyInitContext exists but initialization returned an error.`, async done => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
-    const error = new Error(`foo`)
-    store.initializeLazily(Promise.reject(error))
-      .catch(e => {
-        expect(e).toStrictEqual(error)
-        done()
-      })
-    queryContextList.push(createQueryContext())
-  })
-
   it(`should allow disposing a context by index.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     queryContextList.push(createQueryContext())
     const queryContext = createQueryContext()
     queryContextList.push(queryContext)
@@ -96,8 +64,7 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should ignore when disposing an element by index that doesn't exist.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
@@ -109,8 +76,7 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should allow disposing a context by observable.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     queryContextList.push(createQueryContext())
     const queryContext = createQueryContext()
     queryContextList.push(queryContext)
@@ -127,8 +93,7 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should ignore when disposing an element by observable that doesn't exist.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
@@ -141,8 +106,7 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should allow disposing all element at once.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     const numOfRequiredContexts = 3
     const contextsCacheList: QueryContext[] = []
     for (let i = 0; i < numOfRequiredContexts; i++) {
@@ -158,8 +122,7 @@ describe(`Store Accessories - QueryContextsList:`, () => {
   })
 
   it(`should allow updating all elements that there was a hard reset.`, () => {
-    const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(store)
+    const queryContextList = new QueryContextList(queryContextsListApi)
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())

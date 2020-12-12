@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
-import { BaseStore } from '../../base-store'
 import { QueryContext } from './query-context.interface'
+import { QueryContextsListApi } from './store-query-context-list-api.interface'
 
 export class QueryContextsList extends Array<QueryContext> {
 
@@ -8,12 +8,12 @@ export class QueryContextsList extends Array<QueryContext> {
     this.forEach(x => x.wasHardReset = value)
   }
 
-  constructor(private readonly _store: BaseStore<any, any>) {
+  constructor(private readonly _queryContextsListApi: QueryContextsListApi) {
     super()
   }
 
   public push(...items: QueryContext[]): number {
-    if (this._store[`_lazyInitContext`]) this._store[`_initializeLazily`]()
+    if (this._queryContextsListApi.isLazyInitContext()) this._queryContextsListApi.initializeLazily()
     return super.push(...items)
   }
 
