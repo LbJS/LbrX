@@ -633,7 +633,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
     return this._hardResetOrDestroy(() => {
-      this._queryContextsList.wasHardReset = true
+      this._queryContextsList.doSkipOneChangeCheck = true
       this._partialHardReset(Actions.loading)
     })
   }

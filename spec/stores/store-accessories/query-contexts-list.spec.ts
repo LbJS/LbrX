@@ -5,7 +5,7 @@ import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 describe(`Store Accessories - QueryContextsList:`, () => {
 
-  const createQueryContext = () => ({ isDisposed: false, wasHardReset: false, observable: new Observable() })
+  const createQueryContext = () => ({ isDisposed: false, doSkipOneChangeCheck: false, observable: new Observable() })
   let QueryContextList: typeof QueryContextList_type
   let StoresFactory: typeof StoresFactory_type
   let queryContextsListApi: QueryContextsListApi
@@ -126,9 +126,9 @@ describe(`Store Accessories - QueryContextsList:`, () => {
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
     queryContextList.push(createQueryContext())
-    queryContextList.wasHardReset = true
-    expect(queryContextList.every(x => x.wasHardReset)).toBeTruthy()
-    queryContextList.wasHardReset = false
-    expect(queryContextList.every(x => x.wasHardReset)).toBeFalsy()
+    queryContextList.doSkipOneChangeCheck = true
+    expect(queryContextList.every(x => x.doSkipOneChangeCheck)).toBeTruthy()
+    queryContextList.doSkipOneChangeCheck = false
+    expect(queryContextList.every(x => x.doSkipOneChangeCheck)).toBeFalsy()
   })
 })

@@ -53,7 +53,7 @@ describe(`Base Store - hardReset():`, () => {
     await store.hardReset()
     expect.assertions(3)
     store[`_queryContextsList`].forEach(x => {
-      expect(x.wasHardReset).toBeTruthy()
+      expect(x.doSkipOneChangeCheck).toBeTruthy()
     })
   })
 

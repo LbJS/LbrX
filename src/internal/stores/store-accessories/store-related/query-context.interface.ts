@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs'
 
 export interface QueryContext {
-  wasHardReset: boolean,
+  doSkipOneChangeCheck: boolean,
   isDisposed: boolean,
   observable: Observable<any>
 }

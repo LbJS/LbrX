@@ -91,7 +91,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     }
     const mapProject = this._selectMapProject(projectsOrKeys)
     const queryContext: QueryContext = {
-      wasHardReset: false,
+      doSkipOneChangeCheck: false,
       isDisposed: false,
       observable: this._value$.asObservable()
         .pipe(
@@ -101,10 +101,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
           filter(mainFilterPredicate),
           map(mapProject),
           distinctUntilChanged((prev, curr) => {
-            if (queryContext.wasHardReset) return false
+            if (queryContext.doSkipOneChangeCheck) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
           }),
-          tap(() => queryContext.wasHardReset = false),
+          tap(() => queryContext.doSkipOneChangeCheck = false),
           map(x => this._cloneIfObject(x)),
         )
     }

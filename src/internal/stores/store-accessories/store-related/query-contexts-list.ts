@@ -4,8 +4,8 @@ import { QueryContextsListApi } from './store-query-context-list-api.interface'
 
 export class QueryContextsList extends Array<QueryContext> {
 
-  public set wasHardReset(value: boolean) {
-    this.forEach(x => x.wasHardReset = value)
+  public set doSkipOneChangeCheck(value: boolean) {
+    this.forEach(x => x.doSkipOneChangeCheck = value)
   }
 
   constructor(private readonly _queryContextsListApi: QueryContextsListApi) {
