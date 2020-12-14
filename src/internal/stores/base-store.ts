@@ -2,7 +2,7 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextsList, State, StoreTags, Stringify } from './store-accessories'
@@ -46,7 +46,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /** @internal */
   protected readonly _state$ = new BehaviorSubject(this._state)
 
-  public readonly state$ = this._state$.asObservable().pipe(map(x => this._clone(x)))
+  public readonly state$: Observable<State<T, E>> = this._state$.asObservable().pipe(map(x => this._clone(x)))
 
   /**
    * @get Returns the state.
@@ -454,34 +454,38 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(value => storage.setItem(this._storageKey, this._stringify(value)))
     }
-    let isValueFromOnBeforeInit = false
     if (isFunction(this.onBeforeInit)) {
       const modifiedInitialValue: T | void = this.onBeforeInit(this._clone(initialValue))
       if (modifiedInitialValue) {
-        initialValue = this._clone(modifiedInitialValue)
+        initialValue = modifiedInitialValue
         isValueFromStorage = false
-        isValueFromOnBeforeInit = true
       }
     }
-    if (!isValueFromStorage && !isValueFromOnBeforeInit) initialValue = this._clone(initialValue)
-    if (isDev()) initialValue = this._freeze(initialValue)
     if (this._isResettable) {
       this._initialValue = this._clone(initialValue)
       if (isDev()) this._initialValue = this._freeze(this._initialValue)
     }
     if (this._isClassHandler && !this._instancedValue) {
-      if (isArray(initialValue)) {
-        if (initialValue[0]) this._instancedValue = initialValue[0]
+      if (this._initialValue) {
+        if (isArray(this._initialValue)) {
+          if (this._initialValue[0]) this._instancedValue = this._initialValue[0]
+        } else {
+          this._instancedValue = this._initialValue as Readonly<S>
+        }
       } else {
-        this._instancedValue = initialValue as Readonly<S>
+        if (isArray(initialValue)) {
+          if (initialValue[0]) this._instancedValue = this._freeze(initialValue[0])
+        } else {
+          this._instancedValue = this._freeze(initialValue) as Readonly<S>
+        }
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
-    this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false })
+    this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false }, /*doSkipClone*/ isValueFromStorage)
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
     if (isFunction(this.onAfterInit)) {
-      const modifiedValue: T | void = this.onAfterInit(this._clone(this._value))
-      if (modifiedValue) this._setState({ value: this._clone(modifiedValue) }, Actions.afterInitUpdate)
+      const modifiedValue: T | void = this.onAfterInit(this.value)
+      if (modifiedValue) this._setState({ value: modifiedValue }, Actions.afterInitUpdate)
     }
   }
 
@@ -572,24 +576,39 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected _setState(
     valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
     actionName: string | Actions,
-    stateExtension?: Partial<Omit<State<T, E>, 'value'>>
+    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>>,
+  ): void
+  protected _setState(
+    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
+    actionName: string | Actions,
+    doSkipClone?: boolean,
+  ): void
+  protected _setState(
+    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
+    actionName: string | Actions,
+    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>>,
+    doSkipClone?: boolean
+  ): void
+  protected _setState(
+    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
+    actionName: string | Actions,
+    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>> | boolean,
+    doSkipClone?: boolean
   ): void {
     if (this.isDestroyed) return
+    if (isBool(stateExtensionOrSkipClone)) doSkipClone = stateExtensionOrSkipClone
     if (isFunction(valueFnOrState)) {
       assert(this._value, `Store: "${this._storeName}" is missing state's value. This is usually caused by improper initialization of the store.`)
       valueFnOrState = {
         value: valueFnOrState(this._value)
       }
     }
-    if (valueFnOrState.value
-      && isDev()
-      && actionName != Actions.init
-      && actionName != Actions.initAsync
-    ) {
-      valueFnOrState.value = this._freeze(valueFnOrState.value)
+    if (valueFnOrState.value) {
+      if (!doSkipClone) valueFnOrState.value = this._clone(valueFnOrState.value)
+      if (isDev()) valueFnOrState.value = this._freeze(valueFnOrState.value)
     }
     this._lastAction = actionName
-    this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
+    this._state = objectAssign(this._state, valueFnOrState, isObject(stateExtensionOrSkipClone) ? stateExtensionOrSkipClone : null)
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
@@ -614,7 +633,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
       let modifiedInitialValue: T | void
       if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
-      return this._clone(modifiedInitialValue || initialValue)
+      return modifiedInitialValue || initialValue
     }, actionName || Actions.reset)
   }
 

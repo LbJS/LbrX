@@ -21,14 +21,8 @@ export function handleClasses<T extends object | object[], P extends object | ob
         plain = clonedMoment as P
       }
     } else if (isObject(plain)) {
-      if (instanced.constructor.length) {
-        plain = objectAssign(new instanced.constructor(plain), plain)
-        plain = new instanced.constructor(plain)
-      } else {
-        plain = objectAssign(new instanced.constructor(), plain)
-      }
       plain = instanced.constructor.length ?
-        new instanced.constructor(plain) :
+        objectAssign(new instanced.constructor(plain), plain) :
         objectAssign(new instanced.constructor(), plain)
     }
   } else if (isArray(plain)) {

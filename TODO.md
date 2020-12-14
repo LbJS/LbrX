@@ -2,8 +2,9 @@
 
 - [x] Refactor QueryContextList constructor dependencies.
 - [x] Change `wasHardReset` to `doSkipOneChangeCheck`.
-- [ ] Hooks performance (remove clone).
+- [x] Hooks performance (decrease clone).
+- [ ] Do clone hooks config.
 - [ ] Move all store's query methods to dedicated class.
-- [ ] Add transaction method.
 - [ ] OrderBy config option.
 - [ ] WeakMap StoreList for fast array access.
+- [ ] Add transaction method.
