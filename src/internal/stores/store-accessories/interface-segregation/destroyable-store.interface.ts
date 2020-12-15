@@ -4,6 +4,5 @@ import { BaseStore } from '../../base-store'
 export interface DestroyableStore<T extends object, S extends object, E = any> extends Pick<BaseStore<T, S, E>,
   'reset'
   | 'hardReset'
-  | 'disposeQueryContext'
   | 'destroy'
   > { }
