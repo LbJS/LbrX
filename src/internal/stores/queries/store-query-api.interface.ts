@@ -1,12 +1,12 @@
 import { Observable, Subject } from 'rxjs'
-import { Actions, Compare, QueryContext, QueryContextsList } from '../store-accessories'
+import { Actions, Compare, ObservableQueryContext, ObservableQueryContextsList } from '../store-accessories'
 
-export interface QueryStoreApi<T extends object> {
+export interface StoreQueryApi<T extends object> {
   getValue: () => Readonly<T> | null
   getLastAction: () => Actions | string | null
   value$: Subject<Readonly<T> | null>
   whenLoaded$: Observable<Readonly<T> | null>
-  queryContextsList: Array<QueryContext> & QueryContextsList
+  observableQueryContextsList: Array<ObservableQueryContext> & ObservableQueryContextsList
   compare: Compare
   cloneIfObject: (value: any) => any
 }

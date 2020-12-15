@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, Parse, PromiseContext, QueryContext, QueryContextsList, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, PromiseContext, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
   DestroyableStore<T, S, E>,
@@ -257,7 +257,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region helper
 
   /** @internal */
-  protected readonly _queryContextsList: Array<QueryContext> & QueryContextsList = new QueryContextsList({
+  protected readonly _observableQueryContextsList: Array<ObservableQueryContext> & ObservableQueryContextsList = new ObservableQueryContextsList({
     isLazyInitContext: () => !!this._lazyInitContext,
     initializeLazily: () => this._initializeLazily()
   })
@@ -430,13 +430,6 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._instancedValue = isDev() ? this._freeze(value) : value
   }
 
-  /**
-   * Disposes the observable by completing the observable and removing it from query context list.
-   */
-  public disposeQueryContext(observable: Observable<any>): boolean {
-    return this._queryContextsList.disposeByObservable(observable)
-  }
-
   //#endregion utility-methods
   //#region initialization-methods
 
@@ -553,7 +546,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   public initializeLazily(observable: Observable<T>): Promise<void>
   public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
   public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
-    if (this._queryContextsList.length) return this.initializeAsync(promiseOrObservable)
+    if (this._observableQueryContextsList.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
       if (this._lazyInitContext) {
@@ -652,7 +645,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     this._setState({ isHardResettings: true }, Actions.hardResetting)
     return this._hardResetOrDestroy(() => {
-      this._queryContextsList.doSkipOneChangeCheck = true
+      this._observableQueryContextsList.doSkipOneChangeCheck = true
       this._partialHardReset(Actions.loading)
     })
   }
@@ -670,7 +663,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         const prop = this[key]
         if (prop instanceof Subject) prop.complete()
       })
-      this._queryContextsList.disposeAll()
+      this._observableQueryContextsList.disposeAll()
       this._partialHardReset(Actions.destroy, /*isLoading*/ false)
       const storeName = this._storeName
       delete DevToolsAdapter.stores[storeName]

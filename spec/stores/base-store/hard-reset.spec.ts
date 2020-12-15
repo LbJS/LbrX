@@ -52,7 +52,7 @@ describe(`Base Store - hardReset():`, () => {
     store.select$().subscribe(() => { })
     await store.hardReset()
     expect.assertions(3)
-    store[`_queryContextsList`].forEach(x => {
+    store[`_observableQueryContextsList`].forEach(x => {
       expect(x.doSkipOneChangeCheck).toBeTruthy()
     })
   })

@@ -1,134 +1,134 @@
-import { QueryContext, QueryContextsList as QueryContextList_type, QueryContextsListApi } from 'lbrx/internal/stores/store-accessories'
+import { ObservableQueryContext, ObservableQueryContextsList as QuerySelectContextList_type, ObservableQueryContextsListApi } from 'lbrx/internal/stores/store-accessories'
 import { Observable } from 'rxjs'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
 
-describe(`Store Accessories - QueryContextsList:`, () => {
+describe(`Store Accessories - ObservableQueryContextsList:`, () => {
 
-  const createQueryContext = () => ({ isDisposed: false, doSkipOneChangeCheck: false, observable: new Observable() })
-  let QueryContextList: typeof QueryContextList_type
+  const createQuerySelectContext = () => ({ isDisposed: false, doSkipOneChangeCheck: false, observable: new Observable() })
+  let QuerySelectContextList: typeof QuerySelectContextList_type
   let StoresFactory: typeof StoresFactory_type
-  let queryContextsListApi: QueryContextsListApi
+  let ObservableQueryContextsListApi: ObservableQueryContextsListApi
 
   beforeEach(async () => {
     const provider = await import(`provider`)
-    QueryContextList = provider.QueryContextsList
+    QuerySelectContextList = provider.ObservableQueryContextsList
     StoresFactory = provider.StoresFactory
-    queryContextsListApi = {
+    ObservableQueryContextsListApi = {
       isLazyInitContext: () => false,
       initializeLazily: () => { }
     }
   })
 
-  it(`should require a QueryContextsListApi for the constructor.`, () => {
+  it(`should require a ObservableQueryContextsListApi for the constructor.`, () => {
     const store = StoresFactory.createStore(null)
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    expect(queryContextList[`_queryContextsListApi`]).toBe(queryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    expect(querySelectContextList[`_observableQueryContextsListApi`]).toBe(ObservableQueryContextsListApi)
   })
 
   it(`should extend array.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    expect(queryContextList).toBeInstanceOf(Array)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    expect(querySelectContextList).toBeInstanceOf(Array)
   })
 
   it(`should return length of the query context list.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    expect(queryContextList.length).toBe(0)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    expect(queryContextList.length).toBe(2)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    expect(querySelectContextList.length).toBe(0)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    expect(querySelectContextList.length).toBe(2)
   })
 
   it(`should allow pushing query context.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    const queryContext = createQueryContext()
-    queryContextList.push(queryContext)
-    expect(queryContextList[0]).toBe(queryContext)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContext = createQuerySelectContext()
+    querySelectContextList.push(querySelectContext)
+    expect(querySelectContextList[0]).toBe(querySelectContext)
   })
 
   it(`should allow disposing a context by index.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    queryContextList.push(createQueryContext())
-    const queryContext = createQueryContext()
-    queryContextList.push(queryContext)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    expect(queryContextList.length).toBe(4)
-    expect(queryContextList).toContain(queryContext)
-    expect(queryContext.isDisposed).toBeFalsy()
-    const result = queryContextList.disposeByIndex(1)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    querySelectContextList.push(createQuerySelectContext())
+    const querySelectContext = createQuerySelectContext()
+    querySelectContextList.push(querySelectContext)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    expect(querySelectContextList.length).toBe(4)
+    expect(querySelectContextList).toContain(querySelectContext)
+    expect(querySelectContext.isDisposed).toBeFalsy()
+    const result = querySelectContextList.disposeByIndex(1)
     expect(result).toBeTruthy()
-    expect(queryContextList.length).toBe(3)
-    expect(queryContextList).not.toContain(queryContext)
-    expect(queryContext.isDisposed).toBeTruthy()
+    expect(querySelectContextList.length).toBe(3)
+    expect(querySelectContextList).not.toContain(querySelectContext)
+    expect(querySelectContext.isDisposed).toBeTruthy()
   })
 
   it(`should ignore when disposing an element by index that doesn't exist.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    expect(queryContextList.length).toBe(3)
-    const result = queryContextList.disposeByIndex(3)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    expect(querySelectContextList.length).toBe(3)
+    const result = querySelectContextList.disposeByIndex(3)
     expect(result).toBeFalsy()
-    expect(queryContextList.length).toBe(3)
-    expect(queryContextList.every(x => !x.isDisposed)).toBeTruthy()
+    expect(querySelectContextList.length).toBe(3)
+    expect(querySelectContextList.every(x => !x.isDisposed)).toBeTruthy()
   })
 
   it(`should allow disposing a context by observable.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    queryContextList.push(createQueryContext())
-    const queryContext = createQueryContext()
-    queryContextList.push(queryContext)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    expect(queryContextList.length).toBe(4)
-    expect(queryContextList).toContain(queryContext)
-    expect(queryContext.isDisposed).toBeFalsy()
-    const result = queryContextList.disposeByObservable(queryContext.observable)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    querySelectContextList.push(createQuerySelectContext())
+    const querySelectContext = createQuerySelectContext()
+    querySelectContextList.push(querySelectContext)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    expect(querySelectContextList.length).toBe(4)
+    expect(querySelectContextList).toContain(querySelectContext)
+    expect(querySelectContext.isDisposed).toBeFalsy()
+    const result = querySelectContextList.disposeByObservable(querySelectContext.observable)
     expect(result).toBeTruthy()
-    expect(queryContextList.length).toBe(3)
-    expect(queryContextList).not.toContain(queryContext)
-    expect(queryContext.isDisposed).toBeTruthy()
+    expect(querySelectContextList.length).toBe(3)
+    expect(querySelectContextList).not.toContain(querySelectContext)
+    expect(querySelectContext.isDisposed).toBeTruthy()
   })
 
   it(`should ignore when disposing an element by observable that doesn't exist.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    expect(queryContextList.length).toBe(3)
-    const queryContext = createQueryContext()
-    const result = queryContextList.disposeByObservable(queryContext.observable)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    expect(querySelectContextList.length).toBe(3)
+    const querySelectContext = createQuerySelectContext()
+    const result = querySelectContextList.disposeByObservable(querySelectContext.observable)
     expect(result).toBeFalsy()
-    expect(queryContextList.length).toBe(3)
-    expect(queryContextList.every(x => !x.isDisposed)).toBeTruthy()
+    expect(querySelectContextList.length).toBe(3)
+    expect(querySelectContextList.every(x => !x.isDisposed)).toBeTruthy()
   })
 
   it(`should allow disposing all element at once.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
     const numOfRequiredContexts = 3
-    const contextsCacheList: QueryContext[] = []
+    const contextsCacheList: ObservableQueryContext[] = []
     for (let i = 0; i < numOfRequiredContexts; i++) {
-      const queryContext = createQueryContext()
-      contextsCacheList.push(queryContext)
-      queryContextList.push(queryContext)
+      const querySelectContext = createQuerySelectContext()
+      contextsCacheList.push(querySelectContext)
+      querySelectContextList.push(querySelectContext)
     }
-    expect(queryContextList.length).toBe(numOfRequiredContexts)
-    const result = queryContextList.disposeAll()
+    expect(querySelectContextList.length).toBe(numOfRequiredContexts)
+    const result = querySelectContextList.disposeAll()
     expect(result).toBe(numOfRequiredContexts)
-    expect(queryContextList.length).toBe(0)
+    expect(querySelectContextList.length).toBe(0)
     expect(contextsCacheList.every(x => x.isDisposed)).toBeTruthy()
   })
 
   it(`should allow updating all elements that there was a hard reset.`, () => {
-    const queryContextList = new QueryContextList(queryContextsListApi)
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    queryContextList.push(createQueryContext())
-    queryContextList.doSkipOneChangeCheck = true
-    expect(queryContextList.every(x => x.doSkipOneChangeCheck)).toBeTruthy()
-    queryContextList.doSkipOneChangeCheck = false
-    expect(queryContextList.every(x => x.doSkipOneChangeCheck)).toBeFalsy()
+    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.push(createQuerySelectContext())
+    querySelectContextList.doSkipOneChangeCheck = true
+    expect(querySelectContextList.every(x => x.doSkipOneChangeCheck)).toBeTruthy()
+    querySelectContextList.doSkipOneChangeCheck = false
+    expect(querySelectContextList.every(x => x.doSkipOneChangeCheck)).toBeFalsy()
   })
 })

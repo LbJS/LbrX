@@ -43,7 +43,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     whenLoaded$: this._whenLoaded$,
     compare: (objA: object, pbjB: object) => this._compare(objA, pbjB),
     cloneIfObject: (value: any) => this._cloneIfObject(value),
-    queryContextsList: this._queryContextsList
+    observableQueryContextsList: this._observableQueryContextsList
   })
 
   //#region constructor
@@ -192,6 +192,13 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   public select<R>(dynamic?: ProjectsOrKeys<T, R>): R
   public select<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): T | R | R[] | T[K] | Pick<T, K> {
     return this._query.select(projectsOrKeys)
+  }
+
+  /**
+   * Disposes the observable by completing the observable and removing it from query context list.
+   */
+  public disposeObservableQueryContext(observable: Observable<any>): boolean {
+    return this._query.disposeObservableQueryContext(observable)
   }
 
   //#endregion query-methods

@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 
-describe(`Base Store - disposeQueryContext():`, () => {
+describe(`Base Store - disposeObservableQueryContext():`, () => {
 
   let StoresFactory: typeof StoresFactory_type
 
@@ -16,10 +16,10 @@ describe(`Base Store - disposeQueryContext():`, () => {
     const observable = store.select$()
     store.select$()
     store.select$()
-    expect(store[`_queryContextsList`].length).toBe(4)
-    const result = store.disposeQueryContext(observable)
+    expect(store[`_observableQueryContextsList`].length).toBe(4)
+    const result = store.disposeObservableQueryContext(observable)
     expect(result).toBeTruthy()
-    expect(store[`_queryContextsList`].length).toBe(3)
+    expect(store[`_observableQueryContextsList`].length).toBe(3)
   })
 
   it(`should ignore when disposing an element by observable that doesn't exist.`, () => {
@@ -27,11 +27,11 @@ describe(`Base Store - disposeQueryContext():`, () => {
     store.select$()
     store.select$()
     store.select$()
-    expect(store[`_queryContextsList`].length).toBe(3)
+    expect(store[`_observableQueryContextsList`].length).toBe(3)
     const observable = new Observable()
-    const result = store.disposeQueryContext(observable)
+    const result = store.disposeObservableQueryContext(observable)
     expect(result).toBeFalsy()
-    expect(store[`_queryContextsList`].length).toBe(3)
+    expect(store[`_observableQueryContextsList`].length).toBe(3)
   })
 })
 

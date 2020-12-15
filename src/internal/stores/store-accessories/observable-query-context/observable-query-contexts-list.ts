@@ -1,19 +1,19 @@
 import { Observable } from 'rxjs'
-import { QueryContext } from './query-context.interface'
-import { QueryContextsListApi } from './store-query-context-list-api.interface'
+import { ObservableQueryContext } from './observable-query-context.interface'
+import { ObservableQueryContextsListApi } from './store-observable-query-context-list-api.interface'
 
-export class QueryContextsList extends Array<QueryContext> {
+export class ObservableQueryContextsList extends Array<ObservableQueryContext> {
 
   public set doSkipOneChangeCheck(value: boolean) {
     this.forEach(x => x.doSkipOneChangeCheck = value)
   }
 
-  constructor(private readonly _queryContextsListApi: QueryContextsListApi) {
+  constructor(private readonly _observableQueryContextsListApi: ObservableQueryContextsListApi) {
     super()
   }
 
-  public push(...items: QueryContext[]): number {
-    if (this._queryContextsListApi.isLazyInitContext()) this._queryContextsListApi.initializeLazily()
+  public push(...items: ObservableQueryContext[]): number {
+    if (this._observableQueryContextsListApi.isLazyInitContext()) this._observableQueryContextsListApi.initializeLazily()
     return super.push(...items)
   }
 
