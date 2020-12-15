@@ -269,7 +269,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected _asyncInitPromiseContext: PromiseContext | null = null
 
   /** @internal */
-  protected _lastAction: string | null = null
+  protected _lastAction: Actions | string | null = null
 
   /** @internal */
   protected _lazyInitContext: LazyInitContext<T> | null = null
