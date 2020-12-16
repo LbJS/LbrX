@@ -1,10 +1,9 @@
-import { Observable } from 'rxjs'
-import { filter, switchMap } from 'rxjs/operators'
-import { assert, isFunction } from '../helpers'
+import { iif, Observable, of } from 'rxjs'
+import { distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
+import { assert, isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Query } from './queries'
-import { Actions, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, ObservableQueryContext, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 
 /**
  * @example
@@ -36,16 +35,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       switchMap(() => this._value$),
     )
 
-  protected readonly _query: Query<T> = new Query<T>(this, {
-    getValue: () => this._value,
-    getLastAction: () => this._lastAction,
-    value$: this._value$,
-    whenLoaded$: this._whenLoaded$,
-    compare: (objA: object, pbjB: object) => this._compare(objA, pbjB),
-    cloneIfObject: (value: any) => this._cloneIfObject(value),
-    observableQueryContextsList: this._observableQueryContextsList
-  })
-
   //#region constructor
 
   /**
@@ -68,6 +57,60 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion constructor
   //#region query-methods
 
+  protected _selectMapProject<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> {
+    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
+      if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
+        return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
+      }
+      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
+        return (value: Readonly<T>) => {
+          const result = {} as R;
+          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
+          return result
+        }
+      }
+    }
+    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+    if (isFunction(projectsOrKeys)) return projectsOrKeys
+    return (x: Readonly<T>) => x
+  }
+
+  protected _select$<R, K extends keyof T>(
+    projectsOrKeys?: ProjectsOrKeys<T, R>,
+    action?: Actions | string
+  ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    const takeWhilePredicate = () => {
+      return !selectContext.isDisposed
+    }
+    const actionFilterPredicate = () => !action || action === this._lastAction
+    const iffCondition = () => this.isLoading && action != Actions.loading
+    const mainFilterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+      return !this.isPaused
+        && !selectContext.isDisposed
+        && !!value
+    }
+    const mapProject = this._selectMapProject(projectsOrKeys)
+    const selectContext: ObservableQueryContext = {
+      doSkipOneChangeCheck: false,
+      isDisposed: false,
+      observable: this._value$.asObservable()
+        .pipe(
+          takeWhile(takeWhilePredicate),
+          filter(actionFilterPredicate),
+          mergeMap(x => iif(iffCondition, this._whenLoaded$, of(x))),
+          filter(mainFilterPredicate),
+          map(mapProject),
+          distinctUntilChanged((prev, curr) => {
+            if (selectContext.doSkipOneChangeCheck) return false
+            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
+          }),
+          tap(() => selectContext.doSkipOneChangeCheck = false),
+          map(x => this._cloneIfObject(x)),
+        )
+    }
+    this._observableQueryContextsList.push(selectContext)
+    return selectContext.observable
+  }
 
   /**
    * Returns the state's value as an Observable.
@@ -138,11 +181,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<R>
   public select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>> {
-    return this._query.select$(projectsOrKeys)
+    return this._select$<R, K>(projectsOrKeys)
   }
 
   public onAction<R>(action: Actions | string): Pick<QueryableStore<T, E>, 'select$'> {
-    return this._query.onAction<R>(action)
+    return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, action) }
   }
 
   /**
@@ -191,14 +234,18 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public select<R>(dynamic?: ProjectsOrKeys<T, R>): R
   public select<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): T | R | R[] | T[K] | Pick<T, K> {
-    return this._query.select(projectsOrKeys)
+    const mapProject = this._selectMapProject(projectsOrKeys)
+    const value = this._value
+    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    const mappedValue = mapProject(value)
+    return this._cloneIfObject(mappedValue)
   }
 
   /**
    * Disposes the observable by completing the observable and removing it from query context list.
    */
   public disposeObservableQueryContext(observable: Observable<any>): boolean {
-    return this._query.disposeObservableQueryContext(observable)
+    return this._observableQueryContextsList.disposeByObservable(observable)
   }
 
   //#endregion query-methods
