@@ -29,12 +29,15 @@ import { Actions, ObservableQueryContext, ProjectsOrKeys, QueryableStore, Writea
  */
 export class Store<T extends object, E = any> extends BaseStore<T, T, E> implements QueryableStore<T, E>, WriteableStore<T, E> {
 
+  //#region helper-props
+
   protected readonly _whenLoaded$: Observable<Readonly<T> | null> = this.isLoading$
     .pipe(
       filter(x => !x),
       switchMap(() => this._value$),
     )
 
+  //#endregion helper-props
   //#region constructor
 
   /**
@@ -77,13 +80,14 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
 
   protected _select$<R, K extends keyof T>(
     projectsOrKeys?: ProjectsOrKeys<T, R>,
-    action?: Actions | string
+    actionOrActions?: Actions | string | (Actions | string)[]
   ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
     const takeWhilePredicate = () => {
       return !selectContext.isDisposed
     }
-    const actionFilterPredicate = () => !action || action === this._lastAction
-    const iffCondition = () => this.isLoading && action != Actions.loading
+    const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
+    const iffCondition = () => this.isLoading && (<(Actions | string)[]>actionOrActions)?.every(x => x !== Actions.loading)
     const mainFilterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
       return !this.isPaused
         && !selectContext.isDisposed
@@ -184,8 +188,20 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     return this._select$<R, K>(projectsOrKeys)
   }
 
-  public onAction<R>(action: Actions | string): Pick<QueryableStore<T, E>, 'select$'> {
-    return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, action) }
+  /**
+   * Will invoke the chained method only on the provided action.
+   * @example
+   * onAction('update').select$(projector)
+   */
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<T, E>, 'select$'>
+  /**
+   * Will invoke the chained method only on the provided action.
+   * @example
+   * onAction(['update', 'myCustomActionName']).select$(projector)
+   */
+  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'>
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'> {
+    return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, actionOrActions) }
   }
 
   /**
