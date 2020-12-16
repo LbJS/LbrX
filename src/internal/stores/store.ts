@@ -4,6 +4,7 @@ import { assert, isArray, isFunction, isObject, isString } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 import { Actions, ObservableQueryContext, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { StoreContext } from './store-context'
 
 /**
  * @example
@@ -320,4 +321,11 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   }
 
   //#endregion write-methods
+  //#region store-context
+
+  public getContext(saveChangesAction?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<T> {
+    return new StoreContext<T>(this, this._observableQueryContextsList, saveChangesAction || undefined, onAction)
+  }
+
+  //#endregion store-context
 }

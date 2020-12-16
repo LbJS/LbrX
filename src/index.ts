@@ -11,7 +11,7 @@ interface DevtoolsOptionsTemp extends DevtoolsOptions { }
  */
 const lbrXManager = LbrXManager
 
-export { BaseStore, ListStore, Store } from './internal/stores'
+export { BaseStore, ListStore, Store, StoreContext } from './internal/stores'
 export {
   AdvancedConfigOptions,
   GlobalStoreConfigOptions,
