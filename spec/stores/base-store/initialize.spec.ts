@@ -187,6 +187,13 @@ describe(`Base Store - initialize(): `, () => {
     }).toThrow()
   })
 
+  it(`should throw if the initial value is an array and instanced value is configured.`, () => {
+    const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isResettable: true })
+    expect(() => {
+      store.initialize([])
+    }).toThrow()
+  })
+
   it(`shouldn't freeze the value, the initial value ot the instanced value if not in devMode.`, () => {
     LbrXManager.enableProdMode()
     const store = StoresFactory.createListStore<TestSubject>(null, { name: `TEST-STORE`, isResettable: true })
