@@ -1,6 +1,6 @@
 import { getDefaultGlobalListStoreConfig as getDefaultGlobalListStoreConfig_type, getGlobalListStoreConfig as getGlobalListStoreConfig_type, setGlobalListStoreConfig as setGlobalListStoreConfig_type } from 'lbrx/internal/stores/config'
 
-describe(`Store Accessories - global store config:`, () => {
+describe(`Store Accessories - global list store config:`, () => {
 
   let getDefaultGlobalListStoreConfig: typeof getDefaultGlobalListStoreConfig_type
   let getGlobalListStoreConfig: typeof getGlobalListStoreConfig_type

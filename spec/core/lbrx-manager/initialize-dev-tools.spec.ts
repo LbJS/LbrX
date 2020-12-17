@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-describe(`LbrXManager setGlobalStoreConfig():`, () => {
+describe(`LbrXManager - setGlobalStoreConfig():`, () => {
 
   let LbrXManager: typeof LbrXManager_type
 

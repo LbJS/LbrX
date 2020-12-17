@@ -1,6 +1,6 @@
 import { isStackTracingErrors as isStackTracingErrors_type, LbrXManager as LbrXManager_type } from 'lbrx/internal/core'
 
-describe(`LbrXManager enableStackTracingErrors():`, () => {
+describe(`LbrXManager - enableStackTracingErrors():`, () => {
 
   let LbrXManager: typeof LbrXManager_type
   let isStackTracingErrors: typeof isStackTracingErrors_type

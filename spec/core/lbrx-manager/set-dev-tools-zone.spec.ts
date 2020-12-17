@@ -3,7 +3,7 @@ import { DevToolsManager } from 'lbrx/internal/dev-tools'
 import { ZoneLike } from 'lbrx/internal/types'
 import MockBuilder from '__test__/mock-builder'
 
-describe(`LbrXManager setDevToolsZone():`, () => {
+describe(`LbrXManager - setDevToolsZone():`, () => {
 
   let LbrXManager: typeof LbrXManager_type
   let zone: ZoneLike

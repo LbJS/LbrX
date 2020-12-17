@@ -1,24 +1,25 @@
 import { ObjectCompareTypes, Storages } from 'lbrx'
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
-import { getGlobalStoreConfig as getGlobalStoreConfig_type, GlobalStoreConfigOptions } from 'lbrx/internal/stores/config'
+import { getGlobalListStoreConfig as getGlobalListStoreConfig_type, GlobalListStoreConfigOptions } from 'lbrx/internal/stores/config'
 import { Parse, Stringify } from 'lbrx/internal/stores/store-accessories'
 
-describe(`LbrXManager - setGlobalStoreConfig():`, () => {
+describe(`LbrXManager - setGlobalListStoreConfig():`, () => {
 
   let LbrXManager: typeof LbrXManager_type
-  let getGlobalStoreConfig: typeof getGlobalStoreConfig_type
+  let getGlobalListStoreConfig: typeof getGlobalListStoreConfig_type
   let stringify: Stringify
   let parse: Parse
-  let defaultGlobalConfig: GlobalStoreConfigOptions
+  let defaultGlobalConfig: GlobalListStoreConfigOptions
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     LbrXManager = provider.LbrXManager
-    getGlobalStoreConfig = provider.getGlobalStoreConfig
+    getGlobalListStoreConfig = provider.getGlobalListStoreConfig
     stringify = provider.stringify
     parse = provider.parse
     defaultGlobalConfig = {
-      isResettable: true,
+      id: `id`,
+      isResettable: false,
       isSimpleCloning: false,
       isClassHandler: true,
       objectCompareType: ObjectCompareTypes.advanced,
@@ -33,16 +34,16 @@ describe(`LbrXManager - setGlobalStoreConfig():`, () => {
   })
 
   it(`should set global store configurations.`, () => {
-    const config: Partial<GlobalStoreConfigOptions> = {
+    const config: Partial<GlobalListStoreConfigOptions> = {
       objectCompareType: ObjectCompareTypes.simple
     }
     defaultGlobalConfig = Object.assign(defaultGlobalConfig, config)
-    LbrXManager.setGlobalStoreConfig(config)
-    expect(getGlobalStoreConfig()).toStrictEqual(defaultGlobalConfig)
+    LbrXManager.setGlobalListStoreConfig(config)
+    expect(getGlobalListStoreConfig()).toStrictEqual(defaultGlobalConfig)
   })
 
   it(`should return LbrXManager.`, () => {
-    const value = LbrXManager.setGlobalStoreConfig({})
+    const value = LbrXManager.setGlobalListStoreConfig({})
     expect(value).toStrictEqual(LbrXManager)
   })
 })
