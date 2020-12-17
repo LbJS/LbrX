@@ -315,8 +315,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion write-methods
   //#region store-context
 
-  public getContext(saveChangesAction?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<T> {
-    return new StoreContext<T>(this, this._observableQueryContextsList, saveChangesAction || undefined, onAction)
+  public getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<T> {
+    return new StoreContext<T>(this, this._observableQueryContextsList, saveChangesActionName || undefined, onAction)
   }
 
   //#endregion store-context
