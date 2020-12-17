@@ -430,6 +430,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     this._instancedValue = isDev() ? this._freeze(value) : value
   }
 
+  /**
+   * Disposes the observable by completing the observable and removing it from query context list.
+   */
+  public disposeObservableQueryContext(observable: Observable<any>): boolean {
+    return this._observableQueryContextsList.disposeByObservable(observable)
+  }
+
   //#endregion utility-methods
   //#region initialization-methods
 

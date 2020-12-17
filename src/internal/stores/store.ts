@@ -258,13 +258,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
     return this._cloneIfObject(mappedValue)
   }
 
-  /**
-   * Disposes the observable by completing the observable and removing it from query context list.
-   */
-  public disposeObservableQueryContext(observable: Observable<any>): boolean {
-    return this._observableQueryContextsList.disposeByObservable(observable)
-  }
-
   //#endregion query-methods
   //#region write-methods
 
