@@ -341,6 +341,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       if (advanced.cloneError) this._cloneError = advanced.cloneError
       if (advanced.merge) this._merge = advanced.merge
     }
+    if (isFunction(this.onConfigured)) this.onConfigured(config)
     //#endregion configuration-initialization
     //#region pre-state initialization procedure
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
@@ -719,6 +720,9 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   //#endregion reset-dispose-destroy-methods
   //#region hooks
+
+  /** @internal */
+  protected onConfigured?<C extends StoreConfigOptions>(config: C): void
 
   /**
    * @virtual Override to use `onBeforeInit` hook.

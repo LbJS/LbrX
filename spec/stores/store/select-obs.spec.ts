@@ -312,7 +312,7 @@ describe(`Store - select$():`, () => {
     })
   })
 
-  it(`should stope emitting values if the query context has been disposed.`, () => {
+  it(`should stop emitting values if the query context has been disposed.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const observable = store.select$()
     expect.assertions(1)

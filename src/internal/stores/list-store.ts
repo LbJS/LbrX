@@ -8,7 +8,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   //#region state
 
   /** @internal */
-  protected _map = new Map<any, T>()
+  protected _map!: Map<any, T>
 
   //#region state
   //#endregion config
@@ -23,7 +23,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
-  protected readonly _id: keyof T | null
+  protected _id!: keyof T | null
 
   //#endregion config
   //#region constructor
@@ -43,10 +43,13 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   constructor(initialValue: T[] | null, storeConfig?: ListStoreConfigOptions<T>)
   constructor(initialValueOrNull: T[] | null, storeConfig?: ListStoreConfigOptions<T>) {
     super(initialValueOrNull, storeConfig)
-    assert(this._config, `List Store configuration could not be resolved.`)
-    const config = this._config
+  }
+
+  /** @internal */
+  protected onConfigured(config: ListStoreConfigOptions<T>): void {
     config.id = config.id ? config.id : null
     this._id = config.id
+    this._map = new Map<any, T>()
   }
 
   //#endregion constructor
