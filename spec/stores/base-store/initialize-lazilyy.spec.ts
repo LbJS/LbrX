@@ -74,6 +74,13 @@ describe(`Base Store - initializeLazily():`, () => {
     await lazyInitPromise
   })
 
+  it(`should reject if promise is rejected.`, async () => {
+    const store = StoresFactory.createStore(null)
+    const lazyInitPromise = store.initializeLazily(Promise.reject(new Error()))
+    store.select$().subscribe(() => { })
+    await expect(lazyInitPromise).rejects.toBeDefined()
+  })
+
   it(`should reject if invoked twice - scenario 1.`, async () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
@@ -103,7 +110,6 @@ describe(`Base Store - initializeLazily():`, () => {
     await expect(store.initializeLazily(Promise.resolve(createInitialValue()))).rejects.toBeDefined()
   })
 
-  jest.retryTimes(5)
   it(`should get todo item from promise ajax call.`, async () => {
     const store = StoresFactory.createStore(null)
     const expectedResult = await geTodoItem()
@@ -113,7 +119,6 @@ describe(`Base Store - initializeLazily():`, () => {
     expect(store.value).toStrictEqual(expectedResult)
   })
 
-  jest.retryTimes(5)
   it(`should get todo item from observable ajax call.`, async () => {
     const store = StoresFactory.createStore(null)
     const expectedResult = await geTodoItem()

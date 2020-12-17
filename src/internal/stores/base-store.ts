@@ -493,13 +493,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected _initializeLazily(): void {
     const lazyInitContext = this._lazyInitContext
     if (lazyInitContext) {
+      this._lazyInitContext = null
       if (lazyInitContext.isCanceled) {
         lazyInitContext.resolve()
       } else {
         this.initializeAsync(lazyInitContext.value)
           .then(d => lazyInitContext.resolve(d))
           .catch(e => lazyInitContext.reject(e))
-        this._lazyInitContext = null
       }
     }
   }

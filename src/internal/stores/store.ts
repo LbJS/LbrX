@@ -88,7 +88,6 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
       return !selectContext.isDisposed
     }
     const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
-    const iffCondition = () => this.isLoading && (<(Actions | string)[]>actionOrActions)?.every(x => x !== Actions.loading)
     const mainFilterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
       return !this.isPaused
         && !selectContext.isDisposed
@@ -102,7 +101,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
         .pipe(
           takeWhile(takeWhilePredicate),
           filter(actionFilterPredicate),
-          mergeMap(x => iif(iffCondition, this._whenLoaded$, of(x))),
+          mergeMap(x => iif(() => this.isLoading, this._whenLoaded$, of(x))),
           filter(mainFilterPredicate),
           map(mapProject),
           distinctUntilChanged((prev, curr) => {
