@@ -47,6 +47,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected onConfigured(config: ListStoreConfigOptions<T>): void {
+    // TODO: refactor to constructor
     this._idKey = config.idKey = config.idKey || null
     this._map = new Map<any, T>()
   }
