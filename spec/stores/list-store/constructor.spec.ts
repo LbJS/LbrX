@@ -14,15 +14,48 @@ describe(`List Store - constructor():`, () => {
     LbrXManager.enableProdMode()
   })
 
-  it(`should allow setting the id to null.`, () => {
-    const store = StoresFactory.createListStore(null, { name: 'TEST-STORE', id: null })
-    expect(store.config.id).toBeNull()
+  it(`should allow setting the idKey to null.`, () => {
+    const store = StoresFactory.createListStore(null, { name: 'TEST-STORE', idKey: null })
+    expect(store.config.idKey).toBeNull()
+  })
+
+  it(`should insert items into the map if idKey is null.`, () => {
+    const store = StoresFactory.createListStore(createTestSubjects(), { name: 'TEST-STORE', idKey: null })
+    expect(store[`_map`].size).toBe(0)
   })
 
   it(`should throw if a duplicate id is found.`, () => {
     const data = [...createTestSubjects(), ...createTestSubjects()]
     expect(() => {
-      StoresFactory.createListStore(data, { name: 'TEST-STORE' })
+      StoresFactory.createListStore(data)
+    }).toThrow()
+  })
+
+  it(`should allow setting the idKey value to be a number or a string.`, () => {
+    let data = createTestSubjects()
+    let id = 0
+    data.forEach(x => x._id = ++id)
+    expect(() => {
+      StoresFactory.createListStore(data, { name: 'TEST-STORE1' })
+    }).not.toThrow()
+    data = createTestSubjects()
+    id = 0
+    data.forEach(x => x._id = (++id).toString())
+    expect(() => {
+      StoresFactory.createListStore(data, { name: 'TEST-STORE2' })
+    }).not.toThrow()
+  })
+
+  it(`should throw if the provided key is not an string or a number.`, () => {
+    let data = createTestSubjects()
+    data.forEach(x => x._id = {})
+    expect(() => {
+      StoresFactory.createListStore(data, { name: 'TEST-STORE1' })
+    }).toThrow()
+    data = createTestSubjects()
+    data.forEach(x => x._id = Symbol())
+    expect(() => {
+      StoresFactory.createListStore(data, { name: 'TEST-STORE2' })
     }).toThrow()
   })
 })

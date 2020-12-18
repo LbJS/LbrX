@@ -1,4 +1,4 @@
-import { assert, isObject, stringify, throwError } from '../helpers'
+import { assert, isNumber, isString, throwError } from '../helpers'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 
@@ -47,8 +47,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected onConfigured(config: ListStoreConfigOptions<T>): void {
-    config.idKey = config.idKey ? config.idKey : null
-    this._idKey = config.idKey
+    this._idKey = config.idKey = config.idKey || null
     this._map = new Map<any, T>()
   }
 
@@ -58,7 +57,9 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   /** @internal */
   protected _assertValidId(value: any): void {
     if (this._map.has(value)) {
-      throwError(`Store: "${this._config.name}" has been provided with duplicate id keys. Duplicate key: ${isObject(value) ? stringify(value) : value}.`)
+      throwError(`Store: "${this._config.name}" has been provided with duplicate id keys. Duplicate key: ${value}.`)
+    } else if (!isString(value) && !isNumber(value)) {
+      throwError(`Store: "${this._config.name}" has been provided with key that is not a string and nor a number.`)
     }
   }
 
