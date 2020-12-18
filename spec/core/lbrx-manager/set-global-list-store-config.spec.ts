@@ -18,7 +18,7 @@ describe(`LbrXManager - setGlobalListStoreConfig():`, () => {
     stringify = provider.stringify
     parse = provider.parse
     defaultGlobalConfig = {
-      id: `id`,
+      idKey: `_id`,
       isResettable: false,
       isSimpleCloning: false,
       isClassHandler: true,

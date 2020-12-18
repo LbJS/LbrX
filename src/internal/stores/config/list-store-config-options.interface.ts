@@ -7,7 +7,7 @@ export interface ListStoreConfigOptions<T extends object> extends StoreConfigOpt
   /**
    * Used for fast list's element access.
    * @default
-   * id = null
+   * idKey = '_id'
    */
-  id?: keyof T | null,
+  idKey?: keyof T | null,
 }

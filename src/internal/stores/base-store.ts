@@ -455,12 +455,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(value => storage.setItem(this._storageKey, this._stringify(value)))
     }
-    if (isFunction(this.onBeforeInit)) {
-      const modifiedInitialValue: T | void = this.onBeforeInit(this._clone(initialValue))
-      if (modifiedInitialValue) {
-        initialValue = modifiedInitialValue
-        isValueFromStorage = false
-      }
+    const modifiedInitialValue: T | void = this.onBeforeInit?.(this._clone(initialValue))
+    if (modifiedInitialValue) {
+      initialValue = modifiedInitialValue
+      isValueFromStorage = false
     }
     if (this._isResettable) {
       this._initialValue = this._clone(initialValue)
@@ -484,10 +482,8 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false }, /*doSkipClone*/ isValueFromStorage)
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
-    if (isFunction(this.onAfterInit)) {
-      const modifiedValue: T | void = this.onAfterInit(this.value)
-      if (modifiedValue) this._setState({ value: modifiedValue }, Actions.afterInitUpdate)
-    }
+    const modifiedValue: T | void = this.onAfterInit?.(this.value)
+    if (modifiedValue) this._setState({ value: modifiedValue }, Actions.afterInitUpdate)
   }
 
   /** @internal */
@@ -526,21 +522,25 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     asyncInitPromiseContext.promise = new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
       if (isObservable(promiseOrObservable)) promiseOrObservable = promiseOrObservable.toPromise()
+      let isRejected = false
       promiseOrObservable.then(r => {
         if (asyncInitPromiseContext.isCancelled) return
-        if (!this._assertInitializable(reject)) return
-        if (isFunction(this.onAsyncInitSuccess)) {
-          const modifiedResult = this.onAsyncInitSuccess(r)
-          if (modifiedResult) r = modifiedResult
+        if (!this._assertInitializable(reject)) {
+          isRejected = true
+          return
         }
-        this._initializeStore(r, true)
+        const modifiedResult = this.onAsyncInitSuccess?.(r)
+        this._initializeStore(modifiedResult || r, true)
       }).catch(e => {
         if (asyncInitPromiseContext.isCancelled) return
-        if (isFunction(this.onAsyncInitError)) {
-          e = this.onAsyncInitError(e)
+        if (isFunction(this.onAsyncInitError)) e = this.onAsyncInitError(e)
+        if (e) {
+          isRejected = true
+          reject(e)
         }
-        if (e) return reject(e)
-      }).finally(resolve)
+      }).finally(() => {
+        if (!isRejected) resolve()
+      })
     })
     return asyncInitPromiseContext.promise
   }
@@ -632,8 +632,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       assert(this.isInitialized, `Store: "${this._storeName}" can't be reseted before it was initialized.`)
       assert(initialValue, `Store: "${this._storeName}" is missing it's initial value. This is usually caused by improper initialization of the store.`)
       assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
-      let modifiedInitialValue: T | void
-      if (isFunction(this.onReset)) modifiedInitialValue = this.onReset(this._clone(initialValue), value)
+      const modifiedInitialValue = this.onReset?.(this._clone(initialValue), value)
       return modifiedInitialValue || initialValue
     }, actionName || Actions.reset)
   }

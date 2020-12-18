@@ -23,7 +23,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
-  protected _id!: keyof T | null
+  protected _idKey!: keyof T | null
 
   //#endregion config
   //#region constructor
@@ -47,8 +47,8 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected onConfigured(config: ListStoreConfigOptions<T>): void {
-    config.id = config.id ? config.id : null
-    this._id = config.id
+    config.idKey = config.idKey ? config.idKey : null
+    this._idKey = config.idKey
     this._map = new Map<any, T>()
   }
 
@@ -78,7 +78,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected _setMap(value: T[] | Readonly<T[]>): void {
-    const idKey = this._id
+    const idKey = this._idKey
     if (!idKey) return
     value.forEach(x => {
       this._assertValidId(x[idKey])
