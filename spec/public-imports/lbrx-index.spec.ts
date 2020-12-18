@@ -10,6 +10,7 @@ describe(`lbrx index:`, () => {
     expect(lbrx.Store).toBeTruthy()
     expect(lbrx.ListStore).toBeTruthy()
     expect(lbrx.StoreConfig).toBeTruthy()
+    expect(lbrx.StoreContext).toBeTruthy()
     expect(() => {
       lbrx.Actions.update
       lbrx.ObjectCompareTypes.simple
