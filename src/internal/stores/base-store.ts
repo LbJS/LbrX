@@ -257,10 +257,11 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region helper
 
   /** @internal */
-  protected readonly _observableQueryContextsList: Array<ObservableQueryContext> & ObservableQueryContextsList = new ObservableQueryContextsList({
-    isLazyInitContext: () => !!this._lazyInitContext,
-    initializeLazily: () => this._initializeLazily()
-  })
+  protected readonly _observableQueryContextsList: Array<ObservableQueryContext> & ObservableQueryContextsList
+    = new ObservableQueryContextsList({
+      isLazyInitContext: () => !!this._lazyInitContext,
+      initializeLazily: () => this._initializeLazily()
+    })
 
   /** @internal */
   protected _valueToStorageSub: Subscription | null = null
@@ -480,7 +481,12 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
-    this._setState({ value: initialValue }, isAsync ? Actions.initAsync : Actions.init, { isLoading: false }, /*doSkipClone*/ isValueFromStorage)
+    this._setState(
+      { value: initialValue },
+      isAsync ? Actions.initAsync : Actions.init,
+      { isLoading: false },
+      /*doSkipClone*/ isValueFromStorage
+    )
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
     const modifiedValue: T | void = this.onAfterInit?.(this.value)
     if (modifiedValue) this._setState({ value: modifiedValue }, Actions.afterInitUpdate)

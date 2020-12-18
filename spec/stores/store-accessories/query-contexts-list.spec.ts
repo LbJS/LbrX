@@ -8,13 +8,13 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   const createQuerySelectContext = () => ({ isDisposed: false, doSkipOneChangeCheck: false, observable: new Observable() })
   let QuerySelectContextList: typeof QuerySelectContextList_type
   let StoresFactory: typeof StoresFactory_type
-  let ObservableQueryContextsListApi: ObservableQueryContextsListApi
+  let observableQueryContextsListApi: ObservableQueryContextsListApi
 
   beforeEach(async () => {
     const provider = await import(`provider`)
     QuerySelectContextList = provider.ObservableQueryContextsList
     StoresFactory = provider.StoresFactory
-    ObservableQueryContextsListApi = {
+    observableQueryContextsListApi = {
       isLazyInitContext: () => false,
       initializeLazily: () => { }
     }
@@ -22,17 +22,17 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
 
   it(`should require a ObservableQueryContextsListApi for the constructor.`, () => {
     const store = StoresFactory.createStore(null)
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
-    expect(querySelectContextList[`_observableQueryContextsListApi`]).toBe(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
+    expect(querySelectContextList[`_observableQueryContextsListApi`]).toBe(observableQueryContextsListApi)
   })
 
   it(`should extend array.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     expect(querySelectContextList).toBeInstanceOf(Array)
   })
 
   it(`should return length of the query context list.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     expect(querySelectContextList.length).toBe(0)
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
@@ -40,14 +40,14 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should allow pushing query context.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     const querySelectContext = createQuerySelectContext()
     querySelectContextList.push(querySelectContext)
     expect(querySelectContextList[0]).toBe(querySelectContext)
   })
 
   it(`should allow disposing a context by index.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     querySelectContextList.push(createQuerySelectContext())
     const querySelectContext = createQuerySelectContext()
     querySelectContextList.push(querySelectContext)
@@ -64,7 +64,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should ignore when disposing an element by index that doesn't exist.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
@@ -76,7 +76,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should allow disposing a context by observable.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     querySelectContextList.push(createQuerySelectContext())
     const querySelectContext = createQuerySelectContext()
     querySelectContextList.push(querySelectContext)
@@ -93,7 +93,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should ignore when disposing an element by observable that doesn't exist.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
@@ -106,7 +106,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should allow disposing all element at once.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     const numOfRequiredContexts = 3
     const contextsCacheList: ObservableQueryContext[] = []
     for (let i = 0; i < numOfRequiredContexts; i++) {
@@ -122,7 +122,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   })
 
   it(`should allow updating all elements that there was a hard reset.`, () => {
-    const querySelectContextList = new QuerySelectContextList(ObservableQueryContextsListApi)
+    const querySelectContextList = new QuerySelectContextList(observableQueryContextsListApi)
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())
     querySelectContextList.push(createQuerySelectContext())

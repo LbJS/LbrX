@@ -61,7 +61,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion constructor
   //#region query-methods
 
-  protected _selectMapProject<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> {
+  protected _selectMapProject<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>):
+    (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> {
     if (isArray(projectsOrKeys) && projectsOrKeys.length) {
       if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
         return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))

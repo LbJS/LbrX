@@ -15,12 +15,12 @@ describe(`List Store - constructor():`, () => {
   })
 
   it(`should allow setting the idKey to null.`, () => {
-    const store = StoresFactory.createListStore(null, { name: 'TEST-STORE', idKey: null })
+    const store = StoresFactory.createListStore(null, { name: `TEST-STORE`, idKey: null })
     expect(store.config.idKey).toBeNull()
   })
 
   it(`should insert items into the map if idKey is null.`, () => {
-    const store = StoresFactory.createListStore(createTestSubjects(), { name: 'TEST-STORE', idKey: null })
+    const store = StoresFactory.createListStore(createTestSubjects(), { name: `TEST-STORE`, idKey: null })
     expect(store[`_map`].size).toBe(0)
   })
 
@@ -36,13 +36,13 @@ describe(`List Store - constructor():`, () => {
     let id = 0
     data.forEach(x => x._id = ++id)
     expect(() => {
-      StoresFactory.createListStore(data, { name: 'TEST-STORE1' })
+      StoresFactory.createListStore(data, { name: `TEST-STORE1` })
     }).not.toThrow()
     data = createTestSubjects()
     id = 0
     data.forEach(x => x._id = (++id).toString())
     expect(() => {
-      StoresFactory.createListStore(data, { name: 'TEST-STORE2' })
+      StoresFactory.createListStore(data, { name: `TEST-STORE2` })
     }).not.toThrow()
   })
 
@@ -50,12 +50,12 @@ describe(`List Store - constructor():`, () => {
     let data = createTestSubjects()
     data.forEach(x => x._id = {})
     expect(() => {
-      StoresFactory.createListStore(data, { name: 'TEST-STORE1' })
+      StoresFactory.createListStore(data, { name: `TEST-STORE1` })
     }).toThrow()
     data = createTestSubjects()
     data.forEach(x => x._id = Symbol())
     expect(() => {
-      StoresFactory.createListStore(data, { name: 'TEST-STORE2' })
+      StoresFactory.createListStore(data, { name: `TEST-STORE2` })
     }).toThrow()
   })
 })
