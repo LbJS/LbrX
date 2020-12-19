@@ -10,7 +10,7 @@ export class StoreContext<T extends object> {
   protected _selectObservable: Observable<T> | null = null
   protected _isDisposed: boolean = false
 
-  public isDisposed(): boolean {
+  public get isDisposed(): boolean {
     return this._isDisposed
   }
 
