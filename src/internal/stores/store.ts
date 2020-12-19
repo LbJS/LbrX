@@ -55,7 +55,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   constructor(initialValue: T | null, storeConfig?: StoreConfigOptions)
   constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
-    super(initialValueOrNull, storeConfig)
+    super(storeConfig)
+    this._preInit(initialValueOrNull)
   }
 
   //#endregion constructor

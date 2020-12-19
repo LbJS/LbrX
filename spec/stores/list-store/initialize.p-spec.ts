@@ -17,7 +17,7 @@ describe(`List Store - initialize():`, () => {
 
   it(`should initialize in under 25ms with 100 items.`, () => {
     const data = createTestSubjects()
-    const store = StoresFactory.createListStore(null, { name: `TEST-STORE`, id: `id` })
+    const store = StoresFactory.createListStore(null, { name: `TEST-STORE`, idKey: `_id` })
     expect(() => {
       store.initialize(data)
     }).toFinishWithin(25)

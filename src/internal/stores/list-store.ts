@@ -8,7 +8,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   //#region state
 
   /** @internal */
-  protected _map!: Map<any, T>
+  protected readonly _map: Map<any, T> = new Map()
 
   //#region state
   //#endregion config
@@ -23,7 +23,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
-  protected _idKey!: keyof T | null
+  protected readonly _idKey: keyof T | null
 
   //#endregion config
   //#region constructor
@@ -42,14 +42,10 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
    */
   constructor(initialValue: T[] | null, storeConfig?: ListStoreConfigOptions<T>)
   constructor(initialValueOrNull: T[] | null, storeConfig?: ListStoreConfigOptions<T>) {
-    super(initialValueOrNull, storeConfig)
-  }
-
-  /** @internal */
-  protected onConfigured(config: ListStoreConfigOptions<T>): void {
-    // TODO: refactor to constructor
+    super(storeConfig)
+    const config = this._config
     this._idKey = config.idKey = config.idKey || null
-    this._map = new Map<any, T>()
+    this._preInit(initialValueOrNull)
   }
 
   //#endregion constructor

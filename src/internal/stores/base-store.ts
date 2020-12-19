@@ -290,7 +290,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#endregion helpers
   //#region constructor
 
-  constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
+  constructor(storeConfig?: StoreConfigOptions) {
     //#region configuration-initialization
     if (storeConfig) StoreConfig(storeConfig)(this.constructor as Class)
     const config: StoreConfigCompleteInfo = cloneObject(this.constructor[STORE_CONFIG_KEY])
@@ -342,16 +342,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       if (advanced.cloneError) this._cloneError = advanced.cloneError
       if (advanced.merge) this._merge = advanced.merge
     }
-    if (isFunction(this.onConfigured)) this.onConfigured(config)
     //#endregion configuration-initialization
-    //#region pre-state initialization procedure
-    if (isUndefined(initialValueOrNull)) throwError(`Store: "${storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
-    if (isNull(initialValueOrNull)) {
-      this._setState({ isLoading: true }, Actions.loading)
-    } else {
-      this._initializeStore(initialValueOrNull, false)
-    }
-    //#endregion pre-state initialization procedure
   }
 
   //#endregion constructor
@@ -441,6 +432,16 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   //#endregion utility-methods
   //#region initialization-methods
+
+  /** @internal */
+  protected _preInit(initialValueOrNull: T | null): void {
+    if (isUndefined(initialValueOrNull)) throwError(`Store: "${this._storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
+    if (isNull(initialValueOrNull)) {
+      this._setState({ isLoading: true }, Actions.loading)
+    } else {
+      this._initializeStore(initialValueOrNull, false)
+    }
+  }
 
   /** @internal */
   protected _initializeStore(initialValue: T, isAsync: boolean): void {
@@ -725,9 +726,6 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
 
   //#endregion reset-dispose-destroy-methods
   //#region hooks
-
-  /** @internal */
-  protected onConfigured?<C extends StoreConfigOptions>(config: C): void
 
   /**
    * @virtual Override to use `onBeforeInit` hook.
