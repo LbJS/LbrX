@@ -202,6 +202,10 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    * onAction(['update', 'myCustomActionName']).select$(projector)
    */
   public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'>
+  /**
+   * Dynamic overload.
+   */
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'>
   public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'> {
     return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, actionOrActions) }
   }

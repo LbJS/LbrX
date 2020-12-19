@@ -21,7 +21,7 @@ export class StoreContext<T extends object> {
   }
 
   public get value$(): Observable<T> {
-    const observable = this._onAction ? this._store.onAction(this._onAction as any).select$() : this._store.select$()
+    const observable = this._onAction ? this._store.onAction(this._onAction).select$() : this._store.select$()
     const queryContext = this._queryContextList.find(x => x.observable == observable)
     assert(queryContext, `StoreContext: "${this._store.config.name}" has encountered an critical error while handling the query context observable.`)
     queryContext.observable = queryContext.observable.pipe(tap(x => this._lastValue = x))

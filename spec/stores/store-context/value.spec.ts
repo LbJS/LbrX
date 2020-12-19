@@ -2,7 +2,7 @@
 import { StoreContext as StoreContext_type } from 'lbrx'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
-describe(`Store - getContext():`, () => {
+describe(`StoreContext - value:`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let StoresFactory: typeof StoresFactory_type
@@ -14,15 +14,11 @@ describe(`Store - getContext():`, () => {
     StoreContext = provider.StoreContext
   })
 
-  it(`should return an instance of StoreContext.`, () => {
+  it(`should return store's state value bt invoking the select method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    expect(store.getContext()).toBeInstanceOf(StoreContext)
-  })
-
-  it(`should return a new instance of StoreContext.`, () => {
-    const store = StoresFactory.createStore(createInitialState())
-    const storeContext1 = store.getContext()
-    const storeContext2 = store.getContext()
-    expect(storeContext1).not.toBe(storeContext2)
+    const selectSpy = jest.spyOn(store, `select`)
+    const storeContext = store.getContext()
+    expect(storeContext.value).toStrictEqual(createInitialState())
+    expect(selectSpy).toBeCalledTimes(1)
   })
 })
