@@ -14,20 +14,21 @@ export class StoreContext<T extends object> {
     return this._isDisposed
   }
 
-
   public get value(): T {
-    this._lastValue = this._store.select()
-    return this._lastValue
+    const value = this._store.select()
+    if (!this._isDisposed) this._lastValue = value
+    return value
   }
 
   public get value$(): Observable<T> {
     const observable = this._onAction ? this._store.onAction(this._onAction).select$() : this._store.select$()
-    const queryContext = this._queryContextList.find(x => x.observable == observable)
-    assert(queryContext, `StoreContext: "${this._store.config.name}" has encountered an critical error while handling the query context observable.`)
-    queryContext.observable = queryContext.observable.pipe(tap(x => this._lastValue = x))
-    this._selectObservable = queryContext.observable
-    if (this._isDisposed) this.dispose()
-    return this._selectObservable
+    if (!this._isDisposed) {
+      const queryContext = this._queryContextList.find(x => x.observable == observable)
+      assert(queryContext, `StoreContext: on "${this._store.config.name}" has encountered an critical error while handling the query context observable.`)
+      queryContext.observable = queryContext.observable.pipe(tap(x => this._lastValue = x))
+      this._selectObservable = queryContext.observable
+    }
+    return this._selectObservable || observable
   }
 
   constructor(
@@ -38,7 +39,7 @@ export class StoreContext<T extends object> {
   ) { }
 
   public saveChanges(): void {
-    assert(this._lastValue && this._isDisposed, `StoreContext: "${this._store.config.name}" can't save changes before at least one value has been resolved or after the context is disposed.`)
+    assert(this._lastValue && !this._isDisposed, `StoreContext: "${this._store.config.name}" can't save changes before at least one value has been resolved or after the context is disposed.`)
     this._store.update(this._lastValue, this._saveChangesAction)
   }
 

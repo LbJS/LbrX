@@ -14,10 +14,19 @@ describe(`StoreContext - value:`, () => {
     StoreContext = provider.StoreContext
   })
 
-  it(`should return store's state value bt invoking the select method.`, () => {
+  it(`should return store's state value by invoking the select method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const selectSpy = jest.spyOn(store, `select`)
     const storeContext = store.getContext()
+    expect(storeContext.value).toStrictEqual(createInitialState())
+    expect(selectSpy).toBeCalledTimes(1)
+  })
+
+  it(`should return store's state value by invoking the select method even id disposed.`, () => {
+    const store = StoresFactory.createStore(createInitialState())
+    const selectSpy = jest.spyOn(store, `select`)
+    const storeContext = store.getContext()
+    storeContext.dispose()
     expect(storeContext.value).toStrictEqual(createInitialState())
     expect(selectSpy).toBeCalledTimes(1)
   })
