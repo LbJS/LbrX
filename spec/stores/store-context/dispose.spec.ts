@@ -2,7 +2,7 @@
 import { StoreContext as StoreContext_type } from 'lbrx'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
-describe(`StoreContext - value$:`, () => {
+describe(`StoreContext - dispose():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let StoresFactory: typeof StoresFactory_type
