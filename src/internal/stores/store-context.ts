@@ -45,7 +45,10 @@ export class StoreContext<T extends object> {
 
   public dispose(): void {
     this._lastValue = null
-    if (this._selectObservable) this._store.disposeObservableQueryContext(this._selectObservable)
+    if (this._selectObservable) {
+      this._store.disposeObservableQueryContext(this._selectObservable)
+      this._selectObservable = null
+    }
     this._isDisposed = true
   }
 }
