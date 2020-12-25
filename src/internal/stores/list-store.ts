@@ -1,4 +1,4 @@
-import { isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
+import { ClearableWeakMap, isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { SetStateParam, State } from './store-accessories'
@@ -12,13 +12,17 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   protected readonly _idItemMap: Map<string | number, T> = new Map()
 
   /** @internal */
-  protected readonly _itemIndexMap: WeakMap<T, number> = new WeakMap()
+  protected readonly _itemIndexMap: ClearableWeakMap<T, number> = new ClearableWeakMap()
 
   /** @internal */
   protected set _state(value: State<T[], E>) {
-    if (value.value && !this._idItemMap.size) {
-      if (!this._idItemMap.size) this._setIdItemMap(value.value)
-      this._setItemIndexMap(value.value)
+    if (value.value) {
+      if (!this._value) {
+        this._cleanMaps()
+        this._setMaps(value.value)
+      }
+    } else {
+      this._cleanMaps()
     }
     super._state = value
   }
@@ -98,6 +102,20 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
+  protected _cleanMaps(): void {
+    this._idItemMap.clear()
+    this._itemIndexMap.clear()
+  }
+
+  /** @internal */
+  protected _setMaps(value: T[] | Readonly<T[]>): void
+  protected _setMaps(value: T | Readonly<T>, index: number): void
+  protected _setMaps(value: T[] | Readonly<T[]> | T | Readonly<T>, index?: number): void {
+    this._setIdItemMap(value)
+    this._setItemIndexMap(value as any, index as any)
+  }
+
+  /** @internal */
   protected _setIdItemMap(value: T[] | Readonly<T[]> | T | Readonly<T>): void {
     const idKey = this._idKey
     if (!idKey) return
@@ -109,6 +127,10 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
     else setPredicate(value as T)
   }
 
+  /** @internal */
+
+  protected _setItemIndexMap(value: T[] | Readonly<T[]>): void
+  protected _setItemIndexMap(value: T | Readonly<T>, index: number): void
   protected _setItemIndexMap(value: T[] | Readonly<T[]> | T | Readonly<T>, index?: number): void {
     if (isArray(value)) value.forEach((x, i) => this._itemIndexMap.set(x, i))
     else if (isNumber(index)) this._itemIndexMap.set(value as T, index)
