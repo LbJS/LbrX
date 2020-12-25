@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, PromiseContext, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
   DestroyableStore<T, S, E>,
@@ -105,7 +105,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     return this._stateSource.isPaused
   }
   public set isPaused(value: boolean) {
-    this._setState({ isPaused: value }, value ? Actions.paused : Actions.unpause)
+    this._setState({ valueFnOrState: { isPaused: value }, actionName: value ? Actions.paused : Actions.unpause })
   }
 
   /**
@@ -189,7 +189,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     } else if (isObject(value)) {
       value = this._clone(value)
     }
-    this._setState({ error: value }, Actions.error)
+    this._setState({ valueFnOrState: { error: value }, actionName: Actions.error })
   }
 
   //#endregion error-api
@@ -437,7 +437,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected _preInit(initialValueOrNull: T | null): void {
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${this._storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
     if (isNull(initialValueOrNull)) {
-      this._setState({ isLoading: true }, Actions.loading)
+      this._setState({ valueFnOrState: { isLoading: true }, actionName: Actions.loading })
     } else {
       this._initializeStore(initialValueOrNull, false)
     }
@@ -482,15 +482,15 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
     }
-    this._setState(
-      { value: initialValue },
-      isAsync ? Actions.initAsync : Actions.init,
-      { isLoading: false },
-      /*doSkipClone*/ isValueFromStorage
-    )
+    this._setState({
+      valueFnOrState: { value: initialValue },
+      actionName: isAsync ? Actions.initAsync : Actions.init,
+      stateExtension: { isLoading: false },
+      doSkipClone: isValueFromStorage
+    })
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
     const modifiedValue: T | void = this.onAfterInit?.(this.value)
-    if (modifiedValue) this._setState({ value: modifiedValue }, Actions.afterInitUpdate)
+    if (modifiedValue) this._setState({ valueFnOrState: { value: modifiedValue }, actionName: Actions.afterInitUpdate })
   }
 
   /** @internal */
@@ -581,30 +581,15 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region state-methods
 
   /** @internal */
-  protected _setState(
-    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
-    actionName: string | Actions,
-    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>>,
-  ): void
-  protected _setState(
-    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
-    actionName: string | Actions,
-    doSkipClone?: boolean,
-  ): void
-  protected _setState(
-    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
-    actionName: string | Actions,
-    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>>,
-    doSkipClone?: boolean
-  ): void
-  protected _setState(
-    valueFnOrState: ((stateValue: Readonly<T>) => T) | Partial<State<T, E>>,
-    actionName: string | Actions,
-    stateExtensionOrSkipClone?: Partial<Omit<State<T, E>, 'value'>> | boolean,
-    doSkipClone?: boolean
-  ): void {
+  protected _setState({
+    valueFnOrState,
+    actionName,
+    stateExtension,
+    doSkipClone,
+    doSkipFreeze,
+  }: SetStateParam<T, E>): void {
     if (this.isDestroyed) return
-    if (isBool(stateExtensionOrSkipClone)) doSkipClone = stateExtensionOrSkipClone
+    if (isBool(stateExtension)) doSkipClone = stateExtension
     if (isFunction(valueFnOrState)) {
       assert(this._value, `Store: "${this._storeName}" is missing state's value. This is usually caused by improper initialization of the store.`)
       valueFnOrState = {
@@ -613,10 +598,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     }
     if (valueFnOrState.value) {
       if (!doSkipClone) valueFnOrState.value = this._clone(valueFnOrState.value)
-      if (isDev()) valueFnOrState.value = this._freeze(valueFnOrState.value)
+      if (isDev() && !doSkipFreeze) valueFnOrState.value = this._freeze(valueFnOrState.value)
     }
     this._lastAction = actionName
-    this._state = objectAssign(this._state, valueFnOrState, isObject(stateExtensionOrSkipClone) ? stateExtensionOrSkipClone : null)
+    this._state = objectAssign(this._state, valueFnOrState, stateExtension || null)
     if (isDevTools()) {
       DevToolsAdapter.stateChange$.next({
         storeName: this._storeName,
@@ -634,14 +619,17 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    */
   public reset(actionName?: string): void | never {
     if (this.isPaused) return
-    this._setState(value => {
-      const initialValue = this._initialValue
-      assert(this.isInitialized, `Store: "${this._storeName}" can't be reseted before it was initialized.`)
-      assert(initialValue, `Store: "${this._storeName}" is missing it's initial value. This is usually caused by improper initialization of the store.`)
-      assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
-      const modifiedInitialValue = this.onReset?.(this._clone(initialValue), value)
-      return modifiedInitialValue || initialValue
-    }, actionName || Actions.reset)
+    this._setState({
+      valueFnOrState: value => {
+        const initialValue = this._initialValue
+        assert(this.isInitialized, `Store: "${this._storeName}" can't be reseted before it was initialized.`)
+        assert(initialValue, `Store: "${this._storeName}" is missing it's initial value. This is usually caused by improper initialization of the store.`)
+        assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
+        const modifiedInitialValue = this.onReset?.(this._clone(initialValue), value)
+        return modifiedInitialValue || initialValue
+      },
+      actionName: actionName || Actions.reset
+    })
   }
 
   /**
@@ -657,7 +645,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     if (!this._isResettable) {
       return Promise.reject(new Error(`Store: "${this._storeName}" is not configured as resettable.`))
     }
-    this._setState({ isHardResettings: true }, Actions.hardResetting)
+    this._setState({ valueFnOrState: { isHardResettings: true }, actionName: Actions.hardResetting })
     return this._hardResetOrDestroy(() => {
       this._observableQueryContextsList.doSkipOneChangeCheck = true
       this._partialHardReset(Actions.loading)
@@ -698,12 +686,14 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       this._lazyInitContext = null
     }
     this._setState({
-      value: null,
-      error: null,
-      isPaused: false,
-      isHardResettings: false,
-      isLoading,
-    }, action)
+      valueFnOrState: {
+        value: null,
+        error: null,
+        isPaused: false,
+        isHardResettings: false,
+        isLoading,
+      }, actionName: action
+    })
   }
 
   protected _hardResetOrDestroy(executor: () => void): Promise<this> {

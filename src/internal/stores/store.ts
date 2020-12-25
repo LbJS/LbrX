@@ -274,19 +274,21 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   ): void {
     if (this.isPaused) return
     assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
-    this._setState(value => {
-      valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-      let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
-      if (this._isClassHandler) {
-        assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
-        newValue = this._handleClasses(this._instancedValue, newValue)
-      }
-      if (isFunction(onUpdate)) {
-        const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
-        if (newModifiedValue) newValue = isMerge ? this._clone(newModifiedValue) : newModifiedValue
-      }
-      return newValue
-    }, actionName, /*doSkipClone*/ isMerge)
+    this._setState({
+      valueFnOrState: value => {
+        valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
+        let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
+        if (this._isClassHandler) {
+          assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
+          newValue = this._handleClasses(this._instancedValue, newValue)
+        }
+        if (isFunction(onUpdate)) {
+          const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
+          if (newModifiedValue) newValue = isMerge ? this._clone(newModifiedValue) : newModifiedValue
+        }
+        return newValue
+      }, actionName, doSkipClone: isMerge
+    })
   }
 
   /**

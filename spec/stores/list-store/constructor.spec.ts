@@ -21,7 +21,7 @@ describe(`List Store - constructor():`, () => {
 
   it(`should insert items into the map if idKey is null.`, () => {
     const store = StoresFactory.createListStore(createTestSubjects(), { name: `TEST-STORE`, idKey: null })
-    expect(store[`_map`].size).toBe(0)
+    expect(store[`_idItemMap`].size).toBe(0)
   })
 
   it(`should throw if a duplicate id is found.`, () => {

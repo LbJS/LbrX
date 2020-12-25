@@ -1,6 +1,7 @@
-import { assert, isNumber, isString, throwError } from '../helpers'
+import { assert, isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
+import { SetStateParam } from './store-accessories'
 
 
 export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
@@ -8,7 +9,10 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   //#region state
 
   /** @internal */
-  protected readonly _map: Map<any, T> = new Map()
+  protected readonly _idItemMap: Map<string | number, T> = new Map()
+
+  /** @internal */
+  protected readonly _itemIndexMap: WeakMap<T, number> = new WeakMap()
 
   //#region state
   //#endregion config
@@ -52,12 +56,13 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   //#region helper-methods
 
   /** @internal */
-  protected _assertValidId(value: any): void {
-    if (this._map.has(value)) {
+  protected _assertValidId(value: any): value is string | number {
+    if (this._idItemMap.has(value)) {
       throwError(`Store: "${this._config.name}" has been provided with duplicate id keys. Duplicate key: ${value}.`)
     } else if (!isString(value) && !isNumber(value)) {
       throwError(`Store: "${this._config.name}" has been provided with key that is not a string and nor a number.`)
     }
+    return true
   }
 
   //#endregion helper-methods
@@ -68,19 +73,44 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
     super._initializeStore(initialValue, isAsync)
     const value = this._value
     assert(value, `Store: "${this._config.name}" could not be initialized with the given initial value.`)
-    this._setMap(value)
+    this._setIdItemMap(value)
+    value.forEach((x, i) => this._setItemIndexMap(x, i))
   }
 
   //#endregion initialization-methods
   //#region state-methods
 
   /** @internal */
-  protected _setMap(value: T[] | Readonly<T[]>): void {
+  protected _setIdItemMap(value: T[] | Readonly<T[]> | T | Readonly<T>): void {
     const idKey = this._idKey
     if (!idKey) return
-    value.forEach(x => {
-      this._assertValidId(x[idKey])
-      this._map.set(x[idKey], x)
+    const setPredicate = (x: T) => {
+      const y = x[idKey]
+      if (this._assertValidId(y)) this._idItemMap.set(y, x)
+    }
+    if (isArray(value)) value.forEach(setPredicate)
+    else setPredicate(value as T)
+  }
+
+  /** @internal */
+  protected _setItemIndexMap(value: T | Readonly<T>, index: number): void {
+    this._itemIndexMap.set(value, index)
+  }
+
+  /** @internal */
+  protected _setState({
+    valueFnOrState,
+    actionName,
+    stateExtension,
+    doSkipClone,
+    doSkipFreeze,
+  }: SetStateParam<T[], E>): void {
+    super._setState({
+      valueFnOrState,
+      actionName,
+      stateExtension,
+      doSkipClone: isUndefined(doSkipClone) ? false : doSkipClone,
+      doSkipFreeze: isUndefined(doSkipFreeze) ? false : doSkipFreeze,
     })
   }
 
