@@ -1,7 +1,7 @@
-import { assert, isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
+import { isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
-import { SetStateParam } from './store-accessories'
+import { SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
@@ -13,6 +13,18 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected readonly _itemIndexMap: WeakMap<T, number> = new WeakMap()
+
+  /** @internal */
+  protected set _state(value: State<T[], E>) {
+    if (value.value && !this._idItemMap.size) {
+      if (!this._idItemMap.size) this._setIdItemMap(value.value)
+      this._setItemIndexMap(value.value)
+    }
+    super._state = value
+  }
+  protected get _state(): State<T[], E> {
+    return super._state
+  }
 
   //#region state
   //#endregion config
@@ -66,36 +78,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   //#endregion helper-methods
-  //#region initialization-methods
-
-  /** @internal */
-  protected _initializeStore(initialValue: T[], isAsync: boolean): void {
-    super._initializeStore(initialValue, isAsync)
-    const value = this._value
-    assert(value, `Store: "${this._config.name}" could not be initialized with the given initial value.`)
-    this._setIdItemMap(value)
-    value.forEach((x, i) => this._setItemIndexMap(x, i))
-  }
-
-  //#endregion initialization-methods
   //#region state-methods
-
-  /** @internal */
-  protected _setIdItemMap(value: T[] | Readonly<T[]> | T | Readonly<T>): void {
-    const idKey = this._idKey
-    if (!idKey) return
-    const setPredicate = (x: T) => {
-      const y = x[idKey]
-      if (this._assertValidId(y)) this._idItemMap.set(y, x)
-    }
-    if (isArray(value)) value.forEach(setPredicate)
-    else setPredicate(value as T)
-  }
-
-  /** @internal */
-  protected _setItemIndexMap(value: T | Readonly<T>, index: number): void {
-    this._itemIndexMap.set(value, index)
-  }
 
   /** @internal */
   protected _setState({
@@ -112,6 +95,23 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
       doSkipClone: isUndefined(doSkipClone) ? false : doSkipClone,
       doSkipFreeze: isUndefined(doSkipFreeze) ? false : doSkipFreeze,
     })
+  }
+
+  /** @internal */
+  protected _setIdItemMap(value: T[] | Readonly<T[]> | T | Readonly<T>): void {
+    const idKey = this._idKey
+    if (!idKey) return
+    const setPredicate = (x: T) => {
+      const y = x[idKey]
+      if (this._assertValidId(y)) this._idItemMap.set(y, x)
+    }
+    if (isArray(value)) value.forEach(setPredicate)
+    else setPredicate(value as T)
+  }
+
+  protected _setItemIndexMap(value: T[] | Readonly<T[]> | T | Readonly<T>, index?: number): void {
+    if (isArray(value)) value.forEach((x, i) => this._itemIndexMap.set(x, i))
+    else if (isNumber(index)) this._itemIndexMap.set(value as T, index)
   }
 
   //#endregion state-methods
