@@ -4,5 +4,7 @@ export * from './constructable.interface'
 export * from './key-of'
 export * from './key-value'
 export * from './moment-like.interface'
+export * from './plain-object'
+export * from './sort-method'
 export * from './zone-like'
 

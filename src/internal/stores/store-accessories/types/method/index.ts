@@ -5,5 +5,6 @@ export * from './freeze'
 export * from './handle-classes'
 export * from './merge'
 export * from './parse'
+export * from './sort'
 export * from './stringify'
 
