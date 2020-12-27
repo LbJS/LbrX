@@ -29,18 +29,7 @@ export class SortFactory {
   public static defaultOptions: DefaultSortOptions = {
     dir: SortDirections.ASC,
     cascade: false,
-    compareFn: SortFactory._getDefaultCompare()
-  }
-
-  public static defaultCompare = (a: any, b: any): number => {
-    if (isString(a) && isString(b)) {
-      a = a.toUpperCase()
-      b = b.toUpperCase()
-    } else if (isDate(a) && isDate(b)) {
-      a = a.getTime()
-      b = b.getTime()
-    }
-    return a > b ? 1 : a < b ? -1 : 0
+    compareFn: SortFactory._defaultCompare
   }
 
   private static get _defaultOptions(): DefaultSortOptions {
@@ -70,7 +59,7 @@ export class SortFactory {
     }
     return (arr: T[]) => {
       const maxDepth = sortOptions.length - 1
-      return !sortOptions.length ? arr.sort(SortFactory.defaultCompare) : arr.sort((a: T, b: T) => {
+      return !sortOptions.length ? arr.sort(SortFactory._defaultCompare) : arr.sort((a: T, b: T) => {
         let depthIndex = 0
         let result = 0
         do {
@@ -87,8 +76,15 @@ export class SortFactory {
     }
   }
 
-  private static _getDefaultCompare(): (firstEl: any, secondEl: any) => number {
-    return SortFactory.defaultCompare
+  private static _defaultCompare(a: any, b: any): number {
+    if (isString(a) && isString(b)) {
+      a = a.toUpperCase()
+      b = b.toUpperCase()
+    } else if (isDate(a) && isDate(b)) {
+      a = a.getTime()
+      b = b.getTime()
+    }
+    return a > b ? 1 : a < b ? -1 : 0
   }
 
   private constructor() { }
