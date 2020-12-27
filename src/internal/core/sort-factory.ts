@@ -6,16 +6,27 @@ export const enum SortDirections {
   DESC = 'DESC',
 }
 
+// tslint:disable-next-line: quotemark
+interface CompleteSortOptions<T extends any> extends Pick<SortOptions<T>, 'key'>, DefaultSortOptions {
+  isKey: boolean
+}
+
 export interface SortOptions<T extends any> {
   key: keyof T | (<V>(element: T) => V),
   dir?: SortDirections | null
   cascade?: boolean | null
-  compareFn?: ((firstEl: any, secondEl: any) => number)
+  compareFn?: ((firstEl: any, secondEl: any) => number) | null
+}
+
+export interface DefaultSortOptions {
+  dir: SortDirections
+  cascade: boolean
+  compareFn: ((firstEl: any, secondEl: any) => number)
 }
 
 export class SortFactory {
 
-  public static defaultOptions: Required<Pick<SortOptions<any>, 'dir' | 'cascade' | 'compareFn'>> = {
+  public static defaultOptions: DefaultSortOptions = {
     dir: SortDirections.ASC,
     cascade: false,
     compareFn: SortFactory._getDefaultCompare()
@@ -32,7 +43,7 @@ export class SortFactory {
     return a > b ? 1 : a < b ? -1 : 0
   }
 
-  private static get _defaultOptions(): Required<Pick<SortOptions<any>, 'dir' | 'cascade' | 'compareFn'>> {
+  private static get _defaultOptions(): DefaultSortOptions {
     return cloneObject(SortFactory.defaultOptions)
   }
 
@@ -41,37 +52,33 @@ export class SortFactory {
   public static create<T extends any>(sortOptions: SortOptions<T>): SortMethod<T>
   public static create<T extends any>(sortOptions: SortOptions<T>[]): SortMethod<T>
   public static create<T extends any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethod<T> {
-    const sortOptions: (Required<SortOptions<any>> & { isKey: boolean })[] = []
+    const sortOptions: CompleteSortOptions<T>[] = []
     if (isString<keyof T>(partialSortOptions)) {
-      sortOptions.push(objectAssign(SortFactory._defaultOptions, { key: partialSortOptions } as any) as any)
+      sortOptions.push(objectAssign(SortFactory._defaultOptions, { key: partialSortOptions, isKey: !isFunction(partialSortOptions) }))
     } else if (isPlainObject<SortOptions<T>>(partialSortOptions)) {
-      sortOptions.push(objectAssign(SortFactory._defaultOptions, cloneObject(partialSortOptions)) as any)
+      sortOptions.push(objectAssign(SortFactory._defaultOptions,
+        cloneObject(partialSortOptions),
+        { isKey: isFunction(partialSortOptions.key) }))
     } else if (isArray(partialSortOptions) && partialSortOptions.length) {
       cloneObject(partialSortOptions).forEach((x, i) => {
         if (i > 0 && sortOptions[i - 1].cascade) {
-          sortOptions.push(objectAssign(SortFactory._defaultOptions, sortOptions[i - 1], x) as any)
+          sortOptions.push(objectAssign(SortFactory._defaultOptions, sortOptions[i - 1], x, { isKey: !isFunction(x.key) }))
         } else {
-          sortOptions.push(objectAssign(SortFactory._defaultOptions, x) as any)
+          sortOptions.push(objectAssign(SortFactory._defaultOptions, x, { isKey: !isFunction(x.key) }))
         }
       })
     }
-    sortOptions.forEach(x => x.isKey = !isFunction(x.key))
     return (arr: T[]) => {
       const maxDepth = sortOptions.length - 1
       return !sortOptions.length ? arr.sort(SortFactory.defaultCompare) : arr.sort((a: T, b: T) => {
         let depthIndex = 0
         let result = 0
         do {
-          const key: any = sortOptions[depthIndex].key
-          let resolvedValA: any
-          let resolvedValB: any
-          if (sortOptions[depthIndex].isKey) {
-            resolvedValA = a[key as (keyof T)]
-            resolvedValB = b[key as (keyof T)]
-          } else {
-            resolvedValA = key(a)
-            resolvedValB = key(b)
-          }
+          const key = sortOptions[depthIndex].key
+          const [resolvedValA, resolvedValB]: [any, any] =
+            sortOptions[depthIndex].isKey ?
+              [a[key as (keyof T)], b[key as (keyof T)]] :
+              [(key as <V>(element: T) => V)(a), (key as <V>(element: T) => V)(b)]
           result = sortOptions[depthIndex].compareFn(resolvedValA, resolvedValB)
           if (sortOptions[depthIndex].dir == SortDirections.DESC) result *= -1
         } while (depthIndex++ < maxDepth && result == 0)
