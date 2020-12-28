@@ -1,4 +1,6 @@
-import { ClearableWeakMap, isArray, isNumber, isString, isUndefined, throwError } from '../helpers'
+import { isDev, SortFactory } from '../core'
+import { ClearableWeakMap, isArray, isFunction, isNull, isNumber, isString, isUndefined, objectFreeze, throwError } from '../helpers'
+import { SortMethod } from '../types/sort-method'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { SetStateParam, State } from './store-accessories'
@@ -20,6 +22,7 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
       if (!this._value) {
         this._cleanMaps()
         this._setMaps(value.value)
+        value.value = this._sortLogic(value.value)
       }
     } else {
       this._cleanMaps()
@@ -45,6 +48,9 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   /** @internal */
   protected readonly _idKey: keyof T | null
 
+  /** @internal */
+  protected readonly _sort: SortMethod<T> | null
+
   //#endregion config
   //#region constructor
 
@@ -65,11 +71,21 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
     super(storeConfig)
     const config = this._config
     this._idKey = config.idKey = config.idKey || null
+    this._sort = config.orderBy ?
+      isFunction(config.orderBy) ?
+        config.orderBy :
+        SortFactory.create(config.orderBy) :
+      null
     this._preInit(initialValueOrNull)
   }
 
   //#endregion constructor
   //#region helper-methods
+
+  /** @internal */
+  protected _noSort(value: T[]): T[] {
+    return value
+  }
 
   /** @internal */
   protected _assertValidId(value: any): value is string | number {
@@ -79,6 +95,13 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
       throwError(`Store: "${this._config.name}" has been provided with key that is not a string and nor a number.`)
     }
     return true
+  }
+
+  /** @internal */
+  protected _sortLogic(value: Readonly<T[]>): Readonly<T[]> {
+    if (isNull(this._sort)) return value
+    value = this._sort(isDev() ? [...value] : value as T[])
+    return isDev() ? objectFreeze(value) : value
   }
 
   //#endregion helper-methods

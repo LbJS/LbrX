@@ -1,2 +1,11 @@
-export { DefaultSortOptions, LbrXManager, SortDirections, SortFactory, SortOptions } from '../internal/core'
+export {
+  DefaultSortOptions,
+  LbrXManager,
+  SortDirections,
+  SortFactory,
+  SortingAlgorithm,
+  SortingAlgorithmToken,
+  SortMethodApi,
+  SortOptions
+} from '../internal/core'
 

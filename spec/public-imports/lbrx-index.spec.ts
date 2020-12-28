@@ -5,7 +5,6 @@ describe(`lbrx index:`, () => {
 
   it(`should include the expected imports.`, async () => {
     const lbrx = await import(`lbrx`)
-    expect(lbrx.LbrXManager).toBeTruthy()
     expect(lbrx.BaseStore).toBeTruthy()
     expect(lbrx.Store).toBeTruthy()
     expect(lbrx.ListStore).toBeTruthy()

@@ -2,6 +2,7 @@ import { getOwnPropertyNames } from '../shortened-functions'
 import { freezeDate } from './freeze-date'
 import { isDate } from './is-date'
 import { isObject } from './is-object'
+import { objectFreeze } from './object-freeze'
 
 export function deepFreeze<T extends object>(object: T): Readonly<T> {
   for (const key of getOwnPropertyNames(object)) {
@@ -13,5 +14,5 @@ export function deepFreeze<T extends object>(object: T): Readonly<T> {
     const descriptor = Object.getOwnPropertyDescriptor(object, key)
     if (descriptor?.writable) object[key] = frozenValue
   }
-  return Object.freeze(object)
+  return objectFreeze(object)
 }

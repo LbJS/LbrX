@@ -50,6 +50,7 @@ export class SortFactory {
   public static create<T = any>(key: keyof T): SortMethodApi<T>
   public static create<T = any>(sortOptions: SortOptions<T>): SortMethodApi<T>
   public static create<T = any>(sortOptions: SortOptions<T>[]): SortMethodApi<T>
+  public static create<T = any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T>
   public static create<T = any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T> {
     const sortOptions: CompleteSortOptions<T>[] = SortFactory._getCompleteSortOptions(partialSortOptions)
     const maxDepth = sortOptions.length - 1

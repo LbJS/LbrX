@@ -6,6 +6,6 @@
 - [-] Move all store's query methods to dedicated class.
 - [x] Create store context with save changes method.
 - [x] WeakMap StoreList for fast array access.
-- [ ] OrderBy config option.
+- [x] OrderBy config option.
 - [ ] Add transaction method.
 - [ ] Do clone hooks config.
