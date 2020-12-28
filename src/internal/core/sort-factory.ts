@@ -11,6 +11,10 @@ interface CompleteSortOptions<T extends any> extends Pick<SortOptions<T>, 'key'>
   isKey: boolean
 }
 
+export type SortingAlgorithm<T = any> = (arr: T[], compareFn: (a: any, b: any) => number) => T[]
+
+export type SortingAlgorithmToken = string
+
 export interface SortOptions<T extends any> {
   key: keyof T | (<V>(element: T) => V),
   dir?: SortDirections | null
@@ -24,7 +28,13 @@ export interface DefaultSortOptions {
   compareFn: ((firstEl: any, secondEl: any) => number)
 }
 
+export interface SortMethodApi<T extends any> extends SortMethod<T> {
+  setSortingAlgorithm(token: SortingAlgorithmToken): void
+}
+
 export class SortFactory {
+
+  public static readonly sortingAlgorithmsMap = new Map<SortingAlgorithmToken, SortingAlgorithm>()
 
   public static defaultOptions: DefaultSortOptions = {
     dir: SortDirections.ASC,
@@ -36,11 +46,40 @@ export class SortFactory {
     return cloneObject(SortFactory.defaultOptions)
   }
 
-  public static create<T extends any>(): SortMethod<T>
-  public static create<T extends any>(key: keyof T): SortMethod<T>
-  public static create<T extends any>(sortOptions: SortOptions<T>): SortMethod<T>
-  public static create<T extends any>(sortOptions: SortOptions<T>[]): SortMethod<T>
-  public static create<T extends any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethod<T> {
+  public static create<T = any>(): SortMethodApi<T>
+  public static create<T = any>(key: keyof T): SortMethodApi<T>
+  public static create<T = any>(sortOptions: SortOptions<T>): SortMethodApi<T>
+  public static create<T = any>(sortOptions: SortOptions<T>[]): SortMethodApi<T>
+  public static create<T = any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T> {
+    const sortOptions: CompleteSortOptions<T>[] = SortFactory._getCompleteSortOptions(partialSortOptions)
+    const maxDepth = sortOptions.length - 1
+    const compareFn: (a: any, b: any) => number = !sortOptions.length ? SortFactory._defaultCompare : (a: T, b: T) => {
+      let depthIndex = 0
+      let result = 0
+      do {
+        const key = sortOptions[depthIndex].key
+        const [resolvedValA, resolvedValB]: [any, any] =
+          sortOptions[depthIndex].isKey ?
+            [a[key as (keyof T)], b[key as (keyof T)]] :
+            [(key as <V>(element: T) => V)(a), (key as <V>(element: T) => V)(b)]
+        result = sortOptions[depthIndex].compareFn(resolvedValA, resolvedValB)
+        if (sortOptions[depthIndex].dir == SortDirections.DESC) result *= -1
+      } while (depthIndex++ < maxDepth && result == 0)
+      return result
+    }
+    let _token: SortingAlgorithmToken | null = null
+    const _o: Pick<SortMethodApi<T>, 'setSortingAlgorithm'> = {
+      setSortingAlgorithm: (token: SortingAlgorithmToken) => { _token = token }
+    }
+    const _f: SortMethod<T> = (arr: T[]) => (_token && SortFactory.sortingAlgorithmsMap.has(_token)) ?
+      SortFactory.sortingAlgorithmsMap.get(_token)!(arr, compareFn) :
+      arr.sort(compareFn)
+    return objectAssign(_f, _o)
+  }
+
+  private static _getCompleteSortOptions<T extends any>(
+    partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]
+  ): CompleteSortOptions<T>[] {
     const sortOptions: CompleteSortOptions<T>[] = []
     if (isString<keyof T>(partialSortOptions)) {
       sortOptions.push(objectAssign(SortFactory._defaultOptions, { key: partialSortOptions, isKey: !isFunction(partialSortOptions) }))
@@ -57,23 +96,7 @@ export class SortFactory {
         }
       })
     }
-    return (arr: T[]) => {
-      const maxDepth = sortOptions.length - 1
-      return !sortOptions.length ? arr.sort(SortFactory._defaultCompare) : arr.sort((a: T, b: T) => {
-        let depthIndex = 0
-        let result = 0
-        do {
-          const key = sortOptions[depthIndex].key
-          const [resolvedValA, resolvedValB]: [any, any] =
-            sortOptions[depthIndex].isKey ?
-              [a[key as (keyof T)], b[key as (keyof T)]] :
-              [(key as <V>(element: T) => V)(a), (key as <V>(element: T) => V)(b)]
-          result = sortOptions[depthIndex].compareFn(resolvedValA, resolvedValB)
-          if (sortOptions[depthIndex].dir == SortDirections.DESC) result *= -1
-        } while (depthIndex++ < maxDepth && result == 0)
-        return result
-      })
-    }
+    return sortOptions
   }
 
   private static _defaultCompare(a: any, b: any): number {
