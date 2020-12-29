@@ -1,9 +1,9 @@
-import { isDev, SortFactory } from '../core'
-import { ClearableWeakMap, isArray, isFunction, isNull, isNumber, isString, isUndefined, objectFreeze, throwError } from '../helpers'
+import { isDev, SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
+import { assert, ClearableWeakMap, isArray, isEmpty, isFunction, isNull, isNumber, isObject, isString, isUndefined, objectAssign, objectFreeze, throwError } from '../helpers'
 import { SortMethod } from '../types/sort-method'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
-import { SetStateParam, State } from './store-accessories'
+import { Actions, ProjectsOrKeys, QueryableListStore, SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
@@ -151,7 +151,6 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
-
   protected _setItemIndexMap(value: T[] | Readonly<T[]>): void
   protected _setItemIndexMap(value: T | Readonly<T>, index: number): void
   protected _setItemIndexMap(value: T[] | Readonly<T[]> | T | Readonly<T>, index?: number): void {
@@ -160,4 +159,156 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   //#endregion state-methods
+  //#region query-methods
+
+  /** @internal */
+  protected _getQueryableListStore(
+    partialQueryableListStore: Partial<QueryableListStore<T>>,
+    queryableListStore?: QueryableListStore<T>,
+  ): QueryableListStore<T, E> {
+    queryableListStore = queryableListStore ? objectAssign(queryableListStore, partialQueryableListStore) : objectAssign({
+      select: <R>(projectsOrKeys: ProjectsOrKeys<T, R>) => this._select(projectsOrKeys, queryableListStore),
+      where: (predicate: (value: T, index: number, array: T[]) => T) => this._where(predicate, queryableListStore),
+      when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
+      orderBy: (partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken) =>
+        this._orderBy(partialSortOptions, token, queryableListStore),
+      toList: (predicate?: ((value: T, index: number, array: T[]) => T) | null) => this._toList(predicate, queryableListStore),
+      firstOrDefault: (predicate?: (value: T, index: number, array: T[]) => T) => this._firstOrDefault(predicate, queryableListStore),
+      first: (predicate?: (value: T, index: number, array: T[]) => T) => this._first(predicate, queryableListStore)
+    }, partialQueryableListStore)
+    return queryableListStore
+  }
+
+  /** @internal */
+  protected _select<R, K extends keyof T>(
+    projectsOrKeys: ProjectsOrKeys<T, R>,
+    queryableListStore?: QueryableListStore<T>
+  ): QueryableListStore<T, E> {
+    const project: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = this._getProjectionMethod(projectsOrKeys)
+    return this._getQueryableListStore({ project }, queryableListStore)
+  }
+
+  public select<R>(project: (value: Readonly<T>) => R): QueryableListStore<T, E>
+  public select<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): QueryableListStore<T, E>
+  public select<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): QueryableListStore<T, E>
+  public select<K extends keyof T>(key: K): QueryableListStore<T, E>
+  public select<K extends keyof T>(keys: K[]): QueryableListStore<T, E>
+  public select<R>(dynamic: ProjectsOrKeys<T, R>): QueryableListStore<T, E>
+  public select<R, K extends keyof T>(projectsOrKeys: ProjectsOrKeys<T, R>): QueryableListStore<T, E> {
+    return this._select<R, K>(projectsOrKeys)
+  }
+
+  /** @internal */
+  protected _where(
+    predicate: (value: T, index: number, array: T[]) => T,
+    queryableListStore?: QueryableListStore<T>
+  ): QueryableListStore<T, E> {
+    return this._getQueryableListStore({ filterPredicate: predicate }, queryableListStore)
+  }
+
+  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, E>
+  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, E> {
+    return this._where(predicate)
+  }
+
+  /** @internal */
+  protected _when(
+    actionOrActions: Actions | string | (Actions | string)[],
+    queryableListStore?: QueryableListStore<T>
+  ): QueryableListStore<T, E> {
+    return this._getQueryableListStore({ onActions: isArray(actionOrActions) ? actionOrActions : [actionOrActions] }, queryableListStore)
+  }
+
+  public when(action: Actions | string): QueryableListStore<T, E>
+  public when(actions: (Actions | string)[]): QueryableListStore<T, E>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, E>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, E> {
+    return this._when(actionOrActions)
+  }
+
+  /** @internal */
+  protected _orderBy(
+    partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[],
+    token?: SortingAlgorithmToken,
+    queryableListStore?: QueryableListStore<T>
+  ): any {
+    const sortingApi: SortMethodApi<T> = SortFactory.create(partialSortOptions)
+    if (token) sortingApi.setSortingAlgorithm(token)
+    return this._getQueryableListStore({ sortingMethod: sortingApi }, queryableListStore)
+  }
+
+  public orderBy(key: keyof T, token?: SortingAlgorithmToken): QueryableListStore<T, E>
+  public orderBy(sortOptions: SortOptions<T>, token?: SortingAlgorithmToken): QueryableListStore<T, E>
+  public orderBy(sortOptions: SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E>
+  public orderBy(dynamic: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E>
+  public orderBy(partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E> {
+    return this._orderBy(partialSortOptions, token)
+  }
+
+  /** @internal */
+  protected _toList<R>(
+    predicate?: ((value: T, index: number, array: T[]) => T) | null,
+    queryableListStore?: QueryableListStore<T>
+  ): T[] | R[] {
+    let value: T[] | R[] | null = this._value ? [...this._value] : null
+    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    if (queryableListStore) {
+      if (queryableListStore.filterPredicate) value = value.filter(predicate || queryableListStore.filterPredicate)
+      if (queryableListStore.project) value = value.map(queryableListStore.project) as T[] | R[]
+      if (queryableListStore.sortingMethod) value = queryableListStore.sortingMethod(value)
+    } else if (predicate) {
+      value = value.filter(predicate)
+    }
+    return this._clone(value) as T[] | R[]
+  }
+
+  public toList(): T[]
+  public toList<R>(): R[]
+  public toList(predicate: (value: T, index: number, array: T[]) => T): T[]
+  public toList<R>(predicate: (value: T, index: number, array: T[]) => T): R[]
+  public toList<R>(predicate?: (value: T, index: number, array: T[]) => T): T[] | R[] {
+    return this._toList(predicate)
+  }
+
+  /** @internal */
+  protected _firstOrDefault<R>(
+    predicate?: (value: T, index: number, array: T[]) => T,
+    queryableListStore?: QueryableListStore<T>
+  ): T | R | null {
+    let value: T[] | R[] | null = this._value ? [...this._value] : null
+    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    let result: T | R | null = null
+    if (queryableListStore) {
+      if (queryableListStore.sortingMethod) value = queryableListStore.sortingMethod(value) as T[]
+      if (queryableListStore.filterPredicate) result = value.find(predicate || queryableListStore.filterPredicate) ?? null
+    } else if (predicate) {
+      result = value.find(predicate) ?? null
+    }
+    if (queryableListStore && queryableListStore.project && result) result = queryableListStore.project(result)
+    return isObject(result) ? this._clone(result) : result
+  }
+
+  public firstOrDefault(): T | null
+  public firstOrDefault<R>(): R | null
+  public firstOrDefault(predicate: (value: T, index: number, array: T[]) => T): T | null
+  public firstOrDefault<R>(predicate: (value: T, index: number, array: T[]) => T): R | null
+  public firstOrDefault<R>(predicate?: (value: T, index: number, array: T[]) => T): T | R | null {
+    return this._firstOrDefault(predicate)
+  }
+
+  /** @internal */
+  protected _first<R>(predicate?: (value: T, index: number, array: T[]) => T, queryableListStore?: QueryableListStore<T>): T | R | never {
+    const result: T | R | null = this._firstOrDefault(predicate, queryableListStore)
+    return isEmpty(result) ? throwError(`Store: "${this._storeName}" has resolved a null value by first method.`) : result
+  }
+
+  public first(): T | never
+  public first<R>(): R | never
+  public first(predicate: (value: T, index: number, array: T[]) => T): T | never
+  public first<R>(predicate: (value: T, index: number, array: T[]) => T): R | never
+  public first<R>(predicate?: (value: T, index: number, array: T[]) => T): T | R | never {
+    return this._first(predicate)
+  }
+
+  //#endregion query-methods
 }

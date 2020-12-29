@@ -2,10 +2,10 @@ import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, ProjectsOrKeys, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
   DestroyableStore<T, S, E>,
@@ -715,6 +715,29 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   }
 
   //#endregion reset-dispose-destroy-methods
+  //#region query-methods
+
+  /** @internal */
+  protected _getProjectionMethod<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>):
+    (value: Readonly<S>) => S | R | any[] | S[K] | Pick<S, K> {
+    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
+      if ((<((value: Readonly<S>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
+        return (value: Readonly<S>) => (<((value: Readonly<S>) => R)[]>projectsOrKeys).map(x => x(value))
+      }
+      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
+        return (value: Readonly<S>) => {
+          const result = {} as R;
+          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
+          return result
+        }
+      }
+    }
+    if (isString(projectsOrKeys)) return (value: Readonly<S>) => value[projectsOrKeys as string]
+    if (isFunction(projectsOrKeys)) return projectsOrKeys
+    return (x: Readonly<S>) => x
+  }
+
+  //#endregion query-methods
   //#region hooks
 
   /**

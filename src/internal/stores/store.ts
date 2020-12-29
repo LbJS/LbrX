@@ -1,6 +1,6 @@
 import { iif, Observable, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
-import { assert, isArray, isFunction, isObject, isString } from '../helpers'
+import { assert, isArray, isFunction, isObject } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
 import { Actions, ObservableQueryContext, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
@@ -32,6 +32,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
 
   //#region helper-props
 
+  /** @internal */
   protected readonly _whenLoaded$: Observable<Readonly<T> | null> = this.isLoading$
     .pipe(
       filter(x => !x),
@@ -62,25 +63,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion constructor
   //#region query-methods
 
-  protected _selectMapProject<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>):
-    (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> {
-    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
-      if ((<((value: Readonly<T>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
-        return (value: Readonly<T>) => (<((value: Readonly<T>) => R)[]>projectsOrKeys).map(x => x(value))
-      }
-      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
-        return (value: Readonly<T>) => {
-          const result = {} as R;
-          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
-          return result
-        }
-      }
-    }
-    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-    if (isFunction(projectsOrKeys)) return projectsOrKeys
-    return (x: Readonly<T>) => x
-  }
-
+  /** @internal */
   protected _select$<R, K extends keyof T>(
     projectsOrKeys?: ProjectsOrKeys<T, R>,
     actionOrActions?: Actions | string | (Actions | string)[]
@@ -95,7 +78,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
         && !selectContext.isDisposed
         && !!value
     }
-    const mapProject = this._selectMapProject(projectsOrKeys)
+    const project = this._getProjectionMethod(projectsOrKeys)
     const selectContext: ObservableQueryContext = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
@@ -105,7 +88,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
           filter(actionFilterPredicate),
           mergeMap(x => iif(() => this.isLoading, this._whenLoaded$, of(x))),
           filter(mainFilterPredicate),
-          map(mapProject),
+          map(project),
           distinctUntilChanged((prev, curr) => {
             if (selectContext.doSkipOneChangeCheck) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
@@ -256,7 +239,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    */
   public select<R>(dynamic?: ProjectsOrKeys<T, R>): R
   public select<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): T | R | R[] | T[K] | Pick<T, K> {
-    const mapProject = this._selectMapProject(projectsOrKeys)
+    const mapProject = this._getProjectionMethod(projectsOrKeys)
     const value = this._value
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
     const mappedValue = mapProject(value)
@@ -266,6 +249,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#endregion query-methods
   //#region write-methods
 
+  /** @internal */
   protected _update(
     valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
     isMerge: boolean,
