@@ -1,5 +1,5 @@
-import { cloneObject, isArray, isDate, isFunction, isPlainObject, isString, objectAssign } from '../helpers'
-import { SortMethod } from '../types'
+import { cloneObject, isArray, isBool, isDate, isFunction, isPlainObject, isString, objectAssign } from '../helpers'
+import { KeyOrNever, SortMethod } from '../types'
 
 export const enum SortDirections {
   ASC = 'ASC',
@@ -15,8 +15,8 @@ export type SortingAlgorithm<T = any> = (arr: T[], compareFn: (a: any, b: any) =
 
 export type SortingAlgorithmToken = string
 
-export interface SortOptions<T extends any> {
-  key: keyof T | (<V>(element: T) => V),
+export interface SortOptions<T extends any, K = KeyOrNever<T>> {
+  key: K | (<V>(element: T) => V),
   dir?: SortDirections | null
   cascade?: boolean | null
   compareFn?: ((firstEl: any, secondEl: any) => number) | null
@@ -47,27 +47,33 @@ export class SortFactory {
   }
 
   public static create<T = any>(): SortMethodApi<T>
-  public static create<T = any>(key: keyof T): SortMethodApi<T>
+  public static create<T = any>(desc: true): SortMethodApi<T>
+  public static create<T = any>(key: KeyOrNever<T>): SortMethodApi<T>
   public static create<T = any>(sortOptions: SortOptions<T>): SortMethodApi<T>
   public static create<T = any>(sortOptions: SortOptions<T>[]): SortMethodApi<T>
-  public static create<T = any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T>
-  public static create<T = any>(partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T> {
+  public static create<T = any>(partialSortOptions?: true | false | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T>
+  public static create<T = any>(partialSortOptions?: true | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T> {
     const sortOptions: CompleteSortOptions<T>[] = SortFactory._getCompleteSortOptions(partialSortOptions)
     const maxDepth = sortOptions.length - 1
-    const compareFn: (a: any, b: any) => number = !sortOptions.length ? SortFactory._defaultCompare : (a: T, b: T) => {
-      let depthIndex = 0
-      let result = 0
-      do {
-        const key = sortOptions[depthIndex].key
-        const [resolvedValA, resolvedValB]: [any, any] =
-          sortOptions[depthIndex].isKey ?
-            [a[key as (keyof T)], b[key as (keyof T)]] :
-            [(key as <V>(element: T) => V)(a), (key as <V>(element: T) => V)(b)]
-        result = sortOptions[depthIndex].compareFn(resolvedValA, resolvedValB)
-        if (sortOptions[depthIndex].dir == SortDirections.DESC) result *= -1
-      } while (depthIndex++ < maxDepth && result == 0)
-      return result
-    }
+    const isDesc = isBool(partialSortOptions) && partialSortOptions
+    const compareFn: (a: any, b: any) => number = !sortOptions.length ?
+      isDesc ?
+        (a: T, b: T) => SortFactory._defaultCompare(a, b) * -1 :
+        SortFactory._defaultCompare :
+      (a: T, b: T) => {
+        let depthIndex = 0
+        let result = 0
+        do {
+          const key = sortOptions[depthIndex].key
+          const [resolvedValA, resolvedValB]: [any, any] =
+            sortOptions[depthIndex].isKey ?
+              [a[key as (keyof T)], b[key as (keyof T)]] :
+              [(key as <V>(element: T) => V)(a), (key as <V>(element: T) => V)(b)]
+          result = sortOptions[depthIndex].compareFn(resolvedValA, resolvedValB)
+          if (sortOptions[depthIndex].dir == SortDirections.DESC) result *= -1
+        } while (depthIndex++ < maxDepth && result == 0)
+        return result
+      }
     let _token: SortingAlgorithmToken | null = null
     const _o: Pick<SortMethodApi<T>, 'setSortingAlgorithm'> = {
       setSortingAlgorithm: (token: SortingAlgorithmToken) => { _token = token }
@@ -79,7 +85,7 @@ export class SortFactory {
   }
 
   private static _getCompleteSortOptions<T extends any>(
-    partialSortOptions?: keyof T | SortOptions<T> | SortOptions<T>[]
+    partialSortOptions?: true | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]
   ): CompleteSortOptions<T>[] {
     const sortOptions: CompleteSortOptions<T>[] = []
     if (isString<keyof T>(partialSortOptions)) {

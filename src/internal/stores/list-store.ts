@@ -1,6 +1,6 @@
-import { isDev, SortFactory } from '../core'
+import { isDev, SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
 import { assert, ClearableWeakMap, isArray, isFunction, isNull, isNumber, isObject, isString, isUndefined, objectFreeze, throwError } from '../helpers'
-import { NoVoid, ObjectOrNever } from '../types'
+import { KeyOrNever, NoVoid, ObjectOrNever } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { BaseStore } from './base-store'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
@@ -171,7 +171,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
 
   /** @internal */
   protected _getQueryableListStore<T, R>(
-    pipeOrActions: Pipe<T[], R[]> | (Actions | string)[],
+    pipeOrActions: Pipe<T[], R[] | R> | (Actions | string)[],
     queryableListStore?: QueryableListStore<R> | QueryableListStoreExtended<R, S>,
   ): QueryableListStore<R> {
     if (!queryableListStore) {
@@ -179,16 +179,16 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
         _actions: null,
         _pipMethods: [],
         _pipe: <B>(arr: S[], pipeMethods: Pipe<any[], any[]>[]): B[] | S[] => {
-          pipeMethods.forEach(pipe => {
-            arr = pipe(arr)
+          pipeMethods.forEach((pipe, i) => {
+            arr = pipe(arr, i, pipeMethods)
           })
           return arr
         },
         select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore),
-        // where: (predicate: (value: S, index: number, array: S[]) => S) => this._where(predicate, queryableListStore),
-        // when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
-        // orderBy: (partialSortOptions: keyof S | SortOptions<S> | SortOptions<S>[], token?: SortingAlgorithmToken) =>
-        //   this._orderBy(partialSortOptions, token, queryableListStore),
+        where: (predicate: (value: R, index: number, array: R[]) => R) => this._where(predicate, queryableListStore),
+        when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
+        orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<R> | SortOptions<R>[], token?: SortingAlgorithmToken) =>
+          this._orderBy(partialSortOptions, token, queryableListStore),
         // toList: (predicate?: ((value: S, index: number, array: S[]) => S) | null) => this._toList(predicate, queryableListStore),
         // firstOrDefault: (predicate?: (value: S, index: number, array: S[]) => S) => this._firstOrDefault(predicate, queryableListStore),
         // first: (predicate?: (value: S, index: number, array: S[]) => S) => this._first(predicate, queryableListStore)
@@ -226,54 +226,59 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
   }
 
   /** @internal */
-  // protected _where(
-  //   predicate: (value: S, index: number, array: S[]) => S,
-  //   queryableListStore?: QueryableListStore<S, S>
-  // ): QueryableListStore<S, S> {
-  //   return this._getQueryableListStore({ filterPredicate: predicate }, queryableListStore)
-  // }
+  protected _where<R>(
+    predicate: (value: R, index: number, array: R[]) => R,
+    queryableListStore?: QueryableListStore<R>
+  ): QueryableListStore<R> {
+    const filter: Pipe<R[], R[] | R> = (arr: R[]) => arr.filter(predicate)
+    return this._getQueryableListStore(filter, queryableListStore)
+  }
 
-  // public where(predicate: (value: S, index: number, array: S[]) => S): QueryableListStore<S, S, E>
-  // public where(predicate: (value: S, index: number, array: S[]) => S): QueryableListStore<S, S, E> {
-  //   return this._where(predicate)
-  // }
-
-  /** @internal */
-  // protected _when(
-  //   actionOrActions: Actions | string | (Actions | string)[],
-  //   queryableListStore?: QueryableListStore<S, S>
-  // ): QueryableListStore<S, S> {
-  //   return this._getQueryableListStore({ onActions: isArray(actionOrActions) ? actionOrActions : [actionOrActions] }, queryableListStore)
-  // }
-
-  // public when(action: Actions | string): QueryableListStore<S, S, E>
-  // public when(actions: (Actions | string)[]): QueryableListStore<S, S, E>
-  // public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<S, S, E>
-  // public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<S, S, E> {
-  //   return this._when(actionOrActions)
-  // }
+  public where(predicate: (value: S, index: number, array: S[]) => S): QueryableListStore<S> {
+    return this._where(predicate)
+  }
 
   /** @internal */
-  // protected _orderBy(
-  //   partialSortOptions: keyof S | SortOptions<S> | SortOptions<S>[],
-  //   token?: SortingAlgorithmToken,
-  //   queryableListStore?: QueryableListStore<S, S>
-  // ): any {
-  //   const sortingApi: SortMethodApi<S> = SortFactory.create(partialSortOptions)
-  //   if (token) sortingApi.setSortingAlgorithm(token)
-  //   return this._getQueryableListStore({ sortingMethod: sortingApi }, queryableListStore)
-  // }
+  protected _when<R>(
+    actionOrActions: Actions | string | (Actions | string)[],
+    queryableListStore?: QueryableListStore<R>
+  ): QueryableListStore<R> {
+    return this._getQueryableListStore(isArray(actionOrActions) ? actionOrActions : [actionOrActions], queryableListStore)
+  }
 
-  // public orderBy(key: keyof S, token?: SortingAlgorithmToken): QueryableListStore<S, S, E>
-  // public orderBy(sortOptions: SortOptions<S>, token?: SortingAlgorithmToken): QueryableListStore<S, S, E>
-  // public orderBy(sortOptions: SortOptions<S>[], token?: SortingAlgorithmToken): QueryableListStore<S, S, E>
-  // public orderBy(dynamic: keyof S | SortOptions<S> | SortOptions<S>[], token?: SortingAlgorithmToken): QueryableListStore<S, S, E>
-  // public orderBy(
-  //   partialSortOptions: keyof S | SortOptions<S> | SortOptions<S>[],
-  //   token?: SortingAlgorithmToken
-  // ): QueryableListStore<S, S, E> {
-  //   return this._orderBy(partialSortOptions, token)
-  // }
+  public when(action: Actions | string): QueryableListStore<S>
+  public when(actions: (Actions | string)[]): QueryableListStore<S>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<S>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<S> {
+    return this._when(actionOrActions)
+  }
+
+  /** @internal */
+  protected _orderBy<R>(
+    partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<R> | SortOptions<R>[],
+    token?: SortingAlgorithmToken,
+    queryableListStore?: QueryableListStore<R>
+  ): QueryableListStore<R> {
+    const sortingApi: SortMethodApi<R> = SortFactory.create(partialSortOptions)
+    if (token) sortingApi.setSortingAlgorithm(token)
+    return this._getQueryableListStore(sortingApi, queryableListStore)
+  }
+
+  public orderBy(desc?: false, token?: SortingAlgorithmToken): QueryableListStore<S>
+  public orderBy(desc: true, token?: SortingAlgorithmToken): QueryableListStore<S>
+  public orderBy(key: KeyOrNever<S>, token?: SortingAlgorithmToken): QueryableListStore<S>
+  public orderBy(sortOptions: SortOptions<S>, token?: SortingAlgorithmToken): QueryableListStore<S>
+  public orderBy(sortOptions: SortOptions<S>[], token?: SortingAlgorithmToken): QueryableListStore<S>
+  public orderBy(
+    dynamic?: true | false | KeyOrNever<S> | SortOptions<S> | SortOptions<S>[],
+    token?: SortingAlgorithmToken
+  ): QueryableListStore<S>
+  public orderBy(
+    partialSortOptions?: true | false | KeyOrNever<S> | SortOptions<S> | SortOptions<S>[],
+    token?: SortingAlgorithmToken
+  ): QueryableListStore<S> {
+    return this._orderBy(partialSortOptions, token)
+  }
 
   /** @internal */
   // protected _toList<R>(

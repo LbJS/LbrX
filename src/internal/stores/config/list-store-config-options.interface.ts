@@ -1,4 +1,5 @@
 import { SortOptions } from '../../core'
+import { KeyOrNever } from '../../types'
 import { Sort } from '../store-accessories'
 import { StoreConfigOptions } from './store-config-options.interface'
 
@@ -17,5 +18,5 @@ export interface ListStoreConfigOptions<T> extends StoreConfigOptions {
    * @default
    * orderBy = null
    */
-  orderBy?: Sort<T> | keyof T | SortOptions<T> | SortOptions<T>[] | null
+  orderBy?: Sort<T> | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[] | null
 }
