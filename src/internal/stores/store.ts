@@ -3,7 +3,7 @@ import { distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap 
 import { assert, isArray, isFunction, isObject } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, ObservableQueryContext, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, ObservableQueryContext, Project, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -28,12 +28,12 @@ import { StoreContext } from './store-context'
  *   }
  * }
  */
-export class Store<T extends object, E = any> extends BaseStore<T, T, E> implements QueryableStore<T, E>, WriteableStore<T, E> {
+export class Store<S extends object, E = any> extends BaseStore<S, S, E> implements QueryableStore<S, E>, WriteableStore<S, E> {
 
   //#region helper-props
 
   /** @internal */
-  protected readonly _whenLoaded$: Observable<Readonly<T> | null> = this.isLoading$
+  protected readonly _whenLoaded$: Observable<Readonly<S> | null> = this.isLoading$
     .pipe(
       filter(x => !x),
       switchMap(() => this._value$),
@@ -45,7 +45,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   /**
    * Synchronous initialization.
    */
-  constructor(initialValue: T, storeConfig?: StoreConfigOptions)
+  constructor(initialValue: S, storeConfig?: StoreConfigOptions)
   /**
    * Asynchronous or delayed initialization.
    * The store will be set into loading state till initialization.
@@ -54,8 +54,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   /**
    * Dynamic initialization.
    */
-  constructor(initialValue: T | null, storeConfig?: StoreConfigOptions)
-  constructor(initialValueOrNull: T | null, storeConfig?: StoreConfigOptions) {
+  constructor(initialValue: S | null, storeConfig?: StoreConfigOptions)
+  constructor(initialValueOrNull: S | null, storeConfig?: StoreConfigOptions) {
     super(storeConfig)
     this._preInit(initialValueOrNull)
   }
@@ -64,21 +64,21 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
   //#region query-methods
 
   /** @internal */
-  protected _select$<R, K extends keyof T>(
-    projectsOrKeys?: ProjectsOrKeys<T, R>,
+  protected _select$<R, K extends keyof S>(
+    projectsOrKeys?: ProjectsOrKeys<S, R>,
     actionOrActions?: Actions | string | (Actions | string)[]
-  ): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+  ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
     if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
     const takeWhilePredicate = () => {
       return !selectContext.isDisposed
     }
     const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
-    const mainFilterPredicate = (value: Readonly<T> | null): value is Readonly<T> => {
+    const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
       return !this.isPaused
         && !selectContext.isDisposed
         && !!value
     }
-    const project = this._getProjectionMethod(projectsOrKeys)
+    const project: Project<S, R> = this._getProjectionMethod(projectsOrKeys)
     const selectContext: ObservableQueryContext = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
@@ -108,7 +108,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *   // do something with the weather...
    * });
    */
-  public select$(): Observable<T>
+  public select$(): Observable<S>
   /**
    * Returns the extracted partial state's value as an Observable based on the provided projection method.
    * @example
@@ -119,7 +119,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *     }
    *  });
    */
-  public select$<R>(project: (value: Readonly<T>) => R): Observable<R>
+  public select$<R>(project: (value: Readonly<S>) => R): Observable<R>
   /**
    * Returns an array values as an Observable based on the provided projection methods.
    * @example
@@ -129,7 +129,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *     // do something...
    *  });
    */
-  public select$<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): Observable<R[]>
+  public select$<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): Observable<R[]>
   /**
    * Returns an array values as an Observable based on the provided projections methods.
    * - This overload allows to manually define the return type.
@@ -140,7 +140,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *     // do something...
    *  });
    */
-  public select$<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): Observable<R>
+  public select$<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): Observable<R>
   /**
    * Returns as single the state's value property based on the provided key.
    * @example
@@ -149,7 +149,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *     // do something...
    *  });
    */
-  public select$<K extends keyof T>(key: K): Observable<T[K]>
+  public select$<K extends keyof S>(key: K): Observable<S[K]>
   /**
    * Returns the extracted partial state's value as an Observable based on the provided keys.
    * @example
@@ -160,7 +160,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *      }
    *  });
    */
-  public select$<K extends keyof T>(keys: K[]): Observable<Pick<T, K>>
+  public select$<K extends keyof S>(keys: K[]): Observable<Pick<S, K>>
   /**
    * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
    * @example
@@ -168,8 +168,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *   return weatherStore.select$(dynamic?);
    * }
    */
-  public select$<R>(dynamic?: ProjectsOrKeys<T, R>): Observable<R>
-  public select$<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): Observable<T | R | R[] | T[K] | Pick<T, K>> {
+  public select$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
+  public select$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
     return this._select$<R, K>(projectsOrKeys)
   }
 
@@ -178,19 +178,19 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    * @example
    * onAction('update').select$(projector)
    */
-  public onAction<R>(action: Actions | string): Pick<QueryableStore<T, E>, 'select$'>
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'select$'>
   /**
    * Will invoke the chained method only on the provided action.
    * @example
    * onAction(['update', 'myCustomActionName']).select$(projector)
    */
-  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'>
+  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'>
   /**
    * Dynamic overload.
    */
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'>
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<T, E>, 'select$'> {
-    return { select$: (projectsOrKeys?: ProjectsOrKeys<T, R>) => this._select$<any, any>(projectsOrKeys, actionOrActions) }
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'>
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'> {
+    return { select$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._select$<any, any>(projectsOrKeys, actionOrActions) }
   }
 
   /**
@@ -198,38 +198,38 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    * @example
    * const value = weatherStore.select()
    */
-  public select(): T
+  public select(): S
   /**
    * Returns the extracted partial state's value based on the provided projection method.
    * @example
    * const isRaining = weatherStore.select(value => value.isRaining)
    */
-  public select<R>(project: (value: Readonly<T>) => R): R
+  public select<R>(project: (value: Readonly<S>) => R): R
   /**
    * Returns an array values based on the provided projection methods.
    * @example
    * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
    */
-  public select<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): R[]
+  public select<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): R[]
   /**
    * Returns an array values based on the provided projections methods.
    * - This overload allows to manually define the return type.
    * @example
    * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
    */
-  public select<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): R
+  public select<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): R
   /**
    * Returns as single the state's value property based on the provided key.
    * @example
    * const precipitation = weatherStore.select('precipitation')
    */
-  public select<K extends keyof T>(key: K): T[K]
+  public select<K extends keyof S>(key: K): S[K]
   /**
    * Returns the extracted partial state's value based on the provided keys.
    * @example
    * const { precipitation, isRaining } = weatherStore.select(['precipitation', 'isRaining'])
    */
-  public select<K extends keyof T>(keys: K[]): Pick<T, K>
+  public select<K extends keyof S>(keys: K[]): Pick<S, K>
   /**
    * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
    * @example
@@ -237,8 +237,8 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *   return weatherStore.select(dynamic?);
    * }
    */
-  public select<R>(dynamic?: ProjectsOrKeys<T, R>): R
-  public select<R, K extends keyof T>(projectsOrKeys?: ProjectsOrKeys<T, R>): T | R | R[] | T[K] | Pick<T, K> {
+  public select<R>(dynamic?: ProjectsOrKeys<S, R>): R
+  public select<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): S | R | R[] | S[K] | Pick<S, K> {
     const mapProject = this._getProjectionMethod(projectsOrKeys)
     const value = this._value
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
@@ -251,23 +251,23 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
 
   /** @internal */
   protected _update(
-    valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T> | T,
+    valueOrFunction: ((value: Readonly<S>) => Partial<S>) | Partial<S> | S,
     isMerge: boolean,
     actionName: string,
-    onUpdate?: (nextState: T, prevState: Readonly<T>) => void | T,
+    onUpdate?: (nextState: S, prevState: Readonly<S>) => void | S,
   ): void {
     if (this.isPaused) return
     assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
     this._setState({
       valueFnOrState: value => {
         valueOrFunction = isFunction(valueOrFunction) ? valueOrFunction(value) : valueOrFunction
-        let newValue: T = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as T
+        let newValue: S = isMerge ? this._merge(this._clone(value), this._clone(valueOrFunction)) : valueOrFunction as S
         if (this._isClassHandler) {
           assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
           newValue = this._handleClasses(this._instancedValue, newValue)
         }
         if (isFunction(onUpdate)) {
-          const newModifiedValue: T | void = onUpdate(this._clone(newValue), value)
+          const newModifiedValue: S | void = onUpdate(this._clone(newValue), value)
           if (newModifiedValue) newValue = isMerge ? this._clone(newModifiedValue) : newModifiedValue
         }
         return newValue
@@ -281,7 +281,7 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    * @example
    *  weatherStore.update({ isWindy: true });
    */
-  public update(value: Partial<T>, actionName?: string): void
+  public update(value: Partial<S>, actionName?: string): void
   /**
    * Updates the store's state using a function that will be called by the store.
    * The function will be provided with the current state as a parameter and it must return a new partial state.
@@ -292,23 +292,23 @@ export class Store<T extends object, E = any> extends BaseStore<T, T, E> impleme
    *    isSunny: !state.isRaining
    * }));
    */
-  public update(valueFunction: (value: Readonly<T>) => Partial<T>, actionName?: string): void
-  public update(valueOrFunction: ((value: Readonly<T>) => Partial<T>) | Partial<T>, actionName?: string): void {
+  public update(valueFunction: (value: Readonly<S>) => Partial<S>, actionName?: string): void
+  public update(valueOrFunction: ((value: Readonly<S>) => Partial<S>) | Partial<S>, actionName?: string): void {
     this._update(valueOrFunction, /** isMerge */ true, actionName || Actions.update, this.onUpdate)
   }
 
   /**
    * Overrides the current state's value completely.
    */
-  public override(newValue: T, actionName?: string): void {
+  public override(newValue: S, actionName?: string): void {
     this._update(newValue, /** isMerge */ false, actionName || Actions.override, this.onOverride)
   }
 
   //#endregion write-methods
   //#region store-context
 
-  public getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<T> {
-    return new StoreContext<T>(this, this._observableQueryContextsList, saveChangesActionName || undefined, onAction)
+  public getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<S> {
+    return new StoreContext<S>(this, this._observableQueryContextsList, saveChangesActionName || undefined, onAction)
   }
 
   //#endregion store-context

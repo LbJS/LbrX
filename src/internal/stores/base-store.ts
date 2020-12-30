@@ -3,13 +3,13 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
-import { Class } from '../types'
+import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, ProjectsOrKeys, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Project, ProjectsOrKeys, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
-export abstract class BaseStore<T extends object, S extends object | T, E = any> implements
-  DestroyableStore<T, S, E>,
-  InitializableStore<T, S, E> {
+export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
+  DestroyableStore<S, M, E>,
+  InitializableStore<S, M, E> {
 
   //#region static
 
@@ -23,13 +23,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region state
 
   /** @internal */
-  protected _stateSource: State<T, E> = getDefaultState()
+  protected _stateSource: State<S, E> = getDefaultState()
 
   /** @internal */
-  protected get _state(): State<T, E> {
+  protected get _state(): State<S, E> {
     return objectAssign({}, this._stateSource)
   }
-  protected set _state(value: State<T, E>) {
+  protected set _state(value: State<S, E>) {
     if (isStackTracingErrors() && isDev() && !isCalledBy(`_setState`, 0)) {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
@@ -46,17 +46,17 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /** @internal */
   protected readonly _state$ = new BehaviorSubject(this._state)
 
-  public readonly state$: Observable<State<T, E>> = this._state$.asObservable().pipe(map(x => this._clone(x)))
+  public readonly state$: Observable<State<S, E>> = this._state$.asObservable().pipe(map(x => this._clone(x)))
 
   /**
    * @get Returns the state.
    */
-  public get state(): State<T, E> {
+  public get state(): State<S, E> {
     return this._clone(this._state)
   }
 
   /** @internal */
-  protected get _value(): Readonly<T> | null {
+  protected get _value(): Readonly<S> | null {
     return this._stateSource.value
   }
 
@@ -66,7 +66,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /**
    * @get Returns state's value.
    */
-  public get rawValue(): T | null {
+  public get rawValue(): S | null {
     return this._clone(this._value)
   }
 
@@ -74,7 +74,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * @get Returns state's value.
    * - Will throw if state's value is null.
    */
-  public get value(): T | never {
+  public get value(): S | never {
     assert(this._value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
     return this._clone(this._value)
   }
@@ -123,22 +123,22 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   }
 
   /** @internal */
-  protected _initialValue: Readonly<T> | null = null
+  protected _initialValue: Readonly<S> | null = null
 
   /**
    * @get Returns the instanced value.
    */
-  public get initialValue(): Readonly<T> | null {
+  public get initialValue(): Readonly<S> | null {
     return this._initialValue
   }
 
   /** @internal */
-  protected _instancedValue: Readonly<S> | null = null
+  protected _instancedValue: Readonly<M> | null = null
 
   /**
    * @get Returns the instanced value.
    */
-  public get instancedValue(): Readonly<S> | null {
+  public get instancedValue(): Readonly<M> | null {
     return this._instancedValue
   }
 
@@ -273,7 +273,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   protected _lastAction: Actions | string | null = null
 
   /** @internal */
-  protected _lazyInitContext: LazyInitContext<T> | null = null
+  protected _lazyInitContext: LazyInitContext<S> | null = null
 
   /** @internal */
   protected get _devToolsApi(): StoreDevToolsApi {
@@ -281,7 +281,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       isClassHandler: this._isClassHandler,
       instancedValue: this._instancedValue,
       handleClasses: this._handleClasses,
-      setState: (value: State<T>) => {
+      setState: (value: State<S>) => {
         this._state = value
       }
     }
@@ -418,7 +418,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * if "isClassHandler" is set to true at the store's configurations.
    * - If an instanced value was not set  by this method, the initial value will be used for resolving types.
    */
-  public setInstancedValue(value: S): void {
+  public setInstancedValue(value: M): void {
     value = this._clone(value)
     this._instancedValue = isDev() ? this._freeze(value) : value
   }
@@ -434,7 +434,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region initialization-methods
 
   /** @internal */
-  protected _preInit(initialValueOrNull: T | null): void {
+  protected _preInit(initialValueOrNull: S | null): void {
     if (isUndefined(initialValueOrNull)) throwError(`Store: "${this._storeName}" was provided with "undefined" as an initial state. Pass "null" to initial state if you want to initialize the store later on.`)
     if (isNull(initialValueOrNull)) {
       this._setState({ valueFnOrState: { isLoading: true }, actionName: Actions.loading })
@@ -444,20 +444,20 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   }
 
   /** @internal */
-  protected _initializeStore(initialValue: T, isAsync: boolean): void {
+  protected _initializeStore(initialValue: S, isAsync: boolean): void {
     let isValueFromStorage = false
     const storage = this._storage
     if (storage) {
-      const storedValue: T | null = this._parse(storage.getItem(this._storageKey))
+      const storedValue: S | null = this._parse(storage.getItem(this._storageKey))
       if (storedValue) {
-        initialValue = this._isClassHandler ? this._handleClasses(<T>this._instancedValue || initialValue, storedValue) : storedValue
+        initialValue = this._isClassHandler ? this._handleClasses(<S>this._instancedValue || initialValue, storedValue) : storedValue
         isValueFromStorage = true
       }
       this._valueToStorageSub = this._value$
         .pipe(debounceTime(this._storageDebounce))
         .subscribe(value => storage.setItem(this._storageKey, this._stringify(value)))
     }
-    const modifiedInitialValue: T | void = this.onBeforeInit?.(this._clone(initialValue))
+    const modifiedInitialValue: S | void = this.onBeforeInit?.(this._clone(initialValue))
     if (modifiedInitialValue) {
       initialValue = modifiedInitialValue
       isValueFromStorage = false
@@ -471,13 +471,13 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
         if (isArray(this._initialValue)) {
           if (this._initialValue[0]) this._instancedValue = this._initialValue[0]
         } else {
-          this._instancedValue = this._initialValue as Readonly<S>
+          this._instancedValue = this._initialValue as Readonly<M>
         }
       } else {
         if (isArray(initialValue)) {
           if (initialValue[0]) this._instancedValue = this._freeze(initialValue[0])
         } else {
-          this._instancedValue = this._freeze(initialValue) as Readonly<S>
+          this._instancedValue = this._freeze(initialValue) as Readonly<M>
         }
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
@@ -489,7 +489,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
       doSkipClone: isValueFromStorage
     })
     assert(this._value, `Store: "${this._storeName}" had an error durning initialization. Could not resolve value.`)
-    const modifiedValue: T | void = this.onAfterInit?.(this.value)
+    const modifiedValue: S | void = this.onAfterInit?.(this.value)
     if (modifiedValue) this._setState({ valueFnOrState: { value: modifiedValue }, actionName: Actions.afterInitUpdate })
   }
 
@@ -511,7 +511,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   /**
    * Method used for delayed initialization.
    */
-  public initialize(initialValue: T): void {
+  public initialize(initialValue: S): void {
     this._assertInitializable()
     this._initializeStore(initialValue, false)
   }
@@ -520,10 +520,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * Method for asynchronous initialization.
    * - In case of an observable, only the finite value will be used.
    */
-  public initializeAsync(promise: Promise<T>): Promise<void>
-  public initializeAsync(observable: Observable<T>): Promise<void>
-  public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
-  public initializeAsync(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
+  public initializeAsync(promise: Promise<S>): Promise<void>
+  public initializeAsync(observable: Observable<S>): Promise<void>
+  public initializeAsync(promiseOrObservable: Promise<S> | Observable<S>): Promise<void>
+  public initializeAsync(promiseOrObservable: Promise<S> | Observable<S>): Promise<void> {
     const asyncInitPromiseContext = createPromiseContext()
     this._asyncInitPromiseContext = asyncInitPromiseContext
     asyncInitPromiseContext.promise = new Promise((resolve, reject) => {
@@ -557,10 +557,10 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - will initialize the store only after the first queryable request is made.
    * - In case of an observable, only the finite value will be used.
    */
-  public initializeLazily(promise: Promise<T>): Promise<void>
-  public initializeLazily(observable: Observable<T>): Promise<void>
-  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void>
-  public initializeLazily(promiseOrObservable: Promise<T> | Observable<T>): Promise<void> {
+  public initializeLazily(promise: Promise<S>): Promise<void>
+  public initializeLazily(observable: Observable<S>): Promise<void>
+  public initializeLazily(promiseOrObservable: Promise<S> | Observable<S>): Promise<void>
+  public initializeLazily(promiseOrObservable: Promise<S> | Observable<S>): Promise<void> {
     if (this._observableQueryContextsList.length) return this.initializeAsync(promiseOrObservable)
     return new Promise((resolve, reject) => {
       if (!this._assertInitializable(reject)) return
@@ -587,7 +587,7 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
     stateExtension,
     doSkipClone,
     doSkipFreeze,
-  }: SetStateParam<T, E>): void {
+  }: SetStateParam<S, E>): void {
     if (this.isDestroyed) return
     if (isBool(stateExtension)) doSkipClone = stateExtension
     if (isFunction(valueFnOrState)) {
@@ -718,23 +718,24 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
   //#region query-methods
 
   /** @internal */
-  protected _getProjectionMethod<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>):
-    (value: Readonly<S>) => S | R | any[] | S[K] | Pick<S, K> {
+  protected _getProjectionMethod<T, R>(
+    projectsOrKeys?: ProjectsOrKeys<T, R>
+  ): Project<T, R> {
     if (isArray(projectsOrKeys) && projectsOrKeys.length) {
-      if ((<((value: Readonly<S>) => R)[]>projectsOrKeys).every(x => isFunction(x))) {
-        return (value: Readonly<S>) => (<((value: Readonly<S>) => R)[]>projectsOrKeys).map(x => x(value))
+      if ((<((value: Readonly<T>) => T | R)[]>projectsOrKeys).every(x => isFunction(x))) {
+        return value => (<((value: Readonly<T>) => T | R)[]>projectsOrKeys).map(x => x(value))
       }
       if ((<string[]>projectsOrKeys).every(x => isString(x))) {
-        return (value: Readonly<S>) => {
+        return (value: Readonly<T>) => {
           const result = {} as R;
           (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
           return result
         }
       }
     }
-    if (isString(projectsOrKeys)) return (value: Readonly<S>) => value[projectsOrKeys as string]
+    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
     if (isFunction(projectsOrKeys)) return projectsOrKeys
-    return (x: Readonly<S>) => x
+    return (x: Readonly<T>) => x
   }
 
   //#endregion query-methods
@@ -745,21 +746,21 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - Will be called before the store has completed the initialization.
    * - Allows state's value modification before the initialization is complete.
    */
-  protected onBeforeInit?(nextState: T): void | T
+  protected onBeforeInit?(nextState: S): void | S
 
   /**
    * @virtual Override to use `onAfterInit` hook.
    * - Will be called once the store has completed initialization.
    * - Allows state's value modification after initialization.
    */
-  protected onAfterInit?(currState: T): void | T
+  protected onAfterInit?(currState: S): void | S
 
   /**
    * @virtual Override to use `onAsyncInitSuccess` hook.
    * - Will be called once data is received during async initialization.
    * - Allows data manipulations like mapping and etc.
    */
-  protected onAsyncInitSuccess?(result: T): void | T
+  protected onAsyncInitSuccess?(result: S): void | S
 
   /**
    * @virtual Override to use `onAsyncInitError` hook.
@@ -775,21 +776,21 @@ export abstract class BaseStore<T extends object, S extends object | T, E = any>
    * - Will be called after the update method has merged the changes with the given state and just before this state is set.
    * - Allows future state modification.
    */
-  protected onUpdate?(nextState: T, currState: Readonly<T>): void | T
+  protected onUpdate?(nextState: S, currState: Readonly<S>): void | S
 
   /**
    * @virtual Override to use `onOverride` hook.
    * - Will be called after the override method and just before the new state is set.
    * - Allows future state modification.
    */
-  protected onOverride?(nextState: T, prevState: Readonly<T>): void | T
+  protected onOverride?(nextState: S, prevState: Readonly<S>): void | S
 
   /**
    * @virtual Override to use `onReset` hook.
    * - Will be called after the reset method and just before the new state is set.
    * - Allows future state modification.
    */
-  protected onReset?(nextState: T, currState: Readonly<T>): void | T
+  protected onReset?(nextState: S, currState: Readonly<S>): void | S
 
   //#endregion hooks
 }
