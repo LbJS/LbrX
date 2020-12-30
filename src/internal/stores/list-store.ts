@@ -163,9 +163,9 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
 
   /** @internal */
   protected _getQueryableListStore(
-    partialQueryableListStore: Partial<QueryableListStore<T>>,
-    queryableListStore?: QueryableListStore<T>,
-  ): QueryableListStore<T, E> {
+    partialQueryableListStore: Partial<QueryableListStore<any, T>>,
+    queryableListStore?: QueryableListStore<any, T>,
+  ): QueryableListStore<any, T> {
     queryableListStore = queryableListStore ? objectAssign(queryableListStore, partialQueryableListStore) : objectAssign({
       select: <R>(projectsOrKeys: ProjectsOrKeys<T, R>) => this._select(projectsOrKeys, queryableListStore),
       where: (predicate: (value: T, index: number, array: T[]) => T) => this._where(predicate, queryableListStore),
@@ -182,47 +182,47 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   /** @internal */
   protected _select<R, K extends keyof T>(
     projectsOrKeys: ProjectsOrKeys<T, R>,
-    queryableListStore?: QueryableListStore<T>
-  ): QueryableListStore<T, E> {
+    queryableListStore?: QueryableListStore<T | R, T>
+  ): QueryableListStore<T | R, T> {
     const project: (value: Readonly<T>) => T | R | any[] | T[K] | Pick<T, K> = this._getProjectionMethod(projectsOrKeys)
     return this._getQueryableListStore({ project }, queryableListStore)
   }
 
-  public select<R>(project: (value: Readonly<T>) => R): QueryableListStore<T, E>
-  public select<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): QueryableListStore<T, E>
-  public select<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): QueryableListStore<T, E>
-  public select<K extends keyof T>(key: K): QueryableListStore<T, E>
-  public select<K extends keyof T>(keys: K[]): QueryableListStore<T, E>
-  public select<R>(dynamic: ProjectsOrKeys<T, R>): QueryableListStore<T, E>
-  public select<R, K extends keyof T>(projectsOrKeys: ProjectsOrKeys<T, R>): QueryableListStore<T, E> {
+  public select<R>(project: (value: Readonly<T>) => R): QueryableListStore<R, T, E>
+  public select<R extends ReturnType<M>, M extends ((value: Readonly<T>) => any)>(projects: M[]): QueryableListStore<R, T, E>
+  public select<R extends any[]>(projects: ((value: Readonly<T>) => any)[]): QueryableListStore<R, T, E>
+  public select<K extends keyof T>(key: K): QueryableListStore<T, T, E>
+  public select<K extends keyof T>(keys: K[]): QueryableListStore<T, T, E>
+  public select<R>(dynamic: ProjectsOrKeys<T, R>): QueryableListStore<R, T, E>
+  public select<R, K extends keyof T>(projectsOrKeys: ProjectsOrKeys<T, R>): QueryableListStore<T | R, T, E> {
     return this._select<R, K>(projectsOrKeys)
   }
 
   /** @internal */
   protected _where(
     predicate: (value: T, index: number, array: T[]) => T,
-    queryableListStore?: QueryableListStore<T>
-  ): QueryableListStore<T, E> {
+    queryableListStore?: QueryableListStore<T, T>
+  ): QueryableListStore<T, T> {
     return this._getQueryableListStore({ filterPredicate: predicate }, queryableListStore)
   }
 
-  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, E>
-  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, E> {
+  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, T, E>
+  public where(predicate: (value: T, index: number, array: T[]) => T): QueryableListStore<T, T, E> {
     return this._where(predicate)
   }
 
   /** @internal */
   protected _when(
     actionOrActions: Actions | string | (Actions | string)[],
-    queryableListStore?: QueryableListStore<T>
-  ): QueryableListStore<T, E> {
+    queryableListStore?: QueryableListStore<T, T>
+  ): QueryableListStore<T, T> {
     return this._getQueryableListStore({ onActions: isArray(actionOrActions) ? actionOrActions : [actionOrActions] }, queryableListStore)
   }
 
-  public when(action: Actions | string): QueryableListStore<T, E>
-  public when(actions: (Actions | string)[]): QueryableListStore<T, E>
-  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, E>
-  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, E> {
+  public when(action: Actions | string): QueryableListStore<T, T, E>
+  public when(actions: (Actions | string)[]): QueryableListStore<T, T, E>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, T, E>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): QueryableListStore<T, T, E> {
     return this._when(actionOrActions)
   }
 
@@ -230,25 +230,28 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   protected _orderBy(
     partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[],
     token?: SortingAlgorithmToken,
-    queryableListStore?: QueryableListStore<T>
+    queryableListStore?: QueryableListStore<T, T>
   ): any {
     const sortingApi: SortMethodApi<T> = SortFactory.create(partialSortOptions)
     if (token) sortingApi.setSortingAlgorithm(token)
     return this._getQueryableListStore({ sortingMethod: sortingApi }, queryableListStore)
   }
 
-  public orderBy(key: keyof T, token?: SortingAlgorithmToken): QueryableListStore<T, E>
-  public orderBy(sortOptions: SortOptions<T>, token?: SortingAlgorithmToken): QueryableListStore<T, E>
-  public orderBy(sortOptions: SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E>
-  public orderBy(dynamic: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E>
-  public orderBy(partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, E> {
+  public orderBy(key: keyof T, token?: SortingAlgorithmToken): QueryableListStore<T, T, E>
+  public orderBy(sortOptions: SortOptions<T>, token?: SortingAlgorithmToken): QueryableListStore<T, T, E>
+  public orderBy(sortOptions: SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, T, E>
+  public orderBy(dynamic: keyof T | SortOptions<T> | SortOptions<T>[], token?: SortingAlgorithmToken): QueryableListStore<T, T, E>
+  public orderBy(
+    partialSortOptions: keyof T | SortOptions<T> | SortOptions<T>[],
+    token?: SortingAlgorithmToken
+  ): QueryableListStore<T, T, E> {
     return this._orderBy(partialSortOptions, token)
   }
 
   /** @internal */
   protected _toList<R>(
     predicate?: ((value: T, index: number, array: T[]) => T) | null,
-    queryableListStore?: QueryableListStore<T>
+    queryableListStore?: QueryableListStore<T, T>
   ): T[] | R[] {
     let value: T[] | R[] | null = this._value ? [...this._value] : null
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
@@ -273,10 +276,10 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   /** @internal */
   protected _firstOrDefault<R>(
     predicate?: (value: T, index: number, array: T[]) => T,
-    queryableListStore?: QueryableListStore<T>
+    queryableListStore?: QueryableListStore<T, T>
   ): T | R | null {
     let value: T[] | R[] | null = this._value ? [...this._value] : null
-    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    if (!value) return value
     let result: T | R | null = null
     if (queryableListStore) {
       if (queryableListStore.sortingMethod) value = queryableListStore.sortingMethod(value) as T[]
@@ -297,7 +300,10 @@ export class ListStore<T extends object, E = any> extends BaseStore<T[], T, E> {
   }
 
   /** @internal */
-  protected _first<R>(predicate?: (value: T, index: number, array: T[]) => T, queryableListStore?: QueryableListStore<T>): T | R | never {
+  protected _first<R>(
+    predicate?: (value: T, index: number, array: T[]) => T,
+    queryableListStore?: QueryableListStore<T, T>
+  ): T | R | never {
     const result: T | R | null = this._firstOrDefault(predicate, queryableListStore)
     return isEmpty(result) ? throwError(`Store: "${this._storeName}" has resolved a null value by first method.`) : result
   }
