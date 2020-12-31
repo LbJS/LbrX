@@ -1,5 +1,5 @@
 import { isDev, SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
-import { assert, ClearableWeakMap, isArray, isFunction, isNull, isNumber, isObject, isString, isUndefined, objectFreeze, throwError } from '../helpers'
+import { assert, ClearableWeakMap, isArray, isEmpty, isFunction, isNull, isNumber, isObject, isString, isUndefined, objectFreeze, throwError } from '../helpers'
 import { KeyOrNever, NoVoid, ObjectOrNever } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { BaseStore } from './base-store'
@@ -185,13 +185,14 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
           return arr
         },
         select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore),
-        where: (predicate: (value: R, index: number, array: R[]) => R) => this._where(predicate, queryableListStore),
+        where: (predicate: (value: R, index: number, array: R[]) => boolean) => this._where(predicate, queryableListStore),
         when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
         orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<R> | SortOptions<R>[], token?: SortingAlgorithmToken) =>
           this._orderBy(partialSortOptions, token, queryableListStore),
-        // toList: (predicate?: ((value: S, index: number, array: S[]) => S) | null) => this._toList(predicate, queryableListStore),
-        // firstOrDefault: (predicate?: (value: S, index: number, array: S[]) => S) => this._firstOrDefault(predicate, queryableListStore),
-        // first: (predicate?: (value: S, index: number, array: S[]) => S) => this._first(predicate, queryableListStore)
+        toList: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._toList(predicate, queryableListStore),
+        firstOrDefault: (predicate?: (value: R, index: number, array: R[]) => boolean) =>
+          this._firstOrDefault(predicate, queryableListStore),
+        first: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first(predicate, queryableListStore)
       }
     }
     if (this._assertIsQueryableListStoreExtended<T>(queryableListStore)) {
@@ -227,14 +228,14 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
 
   /** @internal */
   protected _where<R>(
-    predicate: (value: R, index: number, array: R[]) => R,
+    predicate: (value: R, index: number, array: R[]) => boolean,
     queryableListStore?: QueryableListStore<R>
   ): QueryableListStore<R> {
     const filter: Pipe<R[], R[] | R> = (arr: R[]) => arr.filter(predicate)
     return this._getQueryableListStore(filter, queryableListStore)
   }
 
-  public where(predicate: (value: S, index: number, array: S[]) => S): QueryableListStore<S> {
+  public where(predicate: (value: S, index: number, array: S[]) => boolean): QueryableListStore<S> {
     return this._where(predicate)
   }
 
@@ -281,72 +282,70 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
   }
 
   /** @internal */
-  // protected _toList<R>(
-  //   predicate?: ((value: T | R, index: number, array: T[] | R[]) => T | R) | null,
-  //   queryableListStore?: QueryableListStore<T, T>
-  // ): T[] | R[] {
-  //   let value: T[] | R[] | null = this._value ? [...this._value] : null
-  //   assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
-  //   if (queryableListStore) {
-  //     if (queryableListStore.filterPredicate) value = value.filter(predicate || queryableListStore.filterPredicate)
-  //     if (queryableListStore.project) value = value.map(queryableListStore.project) as T[] | R[]
-  //     if (queryableListStore.sortingMethod) value = queryableListStore.sortingMethod(value)
-  //   } else if (predicate) {
-  //     value = value.filter(predicate)
-  //   }
-  //   return this._clone(value) as T[] | R[]
-  // }
+  protected _toList<T, R>(
+    predicate?: ((value: T | R, index: number, array: T[] | R[]) => boolean),
+    queryableListStore?: QueryableListStore<R> | QueryableListStoreExtended<R, S>,
+  ): R[] {
+    if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
+    let value: S[] | R[] | null = this._value ? [...this._value] : null
+    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    if (this._assertIsQueryableListStoreExtended<R>(queryableListStore)) {
+      value = queryableListStore._pipe(value, queryableListStore._pipMethods)
+    }
+    return this._clone(value) as R[]
+  }
 
-  // public toList(): T[]
-  // public toList<R>(): R[]
-  // public toList(predicate: (value: T, index: number, array: T[]) => T): T[]
-  // public toList<R>(predicate: (value: R, index: number, array: R[]) => T): R[]
-  // public toList<R>(predicate?: (value: T | R, index: number, array: T[] | R[]) => T | R): T[] | R[] {
-  //   return this._toList(predicate)
-  // }
+  public toList(): S[]
+  public toList<R>(): R[]
+  public toList(predicate: (value: S, index: number, array: S[]) => boolean): S[]
+  public toList<R>(predicate: (value: S, index: number, array: S[]) => boolean): R[]
+  public toList<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): S[] | R[] {
+    return this._toList<S, R>(predicate)
+  }
 
   /** @internal */
-  // protected _firstOrDefault<R>(
-  //   predicate?: (value: T, index: number, array: T[]) => T,
-  //   queryableListStore?: QueryableListStore<T, T>
-  // ): T | R | null {
-  //   let value: T[] | R[] | null = this._value ? [...this._value] : null
-  //   if (!value) return value
-  //   let result: T | R | null = null
-  //   if (queryableListStore) {
-  //     if (queryableListStore.sortingMethod) value = queryableListStore.sortingMethod(value) as T[]
-  //     if (queryableListStore.filterPredicate) result = value.find(predicate || queryableListStore.filterPredicate) ?? null
-  //   } else if (predicate) {
-  //     result = value.find(predicate) ?? null
-  //   }
-  //   if (queryableListStore && queryableListStore.project && result) result = queryableListStore.project(result)
-  //   return isObject(result) ? this._clone(result) : result
-  // }
+  protected _firstOrDefault<T, R>(
+    predicate?: (value: R, index: number, array: R[]) => boolean,
+    queryableListStore?: QueryableListStore<R> | QueryableListStoreExtended<R, S>,
+  ): R | null {
+    let value: S[] | R[] | null = this._value ? [...this._value] : null
+    if (isNull(value)) return value
+    if (this._assertIsQueryableListStoreExtended<R>(queryableListStore)) {
+      value = queryableListStore._pipe(value, queryableListStore._pipMethods)
+    }
+    let result: T | R | null = null
+    if (predicate) {
+      result = (value as R[]).find(predicate) ?? null
+    } else if (value[0]) {
+      result = value[0] as R
+    }
+    return isObject(result) ? this._clone(result) : null
+  }
 
-  // public firstOrDefault(): T | null
-  // public firstOrDefault<R>(): R | null
-  // public firstOrDefault(predicate: (value: T, index: number, array: T[]) => T): T | null
-  // public firstOrDefault<R>(predicate: (value: T, index: number, array: T[]) => T): R | null
-  // public firstOrDefault<R>(predicate?: (value: T, index: number, array: T[]) => T): T | R | null {
-  //   return this._firstOrDefault(predicate)
-  // }
+  public firstOrDefault(): S | null
+  public firstOrDefault<R>(): R | null
+  public firstOrDefault(predicate: (value: S, index: number, array: S[]) => boolean): S | null
+  public firstOrDefault<R>(predicate: (value: R, index: number, array: R[]) => boolean): R | null
+  public firstOrDefault<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): S | R | null {
+    return this._firstOrDefault<S, R>(predicate)
+  }
 
   /** @internal */
-  // protected _first<R>(
-  //   predicate?: (value: T, index: number, array: T[]) => T,
-  //   queryableListStore?: QueryableListStore<T, T>
-  // ): T | R | never {
-  //   const result: T | R | null = this._firstOrDefault(predicate, queryableListStore)
-  //   return isEmpty(result) ? throwError(`Store: "${this._storeName}" has resolved a null value by first method.`) : result
-  // }
+  protected _first<R>(
+    predicate?: (value: R, index: number, array: R[]) => boolean,
+    queryableListStore?: QueryableListStore<R> | QueryableListStoreExtended<R, S>,
+  ): R | never {
+    const result: R | null = this._firstOrDefault(predicate, queryableListStore)
+    return isEmpty(result) ? throwError(`Store: "${this._storeName}" has resolved a null value by first method.`) : result
+  }
 
-  // public first(): T | never
-  // public first<R>(): R | never
-  // public first(predicate: (value: T, index: number, array: T[]) => T): T | never
-  // public first<R>(predicate: (value: T, index: number, array: T[]) => T): R | never
-  // public first<R>(predicate?: (value: T, index: number, array: T[]) => T): T | R | never {
-  //   return this._first(predicate)
-  // }
+  public first(): S | never
+  public first<R>(): R | never
+  public first(predicate: (value: S, index: number, array: S[]) => boolean): S | never
+  public first<R>(predicate: (value: R, index: number, array: R[]) => boolean): R | never
+  public first<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): S | R | never {
+    return this._first(predicate)
+  }
 
   //#endregion query-methods
 }
