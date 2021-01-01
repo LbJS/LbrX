@@ -5,4 +5,7 @@
   "typescript.preferences.importModuleSpecifierEnding": "minimal",
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "javascript.preferences.importModuleSpecifierEnding": "minimal",
+  "cSpell.words": [
+    "QLSE"
+  ],
 }

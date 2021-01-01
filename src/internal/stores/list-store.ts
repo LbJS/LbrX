@@ -164,7 +164,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
   //#endregion state-methods
   //#region query-methods
 
-  protected _assertIsQueryableListStoreExtended<T>(value: any): value is QueryableListStoreExtended<T, S> {
+  protected _assertIsQLSE<T>(value: any): value is QueryableListStoreExtended<T, S> {
     assert(value._pipMethods, `Store: "${this._config.name}" has encountered an critical error durning piping..`)
     return true
   }
@@ -195,7 +195,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
         first: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first(predicate, queryableListStore)
       }
     }
-    if (this._assertIsQueryableListStoreExtended<T>(queryableListStore)) {
+    if (this._assertIsQLSE<T>(queryableListStore)) {
       if (isArray(pipeOrActions)) {
         if (!queryableListStore._actions) queryableListStore._actions = [...pipeOrActions]
         queryableListStore._actions = [...pipeOrActions, ...pipeOrActions]
@@ -217,7 +217,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
   }
 
   public select<R>(project: (value: Readonly<S>) => NoVoid<R>): QueryableListStore<R>
-  public select<R extends ReturnType<U>, U extends (value: Readonly<S>) => NoVoid<any>>(projects: U[]): QueryableListStore<R>
+  public select<R extends ReturnType<U>[], U extends (value: Readonly<S>) => NoVoid<any>>(projects: U[]): QueryableListStore<R>
   public select<R extends any[]>(projects: ((value: Readonly<S>) => NoVoid<any>)[]): QueryableListStore<R>
   public select<R, K extends keyof S>(key: K): QueryableListStore<R>
   public select<R, K extends keyof S>(keys: K[]): QueryableListStore<R>
@@ -289,7 +289,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
     if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
-    if (this._assertIsQueryableListStoreExtended<R>(queryableListStore)) {
+    if (this._assertIsQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     return this._clone(value) as R[]
@@ -310,7 +310,7 @@ export class ListStore<S, E = any> extends BaseStore<S[], S, E> implements Query
   ): R | null {
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     if (isNull(value)) return value
-    if (this._assertIsQueryableListStoreExtended<R>(queryableListStore)) {
+    if (this._assertIsQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     let result: T | R | null = null
