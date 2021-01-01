@@ -2,7 +2,7 @@ import { Actions, AdvancedConfigOptions, ObjectCompareTypes, Storages, Store as 
 import { LbrXManager as LbrXManager_type } from 'lbrx/core'
 import { isDev as isDev_type } from 'lbrx/internal/core'
 import { DevToolsAdapter as DevToolsAdapter_type } from 'lbrx/internal/dev-tools'
-import { ObservableQueryContextsList as QuerySelectContextList_type } from 'lbrx/internal/stores/store-accessories'
+import { ObservableQueryContextsList as ObservableQueryContextsList_type } from 'lbrx/internal/stores/store-accessories'
 import { parse as parse_type, stringify as stringify_type } from 'lbrx/utils'
 import { StoresFactory as StoresFactory_type } from '__test__/factories'
 import MockBuilder from '__test__/mock-builder'
@@ -16,7 +16,7 @@ describe(`Base Store - constructor():`, () => {
   let LbrXManager: typeof LbrXManager_type
   let StoresFactory: typeof StoresFactory_type
   let DevToolsAdapter: typeof DevToolsAdapter_type
-  let QuerySelectContextList: typeof QuerySelectContextList_type
+  let ObservableQueryContextsList: typeof ObservableQueryContextsList_type
   let Store: typeof Store_type
   let isDev: typeof isDev_type
   let stringify: typeof stringify_type
@@ -27,7 +27,7 @@ describe(`Base Store - constructor():`, () => {
     LbrXManager = provider.LbrXManager
     StoresFactory = provider.StoresFactory
     DevToolsAdapter = provider.DevToolsAdapter
-    QuerySelectContextList = provider.ObservableQueryContextsList
+    ObservableQueryContextsList = provider.ObservableQueryContextsList
     Store = provider.Store
     isDev = provider.isDev
     stringify = provider.stringify
@@ -468,8 +468,8 @@ describe(`Base Store - constructor():`, () => {
     expect(store.state.isLoading).toBeTruthy()
   })
 
-  it(`should have _querySelectContextList prop with an instance of QuerySelectContextList.`, () => {
+  it(`should have _ObservableQueryContextsList prop with an instance of ObservableQueryContextsList.`, () => {
     const store = StoresFactory.createStore(null, { name: `TEST-STORE` })
-    expect(store[`_observableQueryContextsList`]).toBeInstanceOf(QuerySelectContextList)
+    expect(store[`_observableQueryContextsList`]).toBeInstanceOf(ObservableQueryContextsList)
   })
 })
