@@ -5,10 +5,10 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, DestroyableStore, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Project, ProjectsOrKeys, PromiseContext, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
-  DestroyableStore<S, M, E>,
+  ResettableStore<S, M, E>,
   InitializableStore<S, M, E> {
 
   //#region static
@@ -784,11 +784,17 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   protected onUpdate?(nextState: S, currState: Readonly<S>): void | S
 
   /**
-   * @virtual Override to use `onOverride` hook.
+   * @deprecated
+   * User the `onSet` hook instead.
+   */
+  protected onOverride?(nextState: S, prevState: Readonly<S>): void | S
+
+  /**
+   * @virtual Override to use `onSet` hook.
    * - Will be called after the override method and just before the new state is set.
    * - Allows future state modification.
    */
-  protected onOverride?(nextState: S, prevState: Readonly<S>): void | S
+  protected onSet?(nextState: S, prevState: Readonly<S>): void | S
 
   /**
    * @virtual Override to use `onReset` hook.

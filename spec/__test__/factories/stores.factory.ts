@@ -64,6 +64,7 @@ export class StoresFactory {
         onAsyncInitSuccess(result: T): void | T { }
         onAsyncInitError(error: E): void | E { }
         onOverride(nextState: T, currState: Readonly<T>): void | T { }
+        onSet(nextState: T, currState: Readonly<T>): void | T { }
         onReset(nextState: T, currState: Readonly<T>): void | T { }
         onUpdate(nextState: T, currState: Readonly<T>): void | T { }
       }
@@ -140,6 +141,7 @@ export class StoresFactory {
         onAsyncInitSuccess(result: T[]): void | T[] { }
         onAsyncInitError(error: E): void | E { }
         onOverride(nextState: T[], currState: Readonly<T[]>): void | T[] { }
+        onSet(nextState: T[], currState: Readonly<T[]>): void | T[] { }
         onReset(nextState: T[], currState: Readonly<T[]>): void | T[] { }
         onUpdate(nextState: T[], currState: Readonly<T[]>): void | T[] { }
       }

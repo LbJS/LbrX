@@ -3,7 +3,7 @@ import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test_
 import { assert, assertEqual, assertNotNullable } from '__test__/functions'
 import { DeepNestedTestSubject, InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
-describe(`Store - override():`, () => {
+describe(`Store - set():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -18,10 +18,10 @@ describe(`Store - override():`, () => {
     LbrXManager = provider.LbrXManager
   })
 
-  it(`should override the store's state value.`, () => {
+  it(`should set the store's state value.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     expect(store.value).toStrictEqual(createInitialState())
-    store.override(createStateA())
+    store.set(createStateA())
     expect(store.value).toStrictEqual(createStateA())
   })
 
@@ -36,19 +36,19 @@ describe(`Store - override():`, () => {
     ]
     let index = 0
     expect.assertions(expectedStates.length)
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(expectedStates[index++])
     })
-    store.override(createStateB())
-    store.override(createStateA())
-    store.override(createStateB())
-    store.override(createInitialState())
+    store.set(createStateB())
+    store.set(createStateA())
+    store.set(createStateB())
+    store.set(createInitialState())
   })
 
   it(`should clone the value.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const localStateA = createStateA()
-    store.override(localStateA)
+    store.set(localStateA)
     expect(store.value).not.toBe(localStateA)
     expect(store.value).toStrictEqual(createStateA())
     assertNotNullable(localStateA.dateValue)
@@ -60,7 +60,7 @@ describe(`Store - override():`, () => {
   it(`should clone the provided value if class handler is disabled.`, () => {
     const store = StoresFactory.createStore(createInitialState(), { name: `TEST-STORE`, isClassHandler: false })
     const localStateA = createStateA()
-    store.override(localStateA)
+    store.set(localStateA)
     expect(store.value).not.toBe(localStateA)
     expect(store.value).toStrictEqual(createStateA())
     assertNotNullable(localStateA.dateValue)
@@ -71,9 +71,9 @@ describe(`Store - override():`, () => {
 
   it(`should handle instances for plain object.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    store.override(createStateA())
+    store.set(createStateA())
     expect(store.value).toStrictEqual(createStateA())
-    store.override(createPlainStateA())
+    store.set(createPlainStateA())
     expect(store.value).toStrictEqual(createStateA())
     expect(store.value).toBeInstanceOf(TestSubject)
     assertNotNullable(store.value)
@@ -86,7 +86,7 @@ describe(`Store - override():`, () => {
   it(`should throw if the store wasn't initialized.`, () => {
     const store = StoresFactory.createStore(null)
     expect(() => {
-      store.override(createStateA())
+      store.set(createStateA())
     }).toThrow()
   })
 
@@ -94,7 +94,7 @@ describe(`Store - override():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     store[`_instancedValue`] = null
     expect(() => {
-      store.override(createStateA())
+      store.set(createStateA())
     }).toThrow()
   })
 
@@ -102,14 +102,14 @@ describe(`Store - override():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     store[`_stateSource`].value = null
     expect(() => {
-      store.override(createStateA())
+      store.set(createStateA())
     }).toThrow()
   })
 
   it(`should ignore if the store is in paused state.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     store.isPaused = true
-    store.override(createStateA())
+    store.set(createStateA())
     expect(store.value).toStrictEqual(createInitialState())
   })
 

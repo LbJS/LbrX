@@ -4,7 +4,7 @@ import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test_
 import { sleep } from '__test__/functions'
 import { InnerTestSubject, TestSubject } from '__test__/test-subjects'
 
-describe(`Store - select$():`, () => {
+describe(`Store - get$():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -23,7 +23,7 @@ describe(`Store - select$():`, () => {
   it(`should emit store's state value on subscribe.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
-    store.select$().subscribe(state => {
+    store.get$().subscribe(state => {
       expect(state).toStrictEqual(createInitialState())
       done()
     })
@@ -37,7 +37,7 @@ describe(`Store - select$():`, () => {
       createInitialState(),
       createStateA(),
     ]
-    store.select$().subscribe(state => {
+    store.get$().subscribe(state => {
       expect(state).toStrictEqual(expectedStates[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == 2) done()
     })
@@ -56,7 +56,7 @@ describe(`Store - select$():`, () => {
     ]
     const numOfAssertions = expectedStates.length
     expect.assertions(numOfAssertions)
-    store.select$().subscribe(state => {
+    store.get$().subscribe(state => {
       expect(state).toStrictEqual(expectedStates[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
@@ -70,16 +70,16 @@ describe(`Store - select$():`, () => {
     store.update(customObjB())
   })
 
-  it(`should emit the selected property based on the provided projection method.`, done => {
+  it(`should emit the resolved property based on the provided projection method.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
-    store.select$(state => state.stringValue).subscribe(value => {
+    store.get$(state => state.stringValue).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().stringValue)
       done()
     })
   })
 
-  it(`should emit the selected property based on the provided projection method only when it changes.`, done => {
+  it(`should emit the resolved property based on the provided projection method only when it changes.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
@@ -89,7 +89,7 @@ describe(`Store - select$():`, () => {
     ]
     const numOfAssertions = expectedValues.length
     expect.assertions(numOfAssertions)
-    store.select$(state => state.stringValue).subscribe(value => {
+    store.get$(state => state.stringValue).subscribe(value => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
@@ -100,16 +100,16 @@ describe(`Store - select$():`, () => {
     store.update({ stringValue: expectedValues[2] } as TestSubject)
   })
 
-  it(`should emit the selected nested property based on the provided projection method.`, done => {
+  it(`should emit the resolved nested property based on the provided projection method.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     expect.assertions(1)
-    store.select$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
+    store.get$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().innerTestObject!.deepNestedObj!.objectList)
       done()
     })
   })
 
-  it(`should emit the selected property based on the provided projection method only when it changes.`, done => {
+  it(`should emit the resolved property based on the provided projection method only when it changes.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
@@ -118,7 +118,7 @@ describe(`Store - select$():`, () => {
     ]
     const numOfAssertions = expectedValues.length
     expect.assertions(numOfAssertions)
-    store.select$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
+    store.get$(state => state.innerTestObject!.deepNestedObj!.objectList).subscribe(value => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
@@ -134,7 +134,7 @@ describe(`Store - select$():`, () => {
       s: createInitialState().stringValue,
       n: createInitialState().numberValue,
     }
-    store.select$(state => ({
+    store.get$(state => ({
       s: state.stringValue,
       n: state.numberValue,
     })).subscribe(value => {
@@ -170,7 +170,7 @@ describe(`Store - select$():`, () => {
     ]
     const numOfAssertions = expectedValues.length
     expect.assertions(numOfAssertions)
-    store.select$(state => ({
+    store.get$(state => ({
       s: state.stringValue,
       n: state.numberValue,
     })).subscribe(value => {
@@ -191,7 +191,7 @@ describe(`Store - select$():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const initialState = createInitialState()
     const expectedResult = [initialState.dateValue, initialState.innerTestObject]
-    store.select$([
+    store.get$([
       value => value.dateValue,
       value => value.innerTestObject
     ]).subscribe(value => {
@@ -201,7 +201,7 @@ describe(`Store - select$():`, () => {
 
   it(`should emit a value based on a key value.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    store.select$(`stringValue`).subscribe(value => {
+    store.get$(`stringValue`).subscribe(value => {
       expect(value).toStrictEqual(createInitialState().stringValue)
     })
   })
@@ -214,7 +214,7 @@ describe(`Store - select$():`, () => {
       numberValue: initialState.numberValue,
       dateValue: initialState.dateValue,
     }
-    store.select$([`stringValue`, `numberValue`, `dateValue`]).subscribe(value => {
+    store.get$([`stringValue`, `numberValue`, `dateValue`]).subscribe(value => {
       expect(value).toStrictEqual(expectedResult)
     })
   })
@@ -222,7 +222,7 @@ describe(`Store - select$():`, () => {
   it(`shouldn't emit null before initialization.`, async () => {
     const store = StoresFactory.createStore(null)
     const mockCb = jest.fn()
-    store.select$().subscribe(mockCb)
+    store.get$().subscribe(mockCb)
     await sleep(100)
     expect(mockCb).not.toBeCalled()
   })
@@ -230,7 +230,7 @@ describe(`Store - select$():`, () => {
   it(`shouldn't emit null after hard reset.`, async () => {
     const store = StoresFactory.createStore(createInitialState())
     const mockCb = jest.fn()
-    store.select$().subscribe(mockCb)
+    store.get$().subscribe(mockCb)
     expect(mockCb).toBeCalledTimes(1)
     await sleep()
     await store.hardReset()
@@ -247,7 +247,7 @@ describe(`Store - select$():`, () => {
     ]
     const numOfAssertions = expectedValues.length
     expect.assertions(numOfAssertions)
-    store.select$(state => state).subscribe(value => {
+    store.get$(state => state).subscribe(value => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
@@ -258,10 +258,10 @@ describe(`Store - select$():`, () => {
   it(`should emit a value after the store is initialized.`, done => {
     const store = StoresFactory.createStore(null)
     expect.assertions(2)
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
       done()
     })
@@ -271,10 +271,10 @@ describe(`Store - select$():`, () => {
   it(`should emit a value after the store is initialized after hard reset.`, async done => {
     const store = StoresFactory.createStore(null)
     expect.assertions(4)
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
       const jestState = expect.getState()
       if (jestState.assertionCalls == jestState.expectedAssertionsNumber) done()
@@ -288,7 +288,7 @@ describe(`Store - select$():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     function stateProjectionFactory<R, K extends keyof TestSubject>(optionalProjection?: ProjectsOrKeys<TestSubject, R>):
       Observable<TestSubject | R | R[] | TestSubject[K] | Pick<TestSubject, K>> {
-      return store.select$(optionalProjection)
+      return store.get$(optionalProjection)
     }
     stateProjectionFactory()
     stateProjectionFactory(state => state.booleanValue)
@@ -303,10 +303,10 @@ describe(`Store - select$():`, () => {
   it(`it should emit the whole value if the provided paramter is invalid array.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     expect.assertions(2)
-    store.select$([]).subscribe(value => {
+    store.get$([]).subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    store.select$([`stringValue`, (value: any) => value.stringValue] as any).subscribe(value => {
+    store.get$([`stringValue`, (value: any) => value.stringValue] as any).subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
       done()
     })
@@ -314,7 +314,7 @@ describe(`Store - select$():`, () => {
 
   it(`should stop emitting values if the query context has been disposed.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const observable = store.select$()
+    const observable = store.get$()
     expect.assertions(1)
     observable.subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
@@ -325,7 +325,7 @@ describe(`Store - select$():`, () => {
 
   it(`should complete the subscription on update when disposing the query context.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const observable = store.select$()
+    const observable = store.get$()
     const sub = observable.subscribe(() => { })
     expect(sub.closed).toBeFalsy()
     store.disposeObservableQueryContext(observable)

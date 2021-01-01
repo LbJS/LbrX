@@ -8,7 +8,7 @@ export const enum Actions {
   loading = 'LOADING...',
   hardResetting = 'HARD RESETTING !!!',
   update = 'Update',
-  override = 'Override',
+  set = 'Set',
   reset = 'Reset',
   error = '**ERROR** :(',
   destroy = '@@DESTROY',

@@ -35,7 +35,7 @@ describe(`Base Store - initialize(): `, () => {
 
   it(`should return the initial state from an observable.`, done => {
     const store = StoresFactory.createStore(createInitialValue())
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialValue())
       done()
     })
@@ -54,7 +54,7 @@ describe(`Base Store - initialize(): `, () => {
 
   it(`should return the initial state from observable after initialization.`, done => {
     const store = StoresFactory.createStore(null)
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialValue())
       done()
     })

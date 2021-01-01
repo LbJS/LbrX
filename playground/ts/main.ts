@@ -65,33 +65,33 @@ const betterUserStore = new BetterUserStore();
 
 (betterUserStore as QueryableStore<User>)
   .onAction(Actions.update)
-  .select$(x => x.address)
+  .get$(x => x.address)
   .subscribe(x => console.log(x))
 
 userStore
   .onAction(Actions.update)
-  .select$(state => state.firstName)
+  .get$(state => state.firstName)
   .subscribe(x => console.log(`-----Update only: ` + x))
 
 userStore
-  .select$()
+  .get$()
   .subscribe(x => console.log(x))
 userStore
-  .select$(state => state.firstName)
+  .get$(state => state.firstName)
   .subscribe(x => console.log(`firstName: ` + x))
 userStore
-  .select$(`lastName`)
+  .get$(`lastName`)
   .subscribe(x => console.log(`lastName: ` + x))
 userStore
-  .select$(state => getNestedProp(state, `address`, `place`))
+  .get$(state => getNestedProp(state, `address`, `place`))
   .subscribe(x => console.log(`address: ` + x))
 
 userStore
-  .select$([`date`, `address`])
+  .get$([`date`, `address`])
   .subscribe(x => console.log(x))
 
 userStore
-  .select$<[string | null, string | null, Date]>([state => state.firstName, state => state.lastName, state => state.date])
+  .get$<[string | null, string | null, Date]>([state => state.firstName, state => state.lastName, state => state.date])
   .subscribe(x => console.log(x))
 
 userStore
@@ -124,7 +124,7 @@ setTimeout(() => {
 }, 500)
 
 setTimeout(() => {
-  userStore.override({
+  userStore.set({
     firstName: `Some other name1`,
     lastName: `My second lastName1`,
     date: new Date(),
@@ -156,7 +156,7 @@ setTimeout(() => {
 }, 850)
 
 setTimeout(() => {
-  userStore.override({
+  userStore.set({
     firstName: `Some other name1`,
     lastName: `My second lastName1`,
     date: new Date(),

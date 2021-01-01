@@ -64,22 +64,22 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   //#region query-methods
 
   /** @internal */
-  protected _select$<R, K extends keyof S>(
+  protected _get$<R, K extends keyof S>(
     projectsOrKeys?: ProjectsOrKeys<S, R>,
     actionOrActions?: Actions | string | (Actions | string)[]
   ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
     if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
     const takeWhilePredicate = () => {
-      return !selectContext.isDisposed
+      return !getterContext.isDisposed
     }
     const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
     const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
       return !this.isPaused
-        && !selectContext.isDisposed
+        && !getterContext.isDisposed
         && !!value
     }
     const project: Project<S, R> = this._getProjectionMethod(projectsOrKeys)
-    const selectContext: ObservableQueryContext = {
+    const getterContext: ObservableQueryContext = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
       observable: this._value$.asObservable()
@@ -90,155 +90,171 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
           filter(mainFilterPredicate),
           map(project),
           distinctUntilChanged((prev, curr) => {
-            if (selectContext.doSkipOneChangeCheck) return false
+            if (getterContext.doSkipOneChangeCheck) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
           }),
-          tap(() => selectContext.doSkipOneChangeCheck = false),
+          tap(() => getterContext.doSkipOneChangeCheck = false),
           map(x => this._cloneIfObject(x)),
         )
     }
-    this._observableQueryContextsList.push(selectContext)
-    return selectContext.observable
+    this._observableQueryContextsList.push(getterContext)
+    return getterContext.observable
+  }
+
+  /**
+   * @deprecated
+   * User the `get$()` method instead.
+   */
+  public select$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
+    return this._get$<R, K>(projectsOrKeys)
   }
 
   /**
    * Returns the state's value as an Observable.
    * @example
-   * weatherStore.select$().subscribe(value => {
+   * weatherStore.get$().subscribe(value => {
    *   // do something with the weather...
    * });
    */
-  public select$(): Observable<S>
+  public get$(): Observable<S>
   /**
    * Returns the extracted partial state's value as an Observable based on the provided projection method.
    * @example
-   * weatherStore.select$(value => value.isRaining)
+   * weatherStore.get$(value => value.isRaining)
    *   .subscribe(isRaining => {
    *     if (isRaining) {
    *        // do something when it's raining...
    *     }
    *  });
    */
-  public select$<R>(project: (value: Readonly<S>) => R): Observable<R>
+  public get$<R>(project: (value: Readonly<S>) => R): Observable<R>
   /**
    * Returns an array values as an Observable based on the provided projection methods.
    * @example
-   * weatherStore.select$([value => value.isRaining, value => value.precipitation])
+   * weatherStore.get$([value => value.isRaining, value => value.precipitation])
    *   .subscribe(result => {
    *     const [isRaining, precipitation] = result
    *     // do something...
    *  });
    */
-  public select$<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): Observable<R[]>
+  public get$<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): Observable<R[]>
   /**
    * Returns an array values as an Observable based on the provided projections methods.
    * - This overload allows to manually define the return type.
    * @example
-   * weatherStore.select$([value => value.isRaining, value => value.precipitation])
+   * weatherStore.get$([value => value.isRaining, value => value.precipitation])
    *   .subscribe(result => {
    *     const [isRaining, precipitation] = result
    *     // do something...
    *  });
    */
-  public select$<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): Observable<R>
+  public get$<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): Observable<R>
   /**
    * Returns as single the state's value property based on the provided key.
    * @example
-   * weatherStore.select$('precipitation')
+   * weatherStore.get$('precipitation')
    *   .subscribe(precipitation => {
    *     // do something...
    *  });
    */
-  public select$<K extends keyof S>(key: K): Observable<S[K]>
+  public get$<K extends keyof S>(key: K): Observable<S[K]>
   /**
    * Returns the extracted partial state's value as an Observable based on the provided keys.
    * @example
-   * weatherStore.select$(['precipitation', 'isRaining'])
+   * weatherStore.get$(['precipitation', 'isRaining'])
    *   .subscribe(result => {
    *      if (result.isRaining && result.precipitation.mm > 10) {
    *        // do something...
    *      }
    *  });
    */
-  public select$<K extends keyof S>(keys: K[]): Observable<Pick<S, K>>
+  public get$<K extends keyof S>(keys: K[]): Observable<Pick<S, K>>
   /**
    * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
    * @example
-   * function selectFactory(dynamic?) {
-   *   return weatherStore.select$(dynamic?);
+   * function getFactory(dynamic?) {
+   *   return weatherStore.get$(dynamic?);
    * }
    */
-  public select$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
-  public select$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    return this._select$<R, K>(projectsOrKeys)
+  public get$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
+  public get$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
+    return this._get$<R, K>(projectsOrKeys)
   }
 
   /**
    * Will invoke the chained method only on the provided action.
    * @example
-   * onAction('update').select$(projector)
+   * onAction('update').get$(projector)
    */
-  public onAction<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'select$'>
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'get$'>
   /**
    * Will invoke the chained method only on the provided action.
    * @example
-   * onAction(['update', 'myCustomActionName']).select$(projector)
+   * onAction(['update', 'myCustomActionName']).get$(projector)
    */
-  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'>
+  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
   /**
    * Dynamic overload.
    */
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'>
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'select$'> {
-    return { select$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._select$<any, any>(projectsOrKeys, actionOrActions) }
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
+    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(projectsOrKeys, actionOrActions) }
+  }
+
+  /**
+   * @deprecated
+   * User the `get()` method instead.
+   */
+  public select<R>(projectsOrKeys?: ProjectsOrKeys<S, R>): R {
+    return this.get(projectsOrKeys)
   }
 
   /**
    * Returns the state's value.
    * @example
-   * const value = weatherStore.select()
+   * const value = weatherStore.get()
    */
-  public select(): S
+  public get(): S
   /**
    * Returns the extracted partial state's value based on the provided projection method.
    * @example
-   * const isRaining = weatherStore.select(value => value.isRaining)
+   * const isRaining = weatherStore.get(value => value.isRaining)
    */
-  public select<R>(project: (value: Readonly<S>) => R): R
+  public get<R>(project: (value: Readonly<S>) => R): R
   /**
    * Returns an array values based on the provided projection methods.
    * @example
-   * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
+   * const [isRaining, precipitation] = weatherStore.get([value => value.isRaining, value => value.precipitation])
    */
-  public select<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): R[]
+  public get<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): R[]
   /**
    * Returns an array values based on the provided projections methods.
    * - This overload allows to manually define the return type.
    * @example
-   * const [isRaining, precipitation] = weatherStore.select([value => value.isRaining, value => value.precipitation])
+   * const [isRaining, precipitation] = weatherStore.get([value => value.isRaining, value => value.precipitation])
    */
-  public select<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): R
+  public get<R extends any[]>(projects: ((value: Readonly<S>) => any)[]): R
   /**
    * Returns as single the state's value property based on the provided key.
    * @example
-   * const precipitation = weatherStore.select('precipitation')
+   * const precipitation = weatherStore.get('precipitation')
    */
-  public select<K extends keyof S>(key: K): S[K]
+  public get<K extends keyof S>(key: K): S[K]
   /**
    * Returns the extracted partial state's value based on the provided keys.
    * @example
-   * const { precipitation, isRaining } = weatherStore.select(['precipitation', 'isRaining'])
+   * const { precipitation, isRaining } = weatherStore.get(['precipitation', 'isRaining'])
    */
-  public select<K extends keyof S>(keys: K[]): Pick<S, K>
+  public get<K extends keyof S>(keys: K[]): Pick<S, K>
   /**
    * This is an dynamic overload. Use this approach only if necessary because it's not strongly typed.
    * @example
-   * function selectFactory(dynamic?) {
-   *   return weatherStore.select(dynamic?);
+   * function getFactory(dynamic?) {
+   *   return weatherStore.get(dynamic?);
    * }
    */
-  public select<R>(dynamic?: ProjectsOrKeys<S, R>): R
-  public select<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): S | R | R[] | S[K] | Pick<S, K> {
+  public get<R>(dynamic?: ProjectsOrKeys<S, R>): R
+  public get<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): S | R | R[] | S[K] | Pick<S, K> {
     const mapProject = this._getProjectionMethod(projectsOrKeys)
     const value = this._value
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
@@ -277,7 +293,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
 
   /**
    * Updates the store's state using a partial state. The provided partial state will be then merged with current store's state.
-   * - If you want to override the current store's state, use the `override` method.
+   * - If you want to override the current store's state, use the `set` method.
    * @example
    *  weatherStore.update({ isWindy: true });
    */
@@ -286,7 +302,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Updates the store's state using a function that will be called by the store.
    * The function will be provided with the current state as a parameter and it must return a new partial state.
    * The returned partial state will be then merged with current store's state.
-   * - If you want to override the current store's state, use the `override` method.
+   * - If you want to override the current store's state, use the `set` method.
    * @example
    * weatherStore.update(state => ({
    *    isSunny: !state.isRaining
@@ -298,10 +314,20 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   }
 
   /**
-   * Overrides the current state's value completely.
+   * @deprecated
+   * Use the `set()` method instead.
    */
   public override(newValue: S, actionName?: string): void {
-    this._update(newValue, /** isMerge */ false, actionName || Actions.override, this.onOverride)
+    // tslint:disable-next-line: deprecation
+    this._update(newValue, /** isMerge */ false, actionName || Actions.set, this.onSet || this.onOverride)
+  }
+
+  /**
+   * Overrides the current state's value completely.
+   */
+  public set(newValue: S, actionName?: string): void {
+    // tslint:disable-next-line: deprecation
+    this._update(newValue, /** isMerge */ false, actionName || Actions.set, this.onSet || this.onOverride)
   }
 
   //#endregion write-methods

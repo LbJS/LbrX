@@ -1,7 +1,7 @@
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 import { TestSubject } from '__test__/test-subjects'
 
-describe(`Store - select():`, () => {
+describe(`Store - get():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let StoresFactory: typeof StoresFactory_type
@@ -11,22 +11,21 @@ describe(`Store - select():`, () => {
     StoresFactory = provider.StoresFactory
   })
 
-
   it(`should return store's state value.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result = store.select()
+    const result = store.get()
     expect(result).toStrictEqual(createInitialState())
   })
 
-  it(`should return the selected property based on the provided projection method.`, () => {
+  it(`should return property based on the provided projection method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result = store.select(state => state.stringValue)
+    const result = store.get(state => state.stringValue)
     expect(result).toStrictEqual(createInitialState().stringValue)
   })
 
-  it(`should emit the selected nested property based on the provided projection method.`, () => {
+  it(`should return nested property based on the provided projection method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result = store.select(state => state.innerTestObject!.deepNestedObj!.objectList)
+    const result = store.get(state => state.innerTestObject!.deepNestedObj!.objectList)
     expect(result).toStrictEqual(createInitialState().innerTestObject!.deepNestedObj!.objectList)
   })
 
@@ -36,7 +35,7 @@ describe(`Store - select():`, () => {
       s: createInitialState().stringValue,
       n: createInitialState().numberValue,
     }
-    const result = store.select(state => ({
+    const result = store.get(state => ({
       s: state.stringValue,
       n: state.numberValue,
     }))
@@ -47,7 +46,7 @@ describe(`Store - select():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const initialState = createInitialState()
     const expectedResult = [initialState.dateValue, initialState.innerTestObject]
-    const result = store.select([
+    const result = store.get([
       value => value.dateValue,
       value => value.innerTestObject
     ])
@@ -56,7 +55,7 @@ describe(`Store - select():`, () => {
 
   it(`should emit a value based on a key value.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result = store.select(`stringValue`)
+    const result = store.get(`stringValue`)
     expect(result).toStrictEqual(createInitialState().stringValue)
   })
 
@@ -68,22 +67,22 @@ describe(`Store - select():`, () => {
       numberValue: initialState.numberValue,
       dateValue: initialState.dateValue,
     }
-    const result = store.select([`stringValue`, `numberValue`, `dateValue`])
+    const result = store.get([`stringValue`, `numberValue`, `dateValue`])
     expect(result).toStrictEqual(expectedResult)
   })
 
   it(`should throw if the method is called before initialization.`, () => {
     const store = StoresFactory.createStore(null)
     expect(() => {
-      store.select()
+      store.get()
     }).toThrow()
   })
 
   it(`it should emit the whole value if the provided paramter is invalid array.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result1 = store.select([])
+    const result1 = store.get([])
     expect(result1).toStrictEqual(createInitialState())
-    const result2 = store.select([`stringValue`, (value: any) => value.stringValue] as any)
+    const result2 = store.get([`stringValue`, (value: any) => value.stringValue] as any)
     expect(result2).toStrictEqual(createInitialState())
   })
 })

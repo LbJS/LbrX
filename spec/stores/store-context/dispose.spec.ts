@@ -20,7 +20,7 @@ describe(`StoreContext - dispose():`, () => {
     const observable = storeContext.value$
     storeContext.dispose()
     expect(storeContext[`_lastValue`]).toBeNull()
-    expect(storeContext[`_selectObservable`]).toBeNull()
+    expect(storeContext[`_getObservable`]).toBeNull()
     expect(storeContext[`_isDisposed`]).toBeTruthy()
     expect(store[`_observableQueryContextsList`].every(x => x.observable != observable)).toBeTruthy()
   })

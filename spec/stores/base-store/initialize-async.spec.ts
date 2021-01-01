@@ -37,7 +37,7 @@ describe(`Base Store - initializeAsync():`, () => {
 
   it(`should return the initial state from observable after async initialization.`, done => {
     const store = StoresFactory.createStore(null)
-    store.select$().subscribe(value => {
+    store.get$().subscribe(value => {
       expect(value).toStrictEqual(createInitialValue())
       done()
     })

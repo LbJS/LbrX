@@ -12,11 +12,11 @@ describe(`Store - onAction():`, () => {
     StoresFactory = provider.StoresFactory
   })
 
-  it(`should return QueryableStore with select$ only.`, () => {
+  it(`should return QueryableStore with get$ only.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const result = store.onAction(`action`)
     expect(typeof result).toBe(`object`)
-    expect(typeof result.select$).toBe(`function`)
+    expect(typeof result.get$).toBe(`function`)
     expect(Object.keys(result).length).toBe(1)
   })
 
@@ -24,17 +24,17 @@ describe(`Store - onAction():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const actionsName = `myActions`
     expect.assertions(2)
-    store.onAction(Actions.override).select$().subscribe(value => {
+    store.onAction(Actions.set).get$().subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
-    store.onAction(actionsName).select$().subscribe(value => {
+    store.onAction(actionsName).get$().subscribe(value => {
       const expectedState = createStateA()
       expectedState.stringValue = `value value value`
       expect(value).toStrictEqual(expectedState)
       done()
     })
     store.update({ stringValue: `value value value` })
-    store.override(createStateA())
+    store.set(createStateA())
     store.update({ stringValue: `value value value` })
     store.update({ stringValue: `value value value` }, actionsName)
   })

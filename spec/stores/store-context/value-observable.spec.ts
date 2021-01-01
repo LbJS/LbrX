@@ -16,45 +16,45 @@ describe(`StoreContext - value$:`, () => {
     StoreContext = provider.StoreContext
   })
 
-  it(`should return store's state value as an observable by invoking the select$ method.`, () => {
+  it(`should return store's state value as an observable by invoking the get$ method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const selectSpy = jest.spyOn(store, `select$`)
+    const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    expect(selectSpy).toBeCalledTimes(1)
+    expect(getSpy).toBeCalledTimes(1)
   })
 
   it(`should allow disposing the query context using the observable.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const selectSpy = jest.spyOn(store, `select$`)
+    const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     const observable = storeContext.value$
     store.disposeObservableQueryContext(observable)
     const subscribeCallback = jest.fn()
     expect.assertions(2)
     observable.subscribe(subscribeCallback)
-    expect(selectSpy).toBeCalledTimes(1)
+    expect(getSpy).toBeCalledTimes(1)
     expect(subscribeCallback).not.toBeCalled()
   })
 
-  it(`should return store's state value as an observable by invoking the select$ method even after disposing.`, () => {
+  it(`should return store's state value as an observable by invoking the get$ method even after disposing.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const selectSpy = jest.spyOn(store, `select$`)
+    const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     storeContext.dispose()
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    expect(selectSpy).toBeCalledTimes(1)
+    expect(getSpy).toBeCalledTimes(1)
   })
 
   it(`should allow disposing the query context using the observable even after disposing.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const selectSpy = jest.spyOn(store, `select$`)
+    const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     storeContext.dispose()
     const observable = storeContext.value$
@@ -62,33 +62,33 @@ describe(`StoreContext - value$:`, () => {
     const subscribeCallback = jest.fn()
     expect.assertions(2)
     observable.subscribe(subscribeCallback)
-    expect(selectSpy).toBeCalledTimes(1)
+    expect(getSpy).toBeCalledTimes(1)
     expect(subscribeCallback).not.toBeCalled()
   })
 
   it(`should return store's state value as an observable on a specified action.`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const onActionSpy = jest.spyOn(store, `onAction`)
-    const storeContext = store.getContext(null, Actions.override)
+    const storeContext = store.getContext(null, Actions.set)
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
-    store.override(createStateA())
+    store.set(createStateA())
     expect(onActionSpy).toBeCalledTimes(1)
   })
 
   it(`should stop evaluating values after it's disposed.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const selectSpy = jest.spyOn(store, `select$`)
+    const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     const subscribeCallback = jest.fn()
     expect.assertions(2)
     storeContext.value$.subscribe(subscribeCallback)
-    store.override(createStateA())
+    store.set(createStateA())
     storeContext.dispose()
-    store.override(createStateB())
-    expect(selectSpy).toBeCalledTimes(1)
+    store.set(createStateB())
+    expect(getSpy).toBeCalledTimes(1)
     expect(subscribeCallback).toBeCalledTimes(2)
   })
 })

@@ -12,10 +12,10 @@ describe(`Base Store - disposeObservableQueryContext():`, () => {
 
   it(`should allow disposing a context by observable.`, () => {
     const store = StoresFactory.createStore(null)
-    store.select$()
-    const observable = store.select$()
-    store.select$()
-    store.select$()
+    store.get$()
+    const observable = store.get$()
+    store.get$()
+    store.get$()
     expect(store[`_observableQueryContextsList`].length).toBe(4)
     const result = store.disposeObservableQueryContext(observable)
     expect(result).toBeTruthy()
@@ -24,9 +24,9 @@ describe(`Base Store - disposeObservableQueryContext():`, () => {
 
   it(`should ignore when disposing an element by observable that doesn't exist.`, () => {
     const store = StoresFactory.createStore(null)
-    store.select$()
-    store.select$()
-    store.select$()
+    store.get$()
+    store.get$()
+    store.get$()
     expect(store[`_observableQueryContextsList`].length).toBe(3)
     const observable = new Observable()
     const result = store.disposeObservableQueryContext(observable)

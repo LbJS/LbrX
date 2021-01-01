@@ -23,7 +23,7 @@ This is an object oriented State Manager that's build for JavaScript application
 - [x] Store pause api
 - [x] Store destroy api
 - [x] Advanced store config that allows methods override like `objectClone`, `objectCompare`, etc.
-- [x] Select with string literals
+- [x] Get with string literals
 - [x] Full spec coverage of the above
 - [ ] **List Store - wip**
 - [ ] Full spec coverage of the above
@@ -34,7 +34,7 @@ This is an object oriented State Manager that's build for JavaScript application
 
 - Added support for moment.js.
 - LbrX utility functions and types are now available via `import { ... } from 'lbrx/utils'`.
-- `storeName.select()` is removed. Use: `storeName.select$()`.
+- `storeName.get()` is removed. Use: `storeName.get$()`.
 - Global error store has bee removed.
 - Hook's interfaces have been removed. Now you can just override the methods in the inheritor class.
 - `LbrXManager` should now be imported from `lbrx/core`.
@@ -112,15 +112,15 @@ const userStore = new UserStore();
 ### Step 3: Subscribe to changes
 
 ```typescript
-userStore.select$().subscribe((x) => console.log(x));
+userStore.get$().subscribe((x) => console.log(x));
 userStore
-  .select$((state) => state.firstName)
+  .get$((state) => state.firstName)
   .subscribe((x) => console.log("firstName: " + x));
 userStore
-  .select$((state) => state.lastName)
+  .get$((state) => state.lastName)
   .subscribe((x) => console.log("lastName: " + x));
 userStore
-  .select$((state) => state.address?.place)
+  .get$((state) => state.address?.place)
   .subscribe((x) => console.log("address: " + x));
 
 // User {firstName: "Leon", lastName: null, address: Address}

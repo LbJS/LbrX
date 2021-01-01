@@ -2,7 +2,7 @@
 import { StoreContext as StoreContext_type } from 'lbrx'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
-describe(`StoreContext - saveChanges():`, () => {
+describe(`StoreContext - save():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   let StoresFactory: typeof StoresFactory_type
@@ -19,12 +19,12 @@ describe(`StoreContext - saveChanges():`, () => {
     const storeContext = store.getContext()
     const value = storeContext.value
     value.stringValue = `test55`
-    storeContext.saveChanges()
+    storeContext.save()
     const expectedValue = createInitialState()
     expectedValue.stringValue = `test55`
     expect(store.value).toStrictEqual(expectedValue)
     value.stringValue = `test77`
-    storeContext.saveChanges()
+    storeContext.save()
     expectedValue.stringValue = `test77`
     expect(store.value).toStrictEqual(expectedValue)
   })
@@ -38,11 +38,11 @@ describe(`StoreContext - saveChanges():`, () => {
       value.stringValue = isSecondRun ? `test77` : `test55`
       isSecondRun = true
     })
-    storeContext.saveChanges()
+    storeContext.save()
     const expectedValue = createInitialState()
     expectedValue.stringValue = `test55`
     expect(store.value).toStrictEqual(expectedValue)
-    storeContext.saveChanges()
+    storeContext.save()
     expectedValue.stringValue = `test77`
     expect(store.value).toStrictEqual(expectedValue)
   })
@@ -51,7 +51,7 @@ describe(`StoreContext - saveChanges():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const storeContext = store.getContext()
     expect(() => {
-      storeContext.saveChanges()
+      storeContext.save()
     }).toThrow()
   })
 
@@ -62,7 +62,7 @@ describe(`StoreContext - saveChanges():`, () => {
     expect(value).toStrictEqual(createInitialState())
     storeContext.dispose()
     expect(() => {
-      storeContext.saveChanges()
+      storeContext.save()
     }).toThrow()
   })
 })

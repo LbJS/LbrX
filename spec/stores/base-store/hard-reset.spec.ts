@@ -47,9 +47,9 @@ describe(`Base Store - hardReset():`, () => {
 
   it(`should update all items in query context list that the store was reseted.`, async () => {
     const store = StoresFactory.createStore(createInitialState())
-    store.select$().subscribe(() => { })
-    store.select$().subscribe(() => { })
-    store.select$().subscribe(() => { })
+    store.get$().subscribe(() => { })
+    store.get$().subscribe(() => { })
+    store.get$().subscribe(() => { })
     await store.hardReset()
     expect.assertions(3)
     store[`_observableQueryContextsList`].forEach(x => {
