@@ -64,12 +64,12 @@ const userStore = new UserStore()
 const betterUserStore = new BetterUserStore();
 
 (betterUserStore as QueryableStore<User>)
-  .onAction(Actions.update)
+  .when(Actions.update)
   .get$(x => x.address)
   .subscribe(x => console.log(x))
 
 userStore
-  .onAction(Actions.update)
+  .when(Actions.update)
   .get$(state => state.firstName)
   .subscribe(x => console.log(`-----Update only: ` + x))
 

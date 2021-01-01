@@ -1,11 +1,11 @@
-import { BehaviorSubject, isObservable, Observable, Subject, Subscription } from 'rxjs'
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators'
+import { BehaviorSubject, iif, isObservable, Observable, of, Subject, Subscription } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
   ResettableStore<S, M, E>,
@@ -151,6 +151,13 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   public get isInitialized(): boolean {
     return !!this._value && !this.isLoading
   }
+
+  /** @internal */
+  protected readonly _whenLoaded$: Observable<Readonly<S> | null> = this.isLoading$
+    .pipe(
+      filter(x => !x),
+      switchMap(() => this._value$),
+    )
 
   //#endregion state
   //#region error-api
@@ -417,7 +424,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
 
   /** @internal */
   protected _getProjectionMethod<T, R>(
-    projectsOrKeys?: ProjectsOrKeys<T, R>
+    projectsOrKeys?: ProjectsOrKeys<T, R> | null
   ): Project<T, R> {
     if (isArray(projectsOrKeys) && projectsOrKeys.length) {
       if ((<((value: Readonly<T>) => T | R)[]>projectsOrKeys).every(x => isFunction(x))) {
@@ -434,6 +441,47 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
     if (isFunction(projectsOrKeys)) return projectsOrKeys
     return (x: Readonly<T>) => x
+  }
+
+  /** @internal */
+  protected _get$<R, K extends keyof S>(
+    pipe?: Pipe<S, R> | null,
+    actionOrActions?: Actions | string | (Actions | string)[] | null,
+    projectsOrKeys?: ProjectsOrKeys<S, R> | null,
+    compare?: Compare
+  ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
+    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
+    const takeWhilePredicate = () => {
+      return !observableQueryContext.isDisposed
+    }
+    const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
+    const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
+      return !this.isPaused
+        && !observableQueryContext.isDisposed
+        && !!value
+    }
+    const project: Project<S, R> | Pipe<S, R> = pipe || this._getProjectionMethod(projectsOrKeys)
+    compare ||= this._compare
+    const observableQueryContext: ObservableQueryContext = {
+      doSkipOneChangeCheck: false,
+      isDisposed: false,
+      observable: this._value$.asObservable()
+        .pipe(
+          takeWhile(takeWhilePredicate),
+          filter(actionFilterPredicate),
+          mergeMap(x => iif(() => this.isLoading, this._whenLoaded$, of(x))),
+          filter(mainFilterPredicate),
+          map(project),
+          distinctUntilChanged((prev, curr) => {
+            if (observableQueryContext.doSkipOneChangeCheck) return false
+            return (isObject(prev) && isObject(curr)) ? compare!(prev, curr) : prev === curr
+          }),
+          tap(() => observableQueryContext.doSkipOneChangeCheck = false),
+          map(x => this._cloneIfObject(x)),
+        )
+    }
+    this._observableQueryContextsList.push(observableQueryContext)
+    return observableQueryContext.observable
   }
 
   //#endregion helper-methods

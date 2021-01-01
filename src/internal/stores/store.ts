@@ -1,9 +1,8 @@
-import { iif, Observable, of } from 'rxjs'
-import { distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
-import { assert, isArray, isFunction, isObject } from '../helpers'
+import { Observable } from 'rxjs'
+import { assert, isFunction } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, ObservableQueryContext, Project, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -30,16 +29,6 @@ import { StoreContext } from './store-context'
  */
 export class Store<S extends object, E = any> extends BaseStore<S, S, E> implements QueryableStore<S, E>, WriteableStore<S, E> {
 
-  //#region helper-props
-
-  /** @internal */
-  protected readonly _whenLoaded$: Observable<Readonly<S> | null> = this.isLoading$
-    .pipe(
-      filter(x => !x),
-      switchMap(() => this._value$),
-    )
-
-  //#endregion helper-props
   //#region constructor
 
   /**
@@ -63,50 +52,12 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   //#endregion constructor
   //#region query-methods
 
-  /** @internal */
-  protected _get$<R, K extends keyof S>(
-    projectsOrKeys?: ProjectsOrKeys<S, R>,
-    actionOrActions?: Actions | string | (Actions | string)[]
-  ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
-    const takeWhilePredicate = () => {
-      return !observableQueryContext.isDisposed
-    }
-    const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
-    const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
-      return !this.isPaused
-        && !observableQueryContext.isDisposed
-        && !!value
-    }
-    const project: Project<S, R> = this._getProjectionMethod(projectsOrKeys)
-    const observableQueryContext: ObservableQueryContext = {
-      doSkipOneChangeCheck: false,
-      isDisposed: false,
-      observable: this._value$.asObservable()
-        .pipe(
-          takeWhile(takeWhilePredicate),
-          filter(actionFilterPredicate),
-          mergeMap(x => iif(() => this.isLoading, this._whenLoaded$, of(x))),
-          filter(mainFilterPredicate),
-          map(project),
-          distinctUntilChanged((prev, curr) => {
-            if (observableQueryContext.doSkipOneChangeCheck) return false
-            return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
-          }),
-          tap(() => observableQueryContext.doSkipOneChangeCheck = false),
-          map(x => this._cloneIfObject(x)),
-        )
-    }
-    this._observableQueryContextsList.push(observableQueryContext)
-    return observableQueryContext.observable
-  }
-
   /**
    * @deprecated
    * User the `get$()` method instead.
    */
   public select$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    return this._get$<R, K>(projectsOrKeys)
+    return this.get$<R>(projectsOrKeys)
   }
 
   /**
@@ -178,7 +129,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public get$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
   public get$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    return this._get$<R, K>(projectsOrKeys)
+    return this._get$<R, K>(null, null, projectsOrKeys)
   }
 
   /**
@@ -186,7 +137,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Use the `when()` method instead.
    */
   public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
-    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(projectsOrKeys, actionOrActions) }
+    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(null, actionOrActions, projectsOrKeys) }
   }
 
   /**
@@ -206,7 +157,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public when<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
   public when<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
-    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(projectsOrKeys, actionOrActions) }
+    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(null, actionOrActions, projectsOrKeys) }
   }
 
   /**
