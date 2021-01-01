@@ -70,16 +70,16 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
     if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
     const takeWhilePredicate = () => {
-      return !getterContext.isDisposed
+      return !observableQueryContext.isDisposed
     }
     const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
     const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
       return !this.isPaused
-        && !getterContext.isDisposed
+        && !observableQueryContext.isDisposed
         && !!value
     }
     const project: Project<S, R> = this._getProjectionMethod(projectsOrKeys)
-    const getterContext: ObservableQueryContext = {
+    const observableQueryContext: ObservableQueryContext = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
       observable: this._value$.asObservable()
@@ -90,15 +90,15 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
           filter(mainFilterPredicate),
           map(project),
           distinctUntilChanged((prev, curr) => {
-            if (getterContext.doSkipOneChangeCheck) return false
+            if (observableQueryContext.doSkipOneChangeCheck) return false
             return (isObject(prev) && isObject(curr)) ? this._compare(prev, curr) : prev === curr
           }),
-          tap(() => getterContext.doSkipOneChangeCheck = false),
+          tap(() => observableQueryContext.doSkipOneChangeCheck = false),
           map(x => this._cloneIfObject(x)),
         )
     }
-    this._observableQueryContextsList.push(getterContext)
-    return getterContext.observable
+    this._observableQueryContextsList.push(observableQueryContext)
+    return observableQueryContext.observable
   }
 
   /**
