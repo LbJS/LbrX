@@ -1,7 +1,7 @@
 import { Actions } from 'lbrx'
 import { StoresFactory as StoresFactory_type, TestSubjectFactory } from '__test__/factories'
 
-describe(`Store - when():`, () => {
+describe(`Store - onAction():`, () => {
 
   const createInitialState = () => TestSubjectFactory.createTestSubject_initial()
   const createStateA = () => TestSubjectFactory.createTestSubject_configA()
@@ -14,7 +14,7 @@ describe(`Store - when():`, () => {
 
   it(`should return QueryableStore with get$ only.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const result = store.when(`action`)
+    const result = store.onAction(`action`)
     expect(typeof result).toBe(`object`)
     expect(typeof result.get$).toBe(`function`)
     expect(Object.keys(result).length).toBe(1)
@@ -24,10 +24,10 @@ describe(`Store - when():`, () => {
     const store = StoresFactory.createStore(createInitialState())
     const actionsName = `myActions`
     expect.assertions(2)
-    store.when(Actions.set).get$().subscribe(value => {
+    store.onAction(Actions.set).get$().subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
-    store.when(actionsName).get$().subscribe(value => {
+    store.onAction(actionsName).get$().subscribe(value => {
       const expectedState = createStateA()
       expectedState.stringValue = `value value value`
       expect(value).toStrictEqual(expectedState)

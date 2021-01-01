@@ -68,14 +68,14 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should return store's state value as an observable on a specified action.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const whenSpy = jest.spyOn(store, `when`)
+    const onActionSpy = jest.spyOn(store, `onAction`)
     const storeContext = store.getContext(null, Actions.set)
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
     store.set(createStateA())
-    expect(whenSpy).toBeCalledTimes(1)
+    expect(onActionSpy).toBeCalledTimes(1)
   })
 
   it(`should stop evaluating values after it's disposed.`, () => {

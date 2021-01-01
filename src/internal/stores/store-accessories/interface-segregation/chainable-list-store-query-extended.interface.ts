@@ -1,8 +1,8 @@
 import { Actions } from '../actions'
 import { Pipe } from '../types'
-import { QueryableListStore } from './queryable-list-store.interface'
+import { ChainableListStoreQuery } from './chainable-list-store-query.interface'
 
-export interface QueryableListStoreExtended<T, S> extends QueryableListStore<T> {
+export interface ChainableListStoreQueryExtended<T, S> extends ChainableListStoreQuery<T> {
   _actions: (Actions | string)[] | null
   _pipMethods: Pipe<any[], any[] | any>[]
   _pipe<R>(arr: S[], pipeMethods: Pipe<any[], any[]>[]): R[] | S[]

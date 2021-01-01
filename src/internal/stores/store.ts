@@ -133,30 +133,22 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   }
 
   /**
-   * @deprecated
-   * Use the `when()` method instead.
+   * Will invoke the chained method only on the provided action.
+   * @example
+   * onAction('update').get$(projector)
    */
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
-    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(null, actionOrActions, projectsOrKeys) }
-  }
-
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'get$'>
   /**
    * Will invoke the chained method only on the provided action.
    * @example
-   * when('update').get$(projector)
+   * onAction(['update', 'myCustomActionName']).get$(projector)
    */
-  public when<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'get$'>
-  /**
-   * Will invoke the chained method only on the provided action.
-   * @example
-   * when(['update', 'myCustomActionName']).get$(projector)
-   */
-  public when<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
+  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
   /**
    * Dynamic overload.
    */
-  public when<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
-  public when<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
     return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(null, actionOrActions, projectsOrKeys) }
   }
 
