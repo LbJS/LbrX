@@ -21,7 +21,7 @@ export class StoreContext<T extends object> {
   }
 
   public get value$(): Observable<T> {
-    const observable = this._onAction ? this._store.onAction(this._onAction).get$() : this._store.get$()
+    const observable = this._onAction ? this._store.when(this._onAction).get$() : this._store.get$()
     if (!this._isDisposed) {
       const queryContext = this._queryContextList.find(x => x.observable == observable)
       assert(queryContext, `StoreContext: on "${this._store.config.name}" has encountered an critical error while handling the query context observable.`)
@@ -54,7 +54,7 @@ export class StoreContext<T extends object> {
   public dispose(): void {
     this._lastValue = null
     if (this._getObservable) {
-      this._store.disposeObservableQueryContext(this._getObservable)
+      this._store.disposeObservable(this._getObservable)
       this._getObservable = null
     }
     this._isDisposed = true

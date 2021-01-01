@@ -415,6 +415,27 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     this._value$.next(value.value)
   }
 
+  /** @internal */
+  protected _getProjectionMethod<T, R>(
+    projectsOrKeys?: ProjectsOrKeys<T, R>
+  ): Project<T, R> {
+    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
+      if ((<((value: Readonly<T>) => T | R)[]>projectsOrKeys).every(x => isFunction(x))) {
+        return value => (<((value: Readonly<T>) => T | R)[]>projectsOrKeys).map(x => x(value))
+      }
+      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
+        return (value: Readonly<T>) => {
+          const result = {} as R;
+          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
+          return result
+        }
+      }
+    }
+    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
+    if (isFunction(projectsOrKeys)) return projectsOrKeys
+    return (x: Readonly<T>) => x
+  }
+
   //#endregion helper-methods
   //#region utility-methods
 
@@ -431,7 +452,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   /**
    * Disposes the observable by completing the observable and removing it from query context list.
    */
-  public disposeObservableQueryContext(observable: Observable<any>): boolean {
+  public disposeObservable(observable: Observable<any>): boolean {
     return this._observableQueryContextsList.disposeByObservable(observable)
   }
 
@@ -720,30 +741,6 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   }
 
   //#endregion reset-dispose-destroy-methods
-  //#region query-methods
-
-  /** @internal */
-  protected _getProjectionMethod<T, R>(
-    projectsOrKeys?: ProjectsOrKeys<T, R>
-  ): Project<T, R> {
-    if (isArray(projectsOrKeys) && projectsOrKeys.length) {
-      if ((<((value: Readonly<T>) => T | R)[]>projectsOrKeys).every(x => isFunction(x))) {
-        return value => (<((value: Readonly<T>) => T | R)[]>projectsOrKeys).map(x => x(value))
-      }
-      if ((<string[]>projectsOrKeys).every(x => isString(x))) {
-        return (value: Readonly<T>) => {
-          const result = {} as R;
-          (<string[]>projectsOrKeys).forEach((x: string) => result[x] = value[x])
-          return result
-        }
-      }
-    }
-    if (isString(projectsOrKeys)) return (value: Readonly<T>) => value[projectsOrKeys as string]
-    if (isFunction(projectsOrKeys)) return projectsOrKeys
-    return (x: Readonly<T>) => x
-  }
-
-  //#endregion query-methods
   //#region hooks
 
   /**

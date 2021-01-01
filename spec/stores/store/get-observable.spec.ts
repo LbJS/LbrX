@@ -319,7 +319,7 @@ describe(`Store - get$():`, () => {
     observable.subscribe(value => {
       expect(value).toStrictEqual(createInitialState())
     })
-    store.disposeObservableQueryContext(observable)
+    store.disposeObservable(observable)
     store.update(createStateA())
   })
 
@@ -328,7 +328,7 @@ describe(`Store - get$():`, () => {
     const observable = store.get$()
     const sub = observable.subscribe(() => { })
     expect(sub.closed).toBeFalsy()
-    store.disposeObservableQueryContext(observable)
+    store.disposeObservable(observable)
     store.update(createStateA())
     expect(sub.closed).toBeTruthy()
   })

@@ -32,7 +32,7 @@ describe(`StoreContext - value$:`, () => {
     const getSpy = jest.spyOn(store, `get$`)
     const storeContext = store.getContext()
     const observable = storeContext.value$
-    store.disposeObservableQueryContext(observable)
+    store.disposeObservable(observable)
     const subscribeCallback = jest.fn()
     expect.assertions(2)
     observable.subscribe(subscribeCallback)
@@ -58,7 +58,7 @@ describe(`StoreContext - value$:`, () => {
     const storeContext = store.getContext()
     storeContext.dispose()
     const observable = storeContext.value$
-    store.disposeObservableQueryContext(observable)
+    store.disposeObservable(observable)
     const subscribeCallback = jest.fn()
     expect.assertions(2)
     observable.subscribe(subscribeCallback)
@@ -68,14 +68,14 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should return store's state value as an observable on a specified action.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const onActionSpy = jest.spyOn(store, `onAction`)
+    const whenSpy = jest.spyOn(store, `when`)
     const storeContext = store.getContext(null, Actions.set)
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
     store.set(createStateA())
-    expect(onActionSpy).toBeCalledTimes(1)
+    expect(whenSpy).toBeCalledTimes(1)
   })
 
   it(`should stop evaluating values after it's disposed.`, () => {
