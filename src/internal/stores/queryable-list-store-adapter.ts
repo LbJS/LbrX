@@ -44,7 +44,8 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
         toList: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._toList(predicate, queryableListStore),
         firstOrDefault: (predicate?: (value: R, index: number, array: R[]) => boolean) =>
           this._firstOrDefault(predicate, queryableListStore),
-        first: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first(predicate, queryableListStore)
+        first: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first(predicate, queryableListStore),
+        any: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._any(predicate, queryableListStore),
       }
     }
     if (this._assertIsQLSE<T>(queryableListStore)) {
@@ -197,6 +198,23 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   public first<R>(predicate: (value: R, index: number, array: R[]) => boolean): R | never
   public first<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): S | R | never {
     return this._first(predicate)
+  }
+
+  /** @internal */
+  protected _any<R>(
+    predicate?: (value: R, index: number, array: R[]) => boolean,
+    queryableListStore?: QueryableListStore<R> | QueryableListStoreExtended<R, S>,
+  ): boolean {
+    const result: R | null = this._firstOrDefault(predicate, queryableListStore)
+    return !isNull(result)
+  }
+
+  public any(): boolean
+  public any<R>(): boolean
+  public any(predicate: (value: S, index: number, array: S[]) => boolean): boolean
+  public any<R>(predicate: (value: R, index: number, array: R[]) => boolean): boolean
+  public any<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): boolean {
+    return this._any(predicate)
   }
 
   //#endregion query-methods
