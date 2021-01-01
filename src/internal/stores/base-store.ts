@@ -34,13 +34,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     this._stateSource = value
-    DevToolsAdapter.states[this._storeName] = value
-    DevToolsAdapter.values[this._storeName] = value.value
-    this._state$.next(value)
-    this._isLoading$.next(value.isLoading)
-    this._isPaused$.next(value.isPaused)
-    this._error$.next(value.error)
-    this._value$.next(value.value)
+    this._distributeState(value)
   }
 
   /** @internal */
@@ -408,6 +402,17 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   /** @internal */
   protected _cloneIfObject(value: any): any {
     return isObject(value) ? this._clone(value) : value
+  }
+
+  /** @internal */
+  protected _distributeState(value: State<S>): void {
+    DevToolsAdapter.states[this._storeName] = value
+    DevToolsAdapter.values[this._storeName] = value.value
+    this._state$.next(value)
+    this._isLoading$.next(value.isLoading)
+    this._isPaused$.next(value.isPaused)
+    this._error$.next(value.error)
+    this._value$.next(value.value)
   }
 
   //#endregion helper-methods
