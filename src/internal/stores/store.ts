@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 import { assert, isFunction } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, GetReturnType, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, GetObservableParam, GetReturnType, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -129,7 +129,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public get$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
   public get$<R>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<GetReturnType<S, R>> {
-    return this._get$<R>(null, null, projectsOrKeys)
+    return this._get$<R>({ projectsOrKeys })
   }
 
   /**
@@ -151,7 +151,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
     return {
       get$: <R>(projectsOrKeys?: ProjectsOrKeys<S, R>) =>
-        this._get$<R>(null, actionOrActions, projectsOrKeys)
+        this._get$<R>({ actionOrActions, projectsOrKeys })
     }
   }
 
@@ -288,7 +288,13 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   //#region store-context
 
   public getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<S> {
-    return new StoreContext<S>(this, this._observableQueryContextsList, saveChangesActionName || undefined, onAction)
+    return new StoreContext<S>(
+      this,
+      (value: GetObservableParam<S, any>) => this._get$(value),
+      this._observableQueryContextsList,
+      saveChangesActionName || undefined,
+      onAction,
+    )
   }
 
   //#endregion store-context

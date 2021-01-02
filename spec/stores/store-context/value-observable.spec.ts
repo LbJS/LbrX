@@ -18,7 +18,7 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should return store's state value as an observable by invoking the get$ method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get$`)
+    const getSpy = jest.spyOn(store, `_get$` as any)
     const storeContext = store.getContext()
     expect.assertions(2)
     storeContext.value$.subscribe(value => {
@@ -29,7 +29,7 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should allow disposing the query context using the observable.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get$`)
+    const getSpy = jest.spyOn(store, `_get$` as any)
     const storeContext = store.getContext()
     const observable = storeContext.value$
     store.disposeObservable(observable)
@@ -42,7 +42,7 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should return store's state value as an observable by invoking the get$ method even after disposing.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get$`)
+    const getSpy = jest.spyOn(store, `_get$` as any)
     const storeContext = store.getContext()
     storeContext.dispose()
     expect.assertions(2)
@@ -54,7 +54,7 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should allow disposing the query context using the observable even after disposing.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get$`)
+    const getSpy = jest.spyOn(store, `_get$` as any)
     const storeContext = store.getContext()
     storeContext.dispose()
     const observable = storeContext.value$
@@ -68,19 +68,17 @@ describe(`StoreContext - value$:`, () => {
 
   it(`should return store's state value as an observable on a specified action.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const onActionSpy = jest.spyOn(store, `onAction`)
     const storeContext = store.getContext(null, Actions.set)
-    expect.assertions(2)
+    expect.assertions(1)
     storeContext.value$.subscribe(value => {
       expect(value).toStrictEqual(createStateA())
     })
     store.set(createStateA())
-    expect(onActionSpy).toBeCalledTimes(1)
   })
 
   it(`should stop evaluating values after it's disposed.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get$`)
+    const getSpy = jest.spyOn(store, `_get$` as any)
     const storeContext = store.getContext()
     const subscribeCallback = jest.fn()
     expect.assertions(2)

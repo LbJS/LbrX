@@ -2,38 +2,37 @@ import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
 import { assert } from '../helpers'
 import { Store } from './store'
-import { Actions, ObservableQueryContext, ObservableQueryContextsList } from './store-accessories'
+import { Actions, GetObservableParam, ObservableQueryContext, ObservableQueryContextsList } from './store-accessories'
 
-export class StoreContext<T extends object> {
+export class StoreContext<S extends object> {
 
-  protected _lastValue: T | null = null
-  protected _getObservable: Observable<T> | null = null
+  protected _lastValue: S | null = null
+  protected _getObservable: Observable<S> | null = null
   protected _isDisposed: boolean = false
 
   public get isDisposed(): boolean {
     return this._isDisposed
   }
 
-  public get value(): T {
+  public get value(): S {
     const value = this._store.get()
     if (!this._isDisposed) this._lastValue = value
     return value
   }
 
-  public get value$(): Observable<T> {
+  public get value$(): Observable<S> {
     if (this._getObservable) return this._getObservable
-    const observable = this._onAction ? this._store.onAction(this._onAction).get$() : this._store.get$()
-    if (!this._isDisposed) {
-      const queryContext = this._queryContextList.find(x => x.observable == observable)
-      assert(queryContext, `StoreContext: on "${this._store.config.name}" has encountered an critical error while handling the query context observable.`)
-      queryContext.observable = queryContext.observable.pipe(tap(x => this._lastValue = x))
-      this._getObservable = queryContext.observable
-    }
+    const observable = this._get({
+      actionOrActions: this._onAction,
+      operators: [tap((x: S) => this._lastValue = x)]
+    })
+    if (!this._isDisposed) this._getObservable = observable
     return this._getObservable || observable
   }
 
   constructor(
-    protected readonly _store: Store<T>,
+    protected readonly _store: Store<S>,
+    protected readonly _get: (value: GetObservableParam<S, S>) => Observable<S>,
     protected readonly _queryContextList: Array<ObservableQueryContext<any>> & ObservableQueryContextsList,
     protected readonly _saveAction?: string,
     protected readonly _onAction?: Actions | string | (Actions | string)[]
