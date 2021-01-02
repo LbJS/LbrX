@@ -108,7 +108,7 @@ describe(`Store Accessories - ObservableQueryContextsList:`, () => {
   it(`should allow disposing all element at once.`, () => {
     const observableQueryContextsList = new ObservableQueryContextsList(observableQueryContextsListApi)
     const numOfRequiredContexts = 3
-    const contextsCacheList: ObservableQueryContext[] = []
+    const contextsCacheList: ObservableQueryContext<any>[] = []
     for (let i = 0; i < numOfRequiredContexts; i++) {
       const observableQueryContext = createObservableQueryContext()
       contextsCacheList.push(observableQueryContext)

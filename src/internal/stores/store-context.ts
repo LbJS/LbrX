@@ -21,6 +21,7 @@ export class StoreContext<T extends object> {
   }
 
   public get value$(): Observable<T> {
+    if (this._getObservable) return this._getObservable
     const observable = this._onAction ? this._store.onAction(this._onAction).get$() : this._store.get$()
     if (!this._isDisposed) {
       const queryContext = this._queryContextList.find(x => x.observable == observable)
@@ -33,7 +34,7 @@ export class StoreContext<T extends object> {
 
   constructor(
     protected readonly _store: Store<T>,
-    protected readonly _queryContextList: Array<ObservableQueryContext> & ObservableQueryContextsList,
+    protected readonly _queryContextList: Array<ObservableQueryContext<any>> & ObservableQueryContextsList,
     protected readonly _saveAction?: string,
     protected readonly _onAction?: Actions | string | (Actions | string)[]
   ) { }

@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 import { ObservableQueryContext } from './observable-query-context.interface'
 import { ObservableQueryContextsListApi } from './store-observable-query-context-list-api.interface'
 
-export class ObservableQueryContextsList extends Array<ObservableQueryContext> {
+export class ObservableQueryContextsList extends Array<ObservableQueryContext<any>> {
 
   public set doSkipOneChangeCheck(value: boolean) {
     this.forEach(x => x.doSkipOneChangeCheck = value)
@@ -12,7 +12,7 @@ export class ObservableQueryContextsList extends Array<ObservableQueryContext> {
     super()
   }
 
-  public push(...items: ObservableQueryContext[]): number {
+  public push(...items: ObservableQueryContext<any>[]): number {
     if (this._observableQueryContextsListApi.isLazyInitContext()) this._observableQueryContextsListApi.initializeLazily()
     return super.push(...items)
   }

@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 import { assert, isFunction } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, GetReturnType, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -128,8 +128,8 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * }
    */
   public get$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
-  public get$<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    return this._get$<R, K>(null, null, projectsOrKeys)
+  public get$<R>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<GetReturnType<S, R>> {
+    return this._get$<R>(null, null, projectsOrKeys)
   }
 
   /**
@@ -148,8 +148,11 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Dynamic overload.
    */
   public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
-    return { get$: (projectsOrKeys?: ProjectsOrKeys<S, R>) => this._get$<any, any>(null, actionOrActions, projectsOrKeys) }
+  public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
+    return {
+      get$: <R>(projectsOrKeys?: ProjectsOrKeys<S, R>) =>
+        this._get$<R>(null, actionOrActions, projectsOrKeys)
+    }
   }
 
   /**

@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, GetReturnType, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
   ResettableStore<S, M, E>,
@@ -258,7 +258,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   //#region helper
 
   /** @internal */
-  protected readonly _observableQueryContextsList: Array<ObservableQueryContext> & ObservableQueryContextsList
+  protected readonly _observableQueryContextsList: Array<ObservableQueryContext<any>> & ObservableQueryContextsList
     = new ObservableQueryContextsList({
       isLazyInitContext: () => !!this._lazyInitContext,
       initializeLazily: () => this._initializeLazily()
@@ -444,16 +444,16 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   }
 
   /** @internal */
-  protected _get$<R, K extends keyof S>(
+  protected _get$<R>(
     pipe?: Pipe<S, R> | null,
     actionOrActions?: Actions | string | (Actions | string)[] | null,
     projectsOrKeys?: ProjectsOrKeys<S, R> | null,
     compare?: Compare
-  ): Observable<S | R | R[] | S[K] | Pick<S, K>> {
-    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
+  ): Observable<GetReturnType<S, R>> {
     const takeWhilePredicate = () => {
       return !observableQueryContext.isDisposed
     }
+    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
     const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
     const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
       return !this.isPaused
@@ -462,7 +462,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     }
     const project: Project<S, R> | Pipe<S, R> = pipe || this._getProjectionMethod(projectsOrKeys)
     compare ||= this._compare
-    const observableQueryContext: ObservableQueryContext = {
+    const observableQueryContext: ObservableQueryContext<GetReturnType<S, R>> = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
       observable: this._value$.asObservable()

@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs'
 
-export interface ObservableQueryContext {
+export interface ObservableQueryContext<T> {
   doSkipOneChangeCheck: boolean,
   isDisposed: boolean,
-  observable: Observable<any>
+  observable: Observable<T>
 }
