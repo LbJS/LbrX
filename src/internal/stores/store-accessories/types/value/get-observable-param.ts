@@ -7,6 +7,6 @@ export type GetObservableParam<T extends object, R> = {
   pipe?: Pipe<T, R> | null,
   actionOrActions?: Actions | string | (Actions | string)[] | null,
   projectsOrKeys?: ProjectsOrKeys<T, R> | null,
-  compare?: Compare,
+  compare?: Compare | null,
   operators?: MonoTypeOperatorFunction<T | R>[]
 }

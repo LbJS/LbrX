@@ -4,7 +4,7 @@ import { assert, isArray, isEmpty, isNull, isObject, throwError } from '../helpe
 import { KeyOrNever, NoVoid } from '../types'
 import { BaseStore } from './base-store'
 import { ListStoreConfigOptions } from './config'
-import { Actions, ChainableListStoreQuery, ChainableListStoreQueryExtended, Pipe, Project, ProjectsOrKeys } from './store-accessories'
+import { Actions, ChainableListStoreQuery, ChainableListStoreQueryExtended, Compare, Pipe, Project, ProjectsOrKeys } from './store-accessories'
 
 export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[], S, E> implements ChainableListStoreQuery<S> {
 
@@ -18,9 +18,8 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   //#region helper-methods
 
   /** @internal */
-  protected _assertIsQLSE<T>(value: any): value is ChainableListStoreQueryExtended<T, S> {
-    assert(value._pipMethods, `Store: "${this._config.name}" has encountered an critical error durning piping..`)
-    return true
+  protected _isQLSE<T>(value: any): value is ChainableListStoreQueryExtended<T, S> {
+    return !!value._pipMethods
   }
 
   /** @internal */
@@ -33,22 +32,24 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
 
   /** @internal */
   protected _getQueryableListStore<T, R>(
-    pipeOrActions: Pipe<T[], R[] | R> | (Actions | string)[],
+    pipeOrActions?: Pipe<T[], R[] | R> | (Actions | string)[],
     queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, S>,
   ): ChainableListStoreQuery<R> {
     if (!queryableListStore) {
       queryableListStore = {
         _actions: null,
         _pipMethods: [],
+        _compare: null,
         _pipe: <B>(arr: S[], pipeMethods: Pipe<any[], any[]>[]): B[] | S[] => {
           pipeMethods.forEach((pipe, i) => {
             arr = pipe(arr, i, pipeMethods)
           })
           return arr
         },
+        setCompare: (compare: Compare) => this._setCompare(compare, queryableListStore),
+        when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
         select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore),
         where: (predicate: (value: R, index: number, array: R[]) => boolean) => this._where(predicate, queryableListStore),
-        when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
         orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<R> | SortOptions<R>[], token?: SortingAlgorithmToken) =>
           this._orderBy(partialSortOptions, token, queryableListStore),
         toList: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._toList(predicate, queryableListStore),
@@ -56,9 +57,10 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
           this._firstOrDefault(predicate, queryableListStore),
         first: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first(predicate, queryableListStore),
         any: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._any(predicate, queryableListStore),
+        toList$: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._toList$(predicate, queryableListStore),
       }
     }
-    if (this._assertIsQLSE<T>(queryableListStore)) {
+    if (this._isQLSE<T>(queryableListStore) && pipeOrActions) {
       if (isArray(pipeOrActions)) {
         if (!queryableListStore._actions) queryableListStore._actions = [...pipeOrActions]
         queryableListStore._actions = [...pipeOrActions, ...pipeOrActions]
@@ -67,6 +69,35 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
       }
     }
     return queryableListStore
+  }
+
+  /** @internal */
+  protected _setCompare<R>(
+    compare: Compare,
+    queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, S>
+  ): ChainableListStoreQuery<R> {
+    if (!queryableListStore) queryableListStore = this._getQueryableListStore()
+    if (this._isQLSE(queryableListStore)) queryableListStore._compare = compare
+    return queryableListStore
+  }
+
+  public setCompare(compare: Compare): ChainableListStoreQuery<S> {
+    return this._setCompare(compare)
+  }
+
+  /** @internal */
+  protected _when<R>(
+    actionOrActions: Actions | string | (Actions | string)[],
+    queryableListStore?: ChainableListStoreQuery<R>
+  ): ChainableListStoreQuery<R> {
+    return this._getQueryableListStore(isArray(actionOrActions) ? actionOrActions : [actionOrActions], queryableListStore)
+  }
+
+  public when(action: Actions | string): ChainableListStoreQuery<S>
+  public when(actions: (Actions | string)[]): ChainableListStoreQuery<S>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): ChainableListStoreQuery<S>
+  public when(actionOrActions: Actions | string | (Actions | string)[]): ChainableListStoreQuery<S> {
+    return this._when(actionOrActions)
   }
 
   /** @internal */
@@ -100,21 +131,6 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
 
   public where(predicate: (value: S, index: number, array: S[]) => boolean): ChainableListStoreQuery<S> {
     return this._where(predicate)
-  }
-
-  /** @internal */
-  protected _when<R>(
-    actionOrActions: Actions | string | (Actions | string)[],
-    queryableListStore?: ChainableListStoreQuery<R>
-  ): ChainableListStoreQuery<R> {
-    return this._getQueryableListStore(isArray(actionOrActions) ? actionOrActions : [actionOrActions], queryableListStore)
-  }
-
-  public when(action: Actions | string): ChainableListStoreQuery<S>
-  public when(actions: (Actions | string)[]): ChainableListStoreQuery<S>
-  public when(actionOrActions: Actions | string | (Actions | string)[]): ChainableListStoreQuery<S>
-  public when(actionOrActions: Actions | string | (Actions | string)[]): ChainableListStoreQuery<S> {
-    return this._when(actionOrActions)
   }
 
   /** @internal */
@@ -152,7 +168,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
-    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
+    if (queryableListStore && this._isQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     return this._clone(value) as R[]
@@ -173,7 +189,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   ): R | null {
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     if (isNull(value)) return value
-    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
+    if (queryableListStore && this._isQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     let result: T | R | null = null
@@ -233,10 +249,11 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, S>,
   ): Observable<R[]> {
     if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
-    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
+    if (queryableListStore && this._isQLSE<R>(queryableListStore)) {
       return this._get$({
         actionOrActions: queryableListStore._actions,
         pipe: this._createPipe(queryableListStore),
+        compare: queryableListStore._compare
       }) as Observable<R[]>
     }
     return this._get$({}) as Observable<R[]>
