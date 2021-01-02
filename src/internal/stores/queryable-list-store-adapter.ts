@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs'
 import { SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
 import { assert, isArray, isEmpty, isNull, isObject, throwError } from '../helpers'
 import { KeyOrNever, NoVoid } from '../types'
@@ -14,12 +15,21 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   //#endregion constructor
-  //#region query-methods
+  //#region helper-methods
 
+  /** @internal */
   protected _assertIsQLSE<T>(value: any): value is ChainableListStoreQueryExtended<T, S> {
     assert(value._pipMethods, `Store: "${this._config.name}" has encountered an critical error durning piping..`)
     return true
   }
+
+  /** @internal */
+  protected _createPipe<R>(queryableListStore: ChainableListStoreQueryExtended<R, S>): Pipe<S[], R[] | S[]> {
+    return (value: S[]) => queryableListStore._pipe(value, queryableListStore._pipMethods)
+  }
+
+  //#region helper-methods
+  //#region query-methods
 
   /** @internal */
   protected _getQueryableListStore<T, R>(
@@ -142,7 +152,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
-    if (this._assertIsQLSE<R>(queryableListStore)) {
+    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     return this._clone(value) as R[]
@@ -163,7 +173,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   ): R | null {
     let value: S[] | R[] | null = this._value ? [...this._value] : null
     if (isNull(value)) return value
-    if (this._assertIsQLSE<R>(queryableListStore)) {
+    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
       value = queryableListStore._pipe(value, queryableListStore._pipMethods)
     }
     let result: T | R | null = null
@@ -215,6 +225,29 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   public any<R>(predicate: (value: R, index: number, array: R[]) => boolean): boolean
   public any<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): boolean {
     return this._any(predicate)
+  }
+
+  /** @internal */
+  protected _toList$<T, R>(
+    predicate?: ((value: T | R, index: number, array: T[] | R[]) => boolean),
+    queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, S>,
+  ): Observable<R[]> {
+    if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
+    if (queryableListStore && this._assertIsQLSE<R>(queryableListStore)) {
+      return this._get$({
+        actionOrActions: queryableListStore._actions,
+        pipe: this._createPipe(queryableListStore),
+      }) as Observable<R[]>
+    }
+    return this._get$({}) as Observable<R[]>
+  }
+
+  public toList$(): Observable<S[]>
+  public toList$<R>(): Observable<R[]>
+  public toList$(predicate: (value: S, index: number, array: S[]) => boolean): Observable<S[]>
+  public toList$<R>(predicate: (value: S, index: number, array: S[]) => boolean): Observable<R[]>
+  public toList$<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): Observable<S[] | R[]> {
+    return this._toList$<S, R>(predicate)
   }
 
   //#endregion query-methods
