@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs'
+import { iif, MonoTypeOperatorFunction, Observable, of, throwError as rxjsThrowError } from 'rxjs'
+import { mergeMap } from 'rxjs/operators'
 import { SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
 import { assert, isArray, isEmpty, isNull, isObject, throwError } from '../helpers'
 import { KeyOrNever, NoVoid } from '../types'
@@ -59,7 +60,8 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
         any: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._any(predicate, queryableListStore),
         toList$: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._toList$(predicate, queryableListStore),
         firstOrDefault$: (predicate?: (value: R, index: number, array: R[]) => boolean) =>
-          this._firstOrDefault$(predicate, queryableListStore)
+          this._firstOrDefault$(predicate, queryableListStore),
+        first$: (predicate?: (value: R, index: number, array: R[]) => boolean) => this._first$(predicate, queryableListStore),
       }
     }
     if (this._isQLSE<T>(queryableListStore) && pipeOrActions) {
@@ -246,12 +248,16 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _getObs$<T>(queryableListStore?: ChainableListStoreQuery<any> | ChainableListStoreQueryExtended<any, S>): Observable<T> {
+  protected _getObs$<T>(
+    queryableListStore?: ChainableListStoreQuery<any> | ChainableListStoreQueryExtended<any, S>,
+    operators?: MonoTypeOperatorFunction<any>[]
+  ): Observable<T> {
     if (queryableListStore && this._isQLSE(queryableListStore)) {
       return this._get$({
         actionOrActions: queryableListStore._actions,
         pipe: this._createPipe(queryableListStore),
-        compare: queryableListStore._compare
+        compare: queryableListStore._compare,
+        operators
       }) as Observable<T>
     }
     return this._get$({}) as Observable<T>
@@ -275,14 +281,22 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
+  protected _getQueryableListStoreForSingle<T, R extends T | any>(
+    predicate?: (value: T, index: number, array: T[]) => boolean,
+    queryableListStore?: ChainableListStoreQuery<T | R> | ChainableListStoreQueryExtended<T | R, S>,
+  ): ChainableListStoreQuery<T | R> {
+    const find: Pipe<T[], T | null> = predicate ?
+      ((arr: T[]) => arr.find(predicate) || null) :
+      ((arr: T[]) => arr.length ? arr[0] : null)
+    return this._getQueryableListStore<T, T | R | null>(find, queryableListStore) as ChainableListStoreQuery<T | R>
+  }
+
+  /** @internal */
   protected _firstOrDefault$<T, R extends T | any>(
     predicate?: (value: T, index: number, array: T[]) => boolean,
     queryableListStore?: ChainableListStoreQuery<T | R> | ChainableListStoreQueryExtended<T | R, S>,
   ): Observable<T | R | null> {
-    const find: Pipe<T[], T | null> = predicate ?
-      ((arr: T[]) => arr.find(predicate) || null) :
-      ((arr: T[]) => arr.length ? arr[0] : null)
-    queryableListStore = this._getQueryableListStore<T, T | R | null>(find, queryableListStore) as ChainableListStoreQuery<T | R>
+    queryableListStore = this._getQueryableListStoreForSingle(predicate, queryableListStore)
     return this._getObs$<T | R | null>(queryableListStore)
   }
 
@@ -292,6 +306,26 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   public firstOrDefault$<R>(predicate: (value: R, index: number, array: R[]) => boolean): Observable<R | null>
   public firstOrDefault$<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): Observable<S | R | null> {
     return this._firstOrDefault$<S, R>(predicate)
+  }
+
+  /** @internal */
+  protected _first$<T, R extends T | any>(
+    predicate?: (value: T, index: number, array: T[]) => boolean,
+    queryableListStore?: ChainableListStoreQuery<T | R> | ChainableListStoreQueryExtended<T | R, S>,
+  ): Observable<T | R | never> {
+    queryableListStore = this._getQueryableListStoreForSingle(predicate, queryableListStore)
+    const mergeMapOperator = mergeMap((x: R) => iif(() => isNull(x),
+      rxjsThrowError(`Store: "${this._storeName}" has resolved a null value by first$ observable.`),
+      of(x)))
+    return this._getObs$<T | R | never>(queryableListStore, [mergeMapOperator])
+  }
+
+  public first$(): Observable<S | never>
+  public first$<R>(): Observable<R | never>
+  public first$(predicate: (value: S, index: number, array: S[]) => boolean): Observable<S | never>
+  public first$<R>(predicate: (value: R, index: number, array: R[]) => boolean): Observable<R | never>
+  public first$<R>(predicate?: (value: S | R, index: number, array: S[] | R[]) => boolean): Observable<S | R | never> {
+    return this._first$<S, R>(predicate)
   }
 
   //#endregion query-methods
