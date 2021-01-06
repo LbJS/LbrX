@@ -9,6 +9,7 @@ export const enum Actions {
   hardResetting = 'HARD RESETTING !!!',
   update = 'Update',
   set = 'Set',
+  removeRange = 'Remove Range',
   reset = 'Reset',
   error = '**ERROR** :(',
   destroy = '@@DESTROY',

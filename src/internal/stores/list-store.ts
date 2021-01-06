@@ -4,7 +4,7 @@ import { ObjectOrNever } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { SetStateParam, State } from './store-accessories'
+import { Actions, SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<S extends object, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -15,7 +15,7 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   protected readonly _idItemMap: Map<string | number, S> = new Map()
 
   /** @internal */
-  protected readonly _itemIndexMap: ClearableWeakMap<S extends object ? S : never, number> = new ClearableWeakMap()
+  protected readonly _itemIndexMap: ClearableWeakMap<S, number> = new ClearableWeakMap()
 
   /** @internal */
   protected get _state(): State<S[], E> {
@@ -103,6 +103,11 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   }
 
   /** @internal */
+  protected _isValidId(value: any): value is string | number {
+    return isString(value) || isNumber(value)
+  }
+
+  /** @internal */
   protected _sortLogic(value: Readonly<S[]>): Readonly<S[]> {
     if (isNull(this._sort)) return value
     value = this._sort(isDev() ? [...value] : value as S[])
@@ -166,4 +171,27 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   }
 
   //#endregion state-methods
+  //#region update-query-methods
+
+  public removeRange(predicate: (value: S, index: number, array: S[]) => boolean): number {
+    const value: S[] | null = this._value ? [...this._value] : null
+    if (!value) return 0
+    const indexesToRemove: number[] = []
+    value.forEach((x, i, a) => {
+      if (predicate(x, i, a)) {
+        indexesToRemove.push(i)
+        this._itemIndexMap.delete(x)
+        const idKey = this._idKey
+        if (idKey) this._idItemMap.delete(x[idKey] as any)
+      }
+    })
+    let index = indexesToRemove.length
+    while (index--) {
+      value.splice(indexesToRemove[index], 1)
+    }
+    this._setState({ valueFnOrState: { value: objectFreeze(value) }, actionName: Actions.removeRange, doSkipFreeze: true })
+    return indexesToRemove.length
+  }
+
+  //#endregion update-query-methods
 }
