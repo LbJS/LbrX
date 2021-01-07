@@ -1,12 +1,12 @@
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
-import { isCalledBy, isFunction, isNull, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
+import { assert, isArray, isCalledBy, isFunction, isNull, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
 import { Actions, SetStateParam, State } from './store-accessories'
 
 
-export class ListStore<S extends object, E = any> extends QueryableListStoreAdapter<S, E> {
+export class ListStore<S extends object, Id = any, E = any> extends QueryableListStoreAdapter<S, E> {
 
   //#region state
 
@@ -19,7 +19,7 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     if (value.value) {
-      value.value = this._sortLogic(value.value)
+      value.value = this._sortHandler(value.value)
       this._assertValidIds(value.value)
     }
     this._stateSource = value
@@ -85,7 +85,7 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   }
 
   /** @internal */
-  protected _sortLogic(value: Readonly<S[]>): Readonly<S[]> {
+  protected _sortHandler(value: Readonly<S[]>): Readonly<S[]> {
     if (isNull(this._sort)) return value
     value = this._sort(isDev() ? [...value] : value as S[])
     return isDev() ? objectFreeze(value) : value
@@ -166,17 +166,64 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
     return indexesToRemove.length
   }
 
+  public delete(id: Id): boolean
+  public delete(ids: Id[]): number
+  public delete(idOrIds: Id | Id[]): boolean | number {
+    const isArr = isArray(idOrIds)
+    if (!isArr) idOrIds = [idOrIds] as Id[]
+    const idKey = this._idKey
+    const value: S[] | null = this._value ? [...this._value] : null
+    if (!idKey || !value) return isArr ? 0 : false
+    const filteredValue = value.filter(x => !(idOrIds as Id[]).includes(x[idKey] as any))
+    const deletedCount = value.length - filteredValue.length
+    if (deletedCount) {
+      this._setState({
+        valueFnOrState: { value: this._isImmutable ? objectFreeze(filteredValue) : filteredValue },
+        actionName: Actions.delete,
+        doSkipFreeze: true,
+        doSkipClone: true,
+      })
+    }
+    return isArr ? deletedCount : false
+  }
+
   public clear(): boolean {
     const countOrNull: number | null = this._value ? this._value.length : null
-    if (!countOrNull) return false
-    this._setState({
-      valueFnOrState: { value: this._isImmutable ? objectFreeze([]) : [] },
-      actionName: Actions.removeRange,
-      doSkipFreeze: true,
-      doSkipClone: true,
-    })
-    return true
+    if (countOrNull) {
+      this._setState({
+        valueFnOrState: { value: this._isImmutable ? objectFreeze([]) : [] },
+        actionName: Actions.removeRange,
+        doSkipFreeze: true,
+        doSkipClone: true,
+      })
+    }
+    return !!countOrNull
   }
 
   //#endregion delete-methods
+  //#region add-or-update-methods
+
+  public add(item: S): void
+  public add(items: S[]): void
+  public add(itemOrItems: S | S[]): void {
+    const value: S[] | null = this._value ? [...this._value] : null
+    assert(value, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
+    if (isArray(itemOrItems)) {
+      if (!itemOrItems.length) return
+      // tslint:disable-next-line: prefer-for-of
+      for (let i = 0; i < itemOrItems.length; i++) {
+        value.push(itemOrItems[i])
+      }
+    } else {
+      value.push(itemOrItems)
+    }
+    this._setState({
+      valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+      actionName: Actions.add,
+      doSkipFreeze: true,
+      doSkipClone: true,
+    })
+  }
+
+  //#endregion add-or-update-methods
 }
