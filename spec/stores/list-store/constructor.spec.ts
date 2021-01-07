@@ -19,11 +19,6 @@ describe(`List Store - constructor():`, () => {
     expect(store.config.idKey).toBeNull()
   })
 
-  it(`should insert items into the map if idKey is null.`, () => {
-    const store = StoresFactory.createListStore(createTestSubjects(), { name: `TEST-STORE`, idKey: null })
-    expect(store[`_idItemMap`].size).toBe(0)
-  })
-
   it(`should throw if a duplicate id is found.`, () => {
     const data = [...createTestSubjects(), ...createTestSubjects()]
     expect(() => {
@@ -44,18 +39,5 @@ describe(`List Store - constructor():`, () => {
     expect(() => {
       StoresFactory.createListStore(data, { name: `TEST-STORE2` })
     }).not.toThrow()
-  })
-
-  it(`should throw if the provided key is not an string or a number.`, () => {
-    let data = createTestSubjects()
-    data.forEach(x => x._id = {})
-    expect(() => {
-      StoresFactory.createListStore(data, { name: `TEST-STORE1` })
-    }).toThrow()
-    data = createTestSubjects()
-    data.forEach(x => x._id = Symbol())
-    expect(() => {
-      StoresFactory.createListStore(data, { name: `TEST-STORE2` })
-    }).toThrow()
   })
 })

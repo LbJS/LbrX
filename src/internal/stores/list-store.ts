@@ -1,6 +1,5 @@
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
-import { ClearableWeakMap, isArray, isCalledBy, isFunction, isNull, isNumber, isObject, isString, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
-import { ObjectOrNever } from '../types'
+import { isCalledBy, isFunction, isNull, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
@@ -12,12 +11,6 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   //#region state
 
   /** @internal */
-  protected readonly _idItemMap: Map<string | number, S> = new Map()
-
-  /** @internal */
-  protected readonly _itemIndexMap: ClearableWeakMap<S, number> = new ClearableWeakMap()
-
-  /** @internal */
   protected get _state(): State<S[], E> {
     return objectAssign({}, this._stateSource)
   }
@@ -26,13 +19,8 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     if (value.value) {
-      if (!this._value) {
-        this._cleanMaps()
-        this._setMaps(value.value)
-        value.value = this._sortLogic(value.value)
-      }
-    } else {
-      this._cleanMaps()
+      value.value = this._sortLogic(value.value)
+      this._assertValidIds(value.value)
     }
     this._stateSource = value
     this._distributeState(value)
@@ -56,6 +44,9 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   /** @internal */
   protected readonly _sort: SortMethod<S> | null
 
+  /** @internal */
+  protected readonly _isImmutable: boolean
+
   //#endregion config
   //#region constructor
 
@@ -75,6 +66,7 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   constructor(initialValueOrNull: S[] | null, storeConfig?: ListStoreConfigOptions<S>) {
     super(storeConfig)
     const config = this._config
+    this._isImmutable = config.isImmutable
     this._idKey = config.idKey = config.idKey || null
     this._sort = config.orderBy ?
       isFunction(config.orderBy) ?
@@ -93,25 +85,22 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
   }
 
   /** @internal */
-  protected _assertValidId(value: any): value is string | number {
-    if (this._idItemMap.has(value)) {
-      throwError(`Store: "${this._config.name}" has been provided with duplicate id keys. Duplicate key: ${value}.`)
-    } else if (!isString(value) && !isNumber(value)) {
-      throwError(`Store: "${this._config.name}" has been provided with key that is not a string and nor a number.`)
-    }
-    return true
-  }
-
-  /** @internal */
-  protected _isValidId(value: any): value is string | number {
-    return isString(value) || isNumber(value)
-  }
-
-  /** @internal */
   protected _sortLogic(value: Readonly<S[]>): Readonly<S[]> {
     if (isNull(this._sort)) return value
     value = this._sort(isDev() ? [...value] : value as S[])
     return isDev() ? objectFreeze(value) : value
+  }
+
+  /** @internal */
+  protected _assertValidIds(value: S[] | Readonly<S[]>): void | never {
+    const idKey = this._idKey
+    if (!idKey) return
+    const set = new Set<any>()
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < value.length; i++) {
+      set.add(value[i][idKey])
+    }
+    if (value.length != set.size) throwError(`Store: "${this._storeName}" has received a duplicate key.`)
   }
 
   //#endregion helper-methods
@@ -134,64 +123,60 @@ export class ListStore<S extends object, E = any> extends QueryableListStoreAdap
     })
   }
 
-  /** @internal */
-  protected _cleanMaps(): void {
-    this._idItemMap.clear()
-    this._itemIndexMap.clear()
-  }
-
-  /** @internal */
-  protected _setMaps(value: S[] | Readonly<S[]>): void
-  protected _setMaps(value: S | Readonly<S>, index: number): void
-  protected _setMaps(value: S[] | Readonly<S[]> | S | Readonly<S>, index?: number): void {
-    if (isArray(value) ? isObject(value[0]) : isObject(value)) {
-      this._setIdItemMap(value as ObjectOrNever<S>[])
-      this._setItemIndexMap(value as ObjectOrNever<S>, index as number)
-    }
-  }
-
-  /** @internal */
-  protected _setIdItemMap<T extends ObjectOrNever<S>>(value: T[] | Readonly<T[]> | T | Readonly<T>): void {
-    const idKey = this._idKey
-    if (!idKey) return
-    const setPredicate = (x: T) => {
-      const y = x[idKey]
-      if (this._assertValidId(y)) this._idItemMap.set(y, x)
-    }
-    if (isArray(value)) value.forEach(setPredicate)
-    else setPredicate(value as T)
-  }
-
-  /** @internal */
-  protected _setItemIndexMap<T extends ObjectOrNever<S>>(value: T[] | Readonly<T[]>): void
-  protected _setItemIndexMap<T extends ObjectOrNever<S>>(value: T | Readonly<T>, index: number): void
-  protected _setItemIndexMap<T extends ObjectOrNever<S>>(value: T[] | Readonly<T[]> | T | Readonly<T>, index?: number): void {
-    if (isArray(value)) value.forEach((x, i) => this._itemIndexMap.set(x, i))
-    else if (isNumber(index)) this._itemIndexMap.set(value as T, index)
-  }
-
   //#endregion state-methods
-  //#region update-query-methods
+  //#region delete-methods
+
+  public remove(predicate: (value: S, index: number, array: S[]) => boolean): boolean {
+    const value: S[] | null = this._value ? [...this._value] : null
+    if (!value) return false
+    const index = value.findIndex(predicate)
+    const isExist = index > -1
+    if (isExist) {
+      value.splice(index, 1)
+      this._setState({
+        valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+        actionName: Actions.removeRange,
+        doSkipFreeze: true,
+        doSkipClone: true,
+      })
+    }
+    return isExist
+  }
 
   public removeRange(predicate: (value: S, index: number, array: S[]) => boolean): number {
     const value: S[] | null = this._value ? [...this._value] : null
     if (!value) return 0
     const indexesToRemove: number[] = []
     value.forEach((x, i, a) => {
-      if (predicate(x, i, a)) {
-        indexesToRemove.push(i)
-        this._itemIndexMap.delete(x)
-        const idKey = this._idKey
-        if (idKey) this._idItemMap.delete(x[idKey] as any)
-      }
+      if (predicate(x, i, a)) indexesToRemove.push(i)
     })
-    let index = indexesToRemove.length
-    while (index--) {
-      value.splice(indexesToRemove[index], 1)
+    if (indexesToRemove.length) {
+      let i = indexesToRemove.length
+      while (i--) {
+        const index = indexesToRemove[i]
+        value.splice(index, 1)
+      }
+      this._setState({
+        valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+        actionName: Actions.removeRange,
+        doSkipFreeze: true,
+        doSkipClone: true,
+      })
     }
-    this._setState({ valueFnOrState: { value: objectFreeze(value) }, actionName: Actions.removeRange, doSkipFreeze: true })
     return indexesToRemove.length
   }
 
-  //#endregion update-query-methods
+  public clear(): boolean {
+    const countOrNull: number | null = this._value ? this._value.length : null
+    if (!countOrNull) return false
+    this._setState({
+      valueFnOrState: { value: this._isImmutable ? objectFreeze([]) : [] },
+      actionName: Actions.removeRange,
+      doSkipFreeze: true,
+      doSkipClone: true,
+    })
+    return true
+  }
+
+  //#endregion delete-methods
 }
