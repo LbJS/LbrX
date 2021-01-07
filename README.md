@@ -32,13 +32,7 @@ This is an object oriented State Manager that's build for JavaScript application
 
 ## Important Notice
 
-- Added support for moment.js.
-- LbrX utility functions and types are now available via `import { ... } from 'lbrx/utils'`.
-- `storeName.get()` is removed. Use: `storeName.get$()`.
-- Global error store has bee removed.
-- Hook's interfaces have been removed. Now you can just override the methods in the inheritor class.
-- `LbrXManager` should now be imported from `lbrx/core`.
-- `DevtoolsOptions` should now be imported from `lbrx/dev-tools`.
+- All update/add/delete hooks are now using the new `onStateChange` hook. This hook can be filtered by actions using `onStateChangeActions` property.
 
 ## Dependencies
 

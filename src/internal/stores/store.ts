@@ -224,7 +224,6 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
     valueOrFunction: ((value: Readonly<S>) => Partial<S>) | Partial<S> | S,
     isMerge: boolean,
     actionName: string,
-    onUpdate?: (nextState: S, prevState: Readonly<S>) => void | S,
   ): void {
     if (this.isPaused) return
     assert(this.isInitialized, `Store: "${this._storeName}" can't be updated before it was initialized`)
@@ -235,10 +234,6 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
         if (this._isClassHandler) {
           assert(!!this._instancedValue, `Store: "${this._storeName}" instanced handler is configured but an instanced value was not provided.`)
           newValue = this._handleClasses(this._instancedValue, newValue)
-        }
-        if (isFunction(onUpdate)) {
-          const newModifiedValue: S | void = onUpdate(this._clone(newValue), value)
-          if (newModifiedValue) newValue = isMerge ? this._clone(newModifiedValue) : newModifiedValue
         }
         return newValue
       }, actionName, doSkipClone: isMerge
@@ -264,7 +259,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public update(valueFunction: (value: Readonly<S>) => Partial<S>, actionName?: string): void
   public update(valueOrFunction: ((value: Readonly<S>) => Partial<S>) | Partial<S>, actionName?: string): void {
-    this._update(valueOrFunction, /** isMerge */ true, actionName || Actions.update, this.onUpdate)
+    this._update(valueOrFunction, /** isMerge */ true, actionName || Actions.update)
   }
 
   /**
@@ -273,7 +268,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public override(newValue: S, actionName?: string): void {
     // tslint:disable-next-line: deprecation
-    this._update(newValue, /** isMerge */ false, actionName || Actions.set, this.onSet || this.onOverride)
+    this._update(newValue, /** isMerge */ false, actionName || Actions.set)
   }
 
   /**
@@ -281,7 +276,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public set(newValue: S, actionName?: string): void {
     // tslint:disable-next-line: deprecation
-    this._update(newValue, /** isMerge */ false, actionName || Actions.set, this.onSet || this.onOverride)
+    this._update(newValue, /** isMerge */ false, actionName || Actions.set)
   }
 
   //#endregion write-methods

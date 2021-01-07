@@ -128,7 +128,7 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
 
   public remove(predicate: (value: S, index: number, array: S[]) => boolean): boolean {
     const value: S[] | null = this._value ? [...this._value] : null
-    if (!value) return false
+    if (!value || this.isPaused) return false
     const index = value.findIndex(predicate)
     const isExist = index > -1
     if (isExist) {
@@ -145,7 +145,7 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
 
   public removeRange(predicate: (value: S, index: number, array: S[]) => boolean): number {
     const value: S[] | null = this._value ? [...this._value] : null
-    if (!value) return 0
+    if (!value || this.isPaused) return 0
     const indexesToRemove: number[] = []
     value.forEach((x, i, a) => {
       if (predicate(x, i, a)) indexesToRemove.push(i)
@@ -173,7 +173,7 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
     if (!isArr) idOrIds = [idOrIds] as Id[]
     const idKey = this._idKey
     const value: S[] | null = this._value ? [...this._value] : null
-    if (!idKey || !value) return isArr ? 0 : false
+    if (!idKey || !value || this.isPaused) return isArr ? 0 : false
     const filteredValue = value.filter(x => !(idOrIds as Id[]).includes(x[idKey] as any))
     const deletedCount = value.length - filteredValue.length
     if (deletedCount) {
@@ -188,6 +188,7 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
   }
 
   public clear(): boolean {
+    if (this.isPaused) return false
     const countOrNull: number | null = this._value ? this._value.length : null
     if (countOrNull) {
       this._setState({
@@ -206,6 +207,7 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
   public add(item: S): void
   public add(items: S[]): void
   public add(itemOrItems: S | S[]): void {
+    if (this.isPaused) return
     const value: S[] | null = this._value ? [...this._value] : null
     assert(value, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
     if (isArray(itemOrItems)) {

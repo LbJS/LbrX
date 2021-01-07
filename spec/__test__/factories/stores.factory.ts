@@ -1,4 +1,4 @@
-import { ListStore, ListStoreConfig, ListStoreConfigOptions, Store, StoreConfig, StoreConfigOptions } from 'lbrx'
+import { Actions, ListStore, ListStoreConfig, ListStoreConfigOptions, Store, StoreConfig, StoreConfigOptions } from 'lbrx'
 import { AllStoreHooks } from '__test__/types'
 
 export class StoresFactory {
@@ -63,10 +63,8 @@ export class StoresFactory {
         onAfterInit(currState: T): void | T { }
         onAsyncInitSuccess(result: T): void | T { }
         onAsyncInitError(error: E): void | E { }
-        onOverride(nextState: T, currState: Readonly<T>): void | T { }
-        onSet(nextState: T, currState: Readonly<T>): void | T { }
+        osStateChange(action: Actions | string, nextState: T | null, currState: Readonly<T> | null): void | T { }
         onReset(nextState: T, currState: Readonly<T>): void | T { }
-        onUpdate(nextState: T, currState: Readonly<T>): void | T { }
       }
       return new TestStore()
     } else {
@@ -140,10 +138,8 @@ export class StoresFactory {
         onAfterInit(currState: T[]): void | T[] { }
         onAsyncInitSuccess(result: T[]): void | T[] { }
         onAsyncInitError(error: E): void | E { }
-        onOverride(nextState: T[], currState: Readonly<T[]>): void | T[] { }
-        onSet(nextState: T[], currState: Readonly<T[]>): void | T[] { }
+        osStateChange(action: Actions | string, nextState: T | null, currState: Readonly<T> | null): void | T { }
         onReset(nextState: T[], currState: Readonly<T[]>): void | T[] { }
-        onUpdate(nextState: T[], currState: Readonly<T[]>): void | T[] { }
       }
       return new TestStore()
     } else {

@@ -7,6 +7,6 @@
 - [x] Create store context with save changes method.
 - [x] WeakMap StoreList for fast array access.
 - [x] OrderBy config option.
-- [ ] Change all update/ set hooks to single onChange hook.
+- [x] Change all update/ set hooks to single onChange hook.
 - [ ] Add transaction method.
 - [ ] Do clone hooks config.

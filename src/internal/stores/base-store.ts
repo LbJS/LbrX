@@ -159,6 +159,8 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
       switchMap(() => this._value$),
     )
 
+  public readonly onStateChangeActions: (Actions | string)[] = []
+
   //#endregion state
   //#region error-api
 
@@ -676,6 +678,17 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
         value: valueFnOrState(this._value)
       }
     }
+    if (this.onStateChange && (!this.onStateChangeActions.length || this.onStateChangeActions.includes(actionName))) {
+      const modifiedValue = this.onStateChange(actionName, this._clone(valueFnOrState.value ?? null), this._value)
+      if (modifiedValue) {
+        valueFnOrState.value = this._clone(modifiedValue)
+        doSkipClone = true
+        if (isDev()) {
+          valueFnOrState.value = this._freeze(valueFnOrState.value)
+          doSkipFreeze = true
+        }
+      }
+    }
     if (valueFnOrState.value) {
       if (!doSkipClone) valueFnOrState.value = this._clone(valueFnOrState.value)
       if (isDev() && !doSkipFreeze) valueFnOrState.value = this._freeze(valueFnOrState.value)
@@ -828,24 +841,11 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   protected onAsyncInitError?(error: E): void | E
 
   /**
-   * @virtual Override to use `onUpdate` hook.
-   * - Will be called after the update method has merged the changes with the given state and just before this state is set.
+   * @virtual Override to use `onStateChange` hook.
+   * - Will be called after any state change.
    * - Allows future state modification.
    */
-  protected onUpdate?(nextState: S, currState: Readonly<S>): void | S
-
-  /**
-   * @deprecated
-   * User the `onSet` hook instead.
-   */
-  protected onOverride?(nextState: S, prevState: Readonly<S>): void | S
-
-  /**
-   * @virtual Override to use `onSet` hook.
-   * - Will be called after the override method and just before the new state is set.
-   * - Allows future state modification.
-   */
-  protected onSet?(nextState: S, prevState: Readonly<S>): void | S
+  protected onStateChange?(action: Actions | string, nextState: S | null, currState: Readonly<S> | null): void | S
 
   /**
    * @virtual Override to use `onReset` hook.
