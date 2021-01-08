@@ -1,14 +1,18 @@
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
 import { assert, isArray, isCalledBy, isFunction, isNull, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
+import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
 import { Actions, SetStateParam, State } from './store-accessories'
 
 
-export class ListStore<S extends object, Id = any, E = any> extends QueryableListStoreAdapter<S, E> {
+export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
 
   //#region state
+
+  /** @internal */
+  protected _hashTable: KeyValue<string | number | symbol, S> = {}
 
   /** @internal */
   protected get _state(): State<S[], E> {
@@ -18,9 +22,16 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
     if (isStackTracingErrors() && isDev() && !isCalledBy(`_setState`, 0)) {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
+    this._hashTable = {}
     if (value.value) {
       value.value = this._sortHandler(value.value)
-      this._assertValidIds(value.value)
+      if (this._assertValidIds(value.value)) {
+        const idKey = this._idKey as string
+        // tslint:disable-next-line: prefer-for-of
+        for (let i = 0; i < value.value.length; i++) {
+          this._hashTable[idKey] = value.value[i]
+        }
+      }
     }
     this._stateSource = value
     this._distributeState(value)
@@ -92,15 +103,16 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
   }
 
   /** @internal */
-  protected _assertValidIds(value: S[] | Readonly<S[]>): void | never {
+  protected _assertValidIds(value: S[] | Readonly<S[]>): boolean | never {
     const idKey = this._idKey
-    if (!idKey) return
+    if (!idKey) return false
     const set = new Set<any>()
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < value.length; i++) {
       set.add(value[i][idKey])
     }
     if (value.length != set.size) throwError(`Store: "${this._storeName}" has received a duplicate key.`)
+    return true
   }
 
   //#endregion helper-methods
@@ -208,8 +220,8 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
   public add(items: S[]): void
   public add(itemOrItems: S | S[]): void {
     if (this.isPaused) return
-    const value: S[] | null = this._value ? [...this._value] : null
-    assert(value, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
+    const value: S[] = this._value ? [...this._value] : []
+    assert(this.isInitialized, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
     if (isArray(itemOrItems)) {
       if (!itemOrItems.length) return
       // tslint:disable-next-line: prefer-for-of
@@ -227,5 +239,21 @@ export class ListStore<S extends object, Id = any, E = any> extends QueryableLis
     })
   }
 
+  public set(items: S[]): void {
+    if (this.isPaused) return
+    assert(this.isInitialized, `Store: "${this._storeName}" can't set items to store before it was initialized.`)
+    this._setState({
+      valueFnOrState: { value: items },
+      actionName: Actions.set,
+    })
+  }
+
   //#endregion add-or-update-methods
+  //#region query-methods
+
+  public has(id: Id): boolean {
+    return this._idKey ? !!this._hashTable[id] : false
+  }
+
+  //#endregion query-methods
 }
