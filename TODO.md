@@ -8,5 +8,6 @@
 - [x] WeakMap StoreList for fast array access.
 - [x] OrderBy config option.
 - [x] Change all update/ set hooks to single onChange hook.
+- [x] Implement array copy base on `Object.isFrozen(obj)`.
 - [ ] Add transaction method.
 - [ ] Do clone hooks config.

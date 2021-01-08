@@ -1,10 +1,10 @@
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
-import { assert, isArray, isCalledBy, isFunction, isNull, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
+import { assert, isArray, isBool, isCalledBy, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze } from '../helpers'
 import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { Actions, SetStateParam, State } from './store-accessories'
+import { Actions, Predicate, SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -12,7 +12,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#region state
 
   /** @internal */
-  protected _hashTable: KeyValue<string | number | symbol, S> = {}
+  protected _keyIndexMap: KeyValue<string | number | symbol, number> | null = null
 
   /** @internal */
   protected get _state(): State<S[], E> {
@@ -22,15 +22,16 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (isStackTracingErrors() && isDev() && !isCalledBy(`_setState`, 0)) {
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
-    this._hashTable = {}
     if (value.value) {
       value.value = this._sortHandler(value.value)
-      if (this._assertValidIds(value.value)) {
-        const idKey = this._idKey as string
+      const idKey = this._idKey
+      if (idKey) {
+        this._keyIndexMap = {}
         // tslint:disable-next-line: prefer-for-of
         for (let i = 0; i < value.value.length; i++) {
-          this._hashTable[idKey] = value.value[i]
+          this._keyIndexMap[idKey] = i
         }
+        this._assertUniqueIds(value.value)
       }
     }
     this._stateSource = value
@@ -99,18 +100,22 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   }
 
   /** @internal */
-  protected _assertValidIds(value: S[] | readonly S[]): boolean | never {
+  protected _assertUniqueIds(value: S[] | readonly S[]): boolean | never {
     const idKey = this._idKey
     if (!idKey) return false
-    const set = new Set<any>()
-    // tslint:disable-next-line: prefer-for-of
-    for (let i = 0; i < value.length; i++) {
-      set.add(value[i][idKey])
+    const errorMsg = `Store: "${this._storeName}" has received a duplicate key.`
+    if (this._keyIndexMap) {
+      assert(value.length != Object.keys(this._keyIndexMap).length, errorMsg)
+    } else {
+      const set = new Set<any>()
+      // tslint:disable-next-line: prefer-for-of
+      for (let i = 0; i < value.length; i++) {
+        set.add(value[i][idKey])
+      }
+      assert(value.length != set.size, errorMsg)
     }
-    if (value.length != set.size) throwError(`Store: "${this._storeName}" has received a duplicate key.`)
     return true
   }
-
   //#endregion helper-methods
   //#region state-methods
 
@@ -134,7 +139,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#endregion state-methods
   //#region delete-methods
 
-  public remove(predicate: (value: Readonly<S>, index: number, array: readonly S[]) => boolean): boolean {
+  public remove(predicate: Predicate<S>, actionName?: string): boolean {
     const value: readonly S[] | null = this._value
     if (!value || this.isPaused) return false
     const newValue: S[] = []
@@ -148,7 +153,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (!isItemNotFound) {
       this._setState({
         valueFnOrState: { value: this._freezeHandler(newValue, true) },
-        actionName: Actions.removeRange,
+        actionName: actionName || Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
       })
@@ -156,7 +161,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return !isItemNotFound
   }
 
-  public removeRange(predicate: (value: Readonly<S>, index: number, array: readonly S[]) => boolean): number {
+  public removeRange(predicate: Predicate<S>, actionName?: string): number {
     const value: readonly S[] | null = this._value
     if (!value || this.isPaused) return 0
     const newValue: S[] = []
@@ -169,7 +174,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (itemsRemoved) {
       this._setState({
         valueFnOrState: { value: this._freezeHandler(newValue, true) },
-        actionName: Actions.removeRange,
+        actionName: actionName || Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
       })
@@ -177,9 +182,9 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return itemsRemoved
   }
 
-  public delete(id: Id): boolean
-  public delete(ids: Id[]): number
-  public delete(idOrIds: Id | Id[]): boolean | number {
+  public delete(id: Id, actionName?: string): boolean
+  public delete(ids: Id[], actionName?: string): number
+  public delete(idOrIds: Id | Id[], actionName?: string): boolean | number {
     const isArr = isArray(idOrIds)
     if (!isArr) idOrIds = [idOrIds] as Id[]
     const idKey = this._idKey
@@ -190,7 +195,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (deletedCount) {
       this._setState({
         valueFnOrState: { value: this._freezeHandler(filteredValue, true) },
-        actionName: Actions.delete,
+        actionName: actionName || Actions.delete,
         doSkipFreeze: true,
         doSkipClone: true,
       })
@@ -198,13 +203,13 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return isArr ? deletedCount : false
   }
 
-  public clear(): boolean {
+  public clear(actionName?: string): boolean {
     if (this.isPaused) return false
     const countOrNull: number | null = this._value ? this._value.length : null
     if (countOrNull) {
       this._setState({
         valueFnOrState: { value: this._freeze([]) },
-        actionName: Actions.removeRange,
+        actionName: actionName || Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
       })
@@ -215,13 +220,13 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#endregion delete-methods
   //#region add-or-update-methods
 
-  public add(item: S): void
-  public add(items: S[]): void
-  public add(itemOrItems: S | S[]): void {
+  public add(item: S, actionName?: string): void
+  public add(items: S[], actionName?: string): void
+  public add(itemOrItems: S | S[], actionName?: string): void {
     if (this.isPaused) return
-    const value: Readonly<S>[] = this._value ? [...this._value] : []
+    const value: Readonly<S>[] = [...this._assertValue]
     assert(this.isInitialized, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
-    const clonedItemOrItems = this._freeze(this._clone(itemOrItems))
+    const clonedItemOrItems = this._cloneAndFreeze(itemOrItems)
     if (isArray(clonedItemOrItems)) {
       if (!clonedItemOrItems.length) return
       clonedItemOrItems.forEach(x => {
@@ -232,26 +237,84 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     }
     this._setState({
       valueFnOrState: { value: this._freezeHandler(value, true) },
-      actionName: Actions.add,
+      actionName: actionName || Actions.add,
       doSkipFreeze: true,
       doSkipClone: true,
     })
   }
 
-  public set(items: S[]): void {
+  public set(items: S[], actionName?: string): void {
     if (this.isPaused) return
     assert(this.isInitialized, `Store: "${this._storeName}" can't set items to store before it was initialized.`)
     this._setState({
       valueFnOrState: { value: items },
-      actionName: Actions.set,
+      actionName: actionName || Actions.set,
     })
+  }
+
+  public update(id: Id, value: Partial<S>, actionName?: string): boolean
+  public update(id: Id, value: S, isOverride: true, actionName?: string): boolean
+  public update(ids: Id[], value: Partial<S>, actionName?: string): number
+  public update(ids: Id[], value: S, isOverride: true, actionName?: string): number
+  public update(predicate: Predicate<S>, value: Partial<S>, actionName?: string): number
+  public update(predicate: Predicate<S>, value: S, isOverride: true, actionName?: string): number
+  public update(
+    idOrIdsOrPredicate: Id | Id[] | Predicate<S>,
+    value: Partial<S> | S,
+    isOverrideOrActionName?: boolean | string,
+    actionName?: string
+  ): boolean | number {
+    const isSingleId = !isArray(idOrIdsOrPredicate) && !isFunction(idOrIdsOrPredicate)
+    if (this.isPaused) return isSingleId ? 0 : false
+    assert(this.isInitialized, `Store: "${this._storeName}" can't update items before it was initialized.`)
+    const isOverride: boolean = isBool(isOverrideOrActionName) ? isOverrideOrActionName : false
+    actionName = isString(isOverrideOrActionName) ? isOverrideOrActionName : actionName || Actions.update
+    const oldValue: readonly S[] = this._assertValue
+    let newValue: Readonly<S>[] = []
+    let updateCounter = 0
+    const update = (item: Readonly<S>, newItem: S | Partial<S>): Readonly<S> => {
+      if (!isOverride) newItem = this._merge(this._clone(item), newItem)
+      return this._cloneAndFreeze(newItem) as Readonly<S>
+    }
+    const updateByKey = (key: Id, keyIdMap: KeyValue<string | number | symbol, number>): void => {
+      const index: number | void = keyIdMap[key]
+      if (isNumber(index)) {
+        newValue[index] = update(oldValue[index], value)
+        updateCounter++
+      }
+    }
+    if (isFunction(idOrIdsOrPredicate)) {
+      oldValue.forEach((x, i, a) => {
+        if (idOrIdsOrPredicate(x, i, a)) {
+          x = update(x, value)
+          updateCounter++
+        }
+        newValue.push(x)
+      })
+    } else if (!this._keyIndexMap) {
+    } else if (isArray(idOrIdsOrPredicate)) {
+      newValue = [...oldValue]
+      idOrIdsOrPredicate.forEach(x => {
+        updateByKey(x, this._keyIndexMap!)
+      })
+    } else {
+      newValue = [...oldValue]
+      updateByKey(idOrIdsOrPredicate, this._keyIndexMap)
+    }
+    this._setState({
+      valueFnOrState: { value: this._freezeHandler(newValue, true) },
+      actionName,
+      doSkipFreeze: true,
+      doSkipClone: true,
+    })
+    return isSingleId ? !!updateCounter : updateCounter
   }
 
   //#endregion add-or-update-methods
   //#region query-methods
 
   public has(id: Id): boolean {
-    return this._idKey ? !!this._hashTable[id] : false
+    return this._keyIndexMap ? isNumber(this._keyIndexMap[id]) : false
   }
 
   //#endregion query-methods

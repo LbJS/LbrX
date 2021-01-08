@@ -55,6 +55,13 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   }
 
   /** @internal */
+  protected get _assertValue(): Readonly<S> | never {
+    const value = this._stateSource.value
+    assert(value, `Store: "${this._config.name}" has tried to access state's value before initialization.`)
+    return value
+  }
+
+  /** @internal */
   protected readonly _value$ = new BehaviorSubject(this._value)
 
   /**
@@ -368,8 +375,14 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
 
   /** @internal */
   protected _freezeHandler<V extends object>(obj: V, isShallowFreeze: boolean = false): Readonly<V> {
-    if (this._config.isImmutable) return obj
+    if (!this._config.isImmutable || isDev()) return obj
     return isShallowFreeze ? objectFreeze(obj) : this._freeze(obj)
+  }
+
+  /** @internal */
+  protected _cloneAndFreeze<V extends object>(obj: V, isShallowFreeze: boolean = false): Readonly<V> {
+    obj = this._clone(obj)
+    return isShallowFreeze ? this._freezeHandler(obj) : this._freeze(obj)
   }
 
   /** @internal */
