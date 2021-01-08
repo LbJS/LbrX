@@ -669,7 +669,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     stateExtension,
     doSkipClone,
     doSkipFreeze,
-  }: SetStateParam<S, E>): void {
+  }: SetStateParam<S | Readonly<S>, E>): void {
     if (this.isDestroyed) return
     if (isBool(stateExtension)) doSkipClone = stateExtension
     if (isFunction(valueFnOrState)) {

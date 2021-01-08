@@ -96,14 +96,14 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   }
 
   /** @internal */
-  protected _sortHandler(value: Readonly<S[]>): Readonly<S[]> {
+  protected _sortHandler(value: readonly S[]): readonly S[] {
     if (isNull(this._sort)) return value
     value = this._sort(isDev() ? [...value] : value as S[])
     return isDev() ? objectFreeze(value) : value
   }
 
   /** @internal */
-  protected _assertValidIds(value: S[] | Readonly<S[]>): boolean | never {
+  protected _assertValidIds(value: S[] | readonly S[]): boolean | never {
     const idKey = this._idKey
     if (!idKey) return false
     const set = new Set<any>()
@@ -125,7 +125,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     stateExtension,
     doSkipClone,
     doSkipFreeze,
-  }: SetStateParam<S[], E>): void {
+  }: SetStateParam<S[] | readonly S[], E>): void {
     super._setState({
       valueFnOrState,
       actionName,
@@ -138,44 +138,47 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#endregion state-methods
   //#region delete-methods
 
-  public remove(predicate: (value: S, index: number, array: S[]) => boolean): boolean {
-    const value: S[] | null = this._value ? [...this._value] : null
+  public remove(predicate: (value: Readonly<S>, index: number, array: readonly S[]) => boolean): boolean {
+    const value: readonly S[] | null = this._value
     if (!value || this.isPaused) return false
-    const index = value.findIndex(predicate)
-    const isExist = index > -1
-    if (isExist) {
-      value.splice(index, 1)
+    const newValue: S[] = []
+    let isItemNotFound = true
+    value.forEach((x, i, a) => {
+      let doSkipItem = false
+      if (isItemNotFound) doSkipItem = predicate(x, i, a)
+      if (doSkipItem) isItemNotFound = false
+      else newValue.push(x)
+    })
+    if (!isItemNotFound) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+        valueFnOrState: { value: this._isImmutable ? objectFreeze(newValue) : newValue },
         actionName: Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
       })
     }
-    return isExist
+    return !isItemNotFound
   }
 
-  public removeRange(predicate: (value: S, index: number, array: S[]) => boolean): number {
-    const value: S[] | null = this._value ? [...this._value] : null
+  public removeRange(predicate: (value: Readonly<S>, index: number, array: readonly S[]) => boolean): number {
+    const value: readonly S[] | null = this._value
     if (!value || this.isPaused) return 0
-    const indexesToRemove: number[] = []
+    const newValue: S[] = []
+    let itemsRemoved = 0
     value.forEach((x, i, a) => {
-      if (predicate(x, i, a)) indexesToRemove.push(i)
+      const doSkipItem = predicate(x, i, a)
+      if (doSkipItem) itemsRemoved++
+      else newValue.push(x)
     })
-    if (indexesToRemove.length) {
-      let i = indexesToRemove.length
-      while (i--) {
-        const index = indexesToRemove[i]
-        value.splice(index, 1)
-      }
+    if (itemsRemoved) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+        valueFnOrState: { value: this._isImmutable ? objectFreeze(newValue) : newValue },
         actionName: Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
       })
     }
-    return indexesToRemove.length
+    return itemsRemoved
   }
 
   public delete(id: Id): boolean
@@ -184,7 +187,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const isArr = isArray(idOrIds)
     if (!isArr) idOrIds = [idOrIds] as Id[]
     const idKey = this._idKey
-    const value: S[] | null = this._value ? [...this._value] : null
+    const value: readonly S[] | null = this._value
     if (!idKey || !value || this.isPaused) return isArr ? 0 : false
     const filteredValue = value.filter(x => !(idOrIds as Id[]).includes(x[idKey] as any))
     const deletedCount = value.length - filteredValue.length
@@ -222,14 +225,14 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (this.isPaused) return
     const value: S[] = this._value ? [...this._value] : []
     assert(this.isInitialized, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
-    if (isArray(itemOrItems)) {
-      if (!itemOrItems.length) return
-      // tslint:disable-next-line: prefer-for-of
-      for (let i = 0; i < itemOrItems.length; i++) {
-        value.push(itemOrItems[i])
-      }
+    const clonedItemOrItems = this._freeze(this._clone(itemOrItems))
+    if (isArray(clonedItemOrItems)) {
+      if (!clonedItemOrItems.length) return
+      clonedItemOrItems.forEach(x => {
+        value.push(x)
+      })
     } else {
-      value.push(itemOrItems)
+      value.push(clonedItemOrItems as Readonly<S>)
     }
     this._setState({
       valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
