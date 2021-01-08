@@ -55,9 +55,6 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   /** @internal */
   protected readonly _sort: SortMethod<S> | null
 
-  /** @internal */
-  protected readonly _isImmutable: boolean
-
   //#endregion config
   //#region constructor
 
@@ -77,7 +74,6 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   constructor(initialValueOrNull: S[] | null, storeConfig?: ListStoreConfigOptions<S>) {
     super(storeConfig)
     const config = this._config
-    this._isImmutable = config.isImmutable
     this._idKey = config.idKey = config.idKey || null
     this._sort = config.orderBy ?
       isFunction(config.orderBy) ?
@@ -151,7 +147,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     })
     if (!isItemNotFound) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze(newValue) : newValue },
+        valueFnOrState: { value: this._freezeHandler(newValue, true) },
         actionName: Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
@@ -172,7 +168,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     })
     if (itemsRemoved) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze(newValue) : newValue },
+        valueFnOrState: { value: this._freezeHandler(newValue, true) },
         actionName: Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
@@ -193,7 +189,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const deletedCount = value.length - filteredValue.length
     if (deletedCount) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze(filteredValue) : filteredValue },
+        valueFnOrState: { value: this._freezeHandler(filteredValue, true) },
         actionName: Actions.delete,
         doSkipFreeze: true,
         doSkipClone: true,
@@ -207,7 +203,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const countOrNull: number | null = this._value ? this._value.length : null
     if (countOrNull) {
       this._setState({
-        valueFnOrState: { value: this._isImmutable ? objectFreeze([]) : [] },
+        valueFnOrState: { value: this._freeze([]) },
         actionName: Actions.removeRange,
         doSkipFreeze: true,
         doSkipClone: true,
@@ -223,7 +219,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   public add(items: S[]): void
   public add(itemOrItems: S | S[]): void {
     if (this.isPaused) return
-    const value: S[] = this._value ? [...this._value] : []
+    const value: Readonly<S>[] = this._value ? [...this._value] : []
     assert(this.isInitialized, `Store: "${this._storeName}" can't add items to store before it was initialized.`)
     const clonedItemOrItems = this._freeze(this._clone(itemOrItems))
     if (isArray(clonedItemOrItems)) {
@@ -235,7 +231,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       value.push(clonedItemOrItems as Readonly<S>)
     }
     this._setState({
-      valueFnOrState: { value: this._isImmutable ? objectFreeze(value) : value },
+      valueFnOrState: { value: this._freezeHandler(value, true) },
       actionName: Actions.add,
       doSkipFreeze: true,
       doSkipClone: true,

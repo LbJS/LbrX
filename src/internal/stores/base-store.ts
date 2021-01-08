@@ -2,7 +2,7 @@ import { BehaviorSubject, iif, isObservable, Observable, of, Subject, Subscripti
 import { debounceTime, distinctUntilChanged, filter, map, mergeMap, switchMap, takeWhile, tap } from 'rxjs/operators'
 import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
-import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
+import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectFreeze, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
 import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, GetObservableParam, GetReturnType, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
@@ -364,6 +364,12 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   /** @virtual */
   protected _refCompare(objA: object | any[], objB: object | any[]): boolean {
     return objA === objB
+  }
+
+  /** @internal */
+  protected _freezeHandler<V extends object>(obj: V, isShallowFreeze: boolean = false): Readonly<V> {
+    if (this._config.isImmutable) return obj
+    return isShallowFreeze ? objectFreeze(obj) : this._freeze(obj)
   }
 
   /** @internal */

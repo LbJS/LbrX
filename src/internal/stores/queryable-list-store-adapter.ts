@@ -1,7 +1,7 @@
 import { iif, MonoTypeOperatorFunction, Observable, of, throwError as rxjsThrowError } from 'rxjs'
 import { mergeMap } from 'rxjs/operators'
 import { SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
-import { assert, isArray, isEmpty, isNull, isObject, objectFreeze, throwError } from '../helpers'
+import { assert, isArray, isEmpty, isNull, isObject, throwError } from '../helpers'
 import { KeyOrNever, NoVoid } from '../types'
 import { BaseStore } from './base-store'
 import { ListStoreConfigOptions } from './config'
@@ -156,7 +156,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     if (token) sortingApi.setSortingAlgorithm(token)
     const sort: Pipe<readonly R[], readonly R[]> = (arr: readonly R[]) => {
       const result = sortingApi([...arr])
-      return this._config.isImmutable ? objectFreeze(result) : result
+      return this._freezeHandler(result, true)
     }
     return this._getQueryableListStore(sort, queryableListStore)
   }
