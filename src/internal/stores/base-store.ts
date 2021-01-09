@@ -724,7 +724,10 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   }
 
   //#endregion state-methods
-  //#region reset-dispose-destroy-methods
+  //#region reset-destroy-methods
+
+  /** @virtual */
+  protected _onReset?(): void
 
   /**
    * Resets the state's value to it's initial value.
@@ -738,11 +741,54 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
         assert(initialValue, `Store: "${this._storeName}" is missing it's initial value. This is usually caused by improper initialization of the store.`)
         assert(this._isResettable, `Store: "${this._storeName}" is not configured as resettable.`)
         const modifiedInitialValue = this.onReset?.(this._clone(initialValue), value)
+        this._onReset?.()
         return modifiedInitialValue || initialValue
       },
       actionName: actionName || Actions.reset
     })
   }
+
+  /** @internal */
+  protected _partialHardReset(action: Actions, isLoading: boolean = true): void {
+    if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
+    if (this._storage) this._storage.removeItem(this._storageKey)
+    this._initialValue = null
+    this._instancedValue = null
+    if (this._lazyInitContext) {
+      this._lazyInitContext.isCanceled = true
+      this._lazyInitContext.resolve()
+      this._lazyInitContext = null
+    }
+    this._setState({
+      valueFnOrState: {
+        value: null,
+        error: null,
+        isPaused: false,
+        isHardResettings: false,
+        isLoading,
+      }, actionName: action
+    })
+  }
+
+  /** @internal */
+  protected _hardResetOrDestroy(executor: () => void): Promise<this> {
+    const asyncInitPromiseContext = this._asyncInitPromiseContext
+    const initializeAsyncPromiseState: Promise<void | PromiseStates> =
+      (asyncInitPromiseContext && asyncInitPromiseContext.promise) ?
+        getPromiseState(asyncInitPromiseContext.promise) :
+        Promise.resolve()
+    return new Promise(resolve => {
+      const callback = () => {
+        executor()
+        resolve(this)
+      }
+      initializeAsyncPromiseState.then(state => {
+        if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
+        callback()
+      }).catch(callback)
+    })
+  }
+
 
   /**
    * Sets the following:
@@ -787,46 +833,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     })
   }
 
-  protected _partialHardReset(action: Actions, isLoading: boolean = true): void {
-    if (this._valueToStorageSub) this._valueToStorageSub.unsubscribe()
-    if (this._storage) this._storage.removeItem(this._storageKey)
-    this._initialValue = null
-    this._instancedValue = null
-    if (this._lazyInitContext) {
-      this._lazyInitContext.isCanceled = true
-      this._lazyInitContext.resolve()
-      this._lazyInitContext = null
-    }
-    this._setState({
-      valueFnOrState: {
-        value: null,
-        error: null,
-        isPaused: false,
-        isHardResettings: false,
-        isLoading,
-      }, actionName: action
-    })
-  }
-
-  protected _hardResetOrDestroy(executor: () => void): Promise<this> {
-    const asyncInitPromiseContext = this._asyncInitPromiseContext
-    const initializeAsyncPromiseState: Promise<void | PromiseStates> =
-      (asyncInitPromiseContext && asyncInitPromiseContext.promise) ?
-        getPromiseState(asyncInitPromiseContext.promise) :
-        Promise.resolve()
-    return new Promise(resolve => {
-      const callback = () => {
-        executor()
-        resolve(this)
-      }
-      initializeAsyncPromiseState.then(state => {
-        if (asyncInitPromiseContext) asyncInitPromiseContext.isCancelled = state === PromiseStates.pending
-        callback()
-      }).catch(callback)
-    })
-  }
-
-  //#endregion reset-dispose-destroy-methods
+  //#endregion reset-destroy-methods
   //#region hooks
 
   /**

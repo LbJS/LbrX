@@ -1,5 +1,5 @@
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
-import { assert, isArray, isBool, isCalledBy, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze } from '../helpers'
+import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
@@ -9,10 +9,22 @@ import { Actions, Predicate, SetStateParam, State } from './store-accessories'
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
 
-  //#region state
+  //#region id-helpers
 
   /** @internal */
-  protected _keyIndexMap: KeyValue<string | number | symbol, number> | null = null
+  protected _idIndexMap: KeyValue<string | number | symbol, number> = {}
+
+  /** @internal */
+  protected _idsSet = new Set<string | number | symbol>()
+
+  /** @internal */
+  protected _idsToDelete: Id[] = []
+
+  /** @internal */
+  protected _idsClearFlag = false
+
+  //#region id-helpers
+  //#region state
 
   /** @internal */
   protected get _state(): State<S[], E> {
@@ -23,20 +35,14 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     if (value.value) {
-      value.value = this._sortHandler(value.value) // TODO: better sort logic if possible
-      const list: readonly S[] = value.value
+      value.value = this._sortHandler(value.value)
       const idKey = this._idKey
       if (idKey) {
-        this._keyIndexMap = {}
-        const set = new Set<string | number | symbol>()
-        // tslint:disable-next-line: prefer-for-of
-        for (let i = 0; i < value.value.length; i++) {
-          const id: Id = list[i][idKey] as any
-          this._keyIndexMap[id] = i
-          set.add(id)
-        }
-        this._assertUniqueIds(value.value, set)
+        this._handleIdHelpers(value.value, idKey)
+        this._assertUniqueIds(value.value)
       }
+    } else {
+      this._clearIdHelpers()
     }
     this._stateSource = value
     this._distributeState(value)
@@ -99,16 +105,60 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   /** @internal */
   protected _sortHandler(value: readonly S[]): readonly S[] {
     if (isNull(this._sort)) return value
-    value = this._sort(isDev() ? [...value] : value as S[])
+    value = this._sort(isFrozen(value) ? [...value] : value)
     return isDev() ? objectFreeze(value) : value
   }
 
+  //#endregion helper-methods
+  //#region id-helpers-methods
+
   /** @internal */
-  protected _assertUniqueIds(value: S[] | readonly S[], set: Set<string | number | symbol>): boolean | never {
-    assert(value.length == set.size, `Store: "${this._storeName}" has received a duplicate key.`)
+  protected _handleIdHelpers(value: readonly S[], key: string | number | symbol): void {
+    if (!this._value || this._idsClearFlag) this._clearIdHelpers()
+    const deletePerformanceThreshold = 100
+    const idsToDelete = this._idsToDelete
+    if (idsToDelete.length > deletePerformanceThreshold
+      && idsToDelete.length > value.length / 3
+    ) {
+      this._clearIdHelpers()
+    } else {
+      idsToDelete.forEach(id => {
+        delete this._idIndexMap[id]
+        this._idsSet.delete(id)
+      })
+      this._idsToDelete = []
+    }
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < value.length; i++) {
+      const id: Id = value[i][key] as any
+      if (this._idIndexMap[id] !== i) this._idIndexMap[id] = i
+      if (!this._idsSet.has(id)) this._idsSet.add(id)
+    }
+  }
+
+  /** @internal */
+  protected _clearIdHelpers(): void {
+    this._idIndexMap = {}
+    this._idsSet.clear()
+    this._idsToDelete = []
+    this._idsClearFlag = false
+  }
+
+  /** @internal */
+  protected _assertUniqueIds(value: S[] | readonly S[]): boolean | never {
+    const idKey = this._idKey
+    if (!idKey) return false
+    let isIdsValid = value.length == this._idsSet.size
+    if (!isIdsValid) {
+      this._clearIdHelpers()
+      this._handleIdHelpers(value, idKey)
+      isIdsValid = value.length == this._idsSet.size
+    }
+    if (!isIdsValid) throwError(`Store: "${this._storeName}" has received a duplicate key.`)
     return true
   }
-  //#endregion helper-methods
+
+  //#endregion id-helpers-methods
   //#region state-methods
 
   /** @internal */
@@ -136,11 +186,16 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (!value || this.isPaused) return false
     const newValue: S[] = []
     let isItemNotFound = true
+    const idKey = this._idKey
     value.forEach((x, i, a) => {
       let doSkipItem = false
       if (isItemNotFound) doSkipItem = predicate(x, i, a)
-      if (doSkipItem) isItemNotFound = false
-      else newValue.push(x)
+      if (doSkipItem) {
+        isItemNotFound = false
+        if (idKey) this._idsToDelete.push(x[idKey as any])
+      } else {
+        newValue.push(x)
+      }
     })
     if (!isItemNotFound) {
       this._setState({
@@ -158,10 +213,15 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (!value || this.isPaused) return 0
     const newValue: S[] = []
     let itemsRemoved = 0
+    const idKey = this._idKey
     value.forEach((x, i, a) => {
       const doSkipItem = predicate(x, i, a)
-      if (doSkipItem) itemsRemoved++
-      else newValue.push(x)
+      if (doSkipItem) {
+        itemsRemoved++
+        if (idKey) this._idsToDelete.push(x[idKey] as any)
+      } else {
+        newValue.push(x)
+      }
     })
     if (itemsRemoved) {
       this._setState({
@@ -185,6 +245,9 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const filteredValue = value.filter(x => !(idOrIds as Id[]).includes(x[idKey] as any))
     const deletedCount = value.length - filteredValue.length
     if (deletedCount) {
+      (idOrIds as Id[]).forEach(id => {
+        this._idsToDelete.push(id)
+      })
       this._setState({
         valueFnOrState: { value: this._freezeHandler(filteredValue, true) },
         actionName: actionName || Actions.delete,
@@ -199,6 +262,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     if (this.isPaused) return false
     const countOrNull: number | null = this._value ? this._value.length : null
     if (countOrNull) {
+      this._idsClearFlag = true
       this._setState({
         valueFnOrState: { value: this._freeze([]) },
         actionName: actionName || Actions.removeRange,
@@ -252,7 +316,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   public update(predicate: Predicate<S>, value: S, isOverride: true, actionName?: string): number
   public update(
     idOrIdsOrPredicate: Id | Id[] | Predicate<S>,
-    value: Partial<S> | S,
+    newItem: Partial<S> | S,
     isOverrideOrActionName?: boolean | string,
     actionName?: string
   ): boolean | number {
@@ -264,34 +328,39 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const oldValue: readonly S[] = this._assertValue
     let newValue: Readonly<S>[] = []
     let updateCounter = 0
-    const update = (item: Readonly<S>, newItem: S | Partial<S>): Readonly<S> => {
-      if (!isOverride) newItem = this._merge(this._clone(item), newItem)
-      return this._cloneAndFreeze(newItem) as Readonly<S>
+    const idKey = this._idKey
+    const update = (oldItem: Readonly<S>, key?: string | number | symbol): Readonly<S> => {
+      let clonedNewItem = this._clone(newItem)
+      let tempId: string | number | symbol | null = null
+      if (key) tempId = oldItem[key] as any
+      if (!isOverride) clonedNewItem = this._merge(this._clone(oldItem), clonedNewItem)
+      if (!isNull(tempId)) clonedNewItem[key as any] = tempId
+      return this._freeze(clonedNewItem) as Readonly<S>
     }
-    const updateByKey = (key: Id, keyIdMap: KeyValue<string | number | symbol, number>): void => {
-      const index: number | void = keyIdMap[key]
+    const updateByKey = (id: Id, key: string | number | symbol): void => {
+      const index: number | void = this._idIndexMap[id]
       if (isNumber(index)) {
-        newValue[index] = update(oldValue[index], value)
+        newValue[index] = update(oldValue[index], key)
         updateCounter++
       }
     }
     if (isFunction(idOrIdsOrPredicate)) {
       oldValue.forEach((x, i, a) => {
         if (idOrIdsOrPredicate(x, i, a)) {
-          x = update(x, value)
+          x = update(x)
           updateCounter++
         }
         newValue.push(x)
       })
-    } else if (!this._keyIndexMap) {
+    } else if (!idKey) {
     } else if (isArray(idOrIdsOrPredicate)) {
       newValue = [...oldValue]
       idOrIdsOrPredicate.forEach(x => {
-        updateByKey(x, this._keyIndexMap!)
+        updateByKey(x, idKey)
       })
     } else {
       newValue = [...oldValue]
-      updateByKey(idOrIdsOrPredicate, this._keyIndexMap)
+      updateByKey(idOrIdsOrPredicate, idKey)
     }
     this._setState({
       valueFnOrState: { value: this._freezeHandler(newValue, true) },
@@ -306,8 +375,25 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#region query-methods
 
   public has(id: Id): boolean {
-    return this._keyIndexMap ? isNumber(this._keyIndexMap[id]) : false
+    return isNumber(this._idIndexMap[id]) || false
   }
 
   //#endregion query-methods
+  //#region reset-destroy-methods
+
+  /**
+   * @internal
+   * @override
+   */
+  protected _onReset(): void {
+    this._idsClearFlag = true
+  }
+
+  /** @internal */
+  protected _partialHardReset(action: Actions, isLoading: boolean = true): void {
+    this._idsClearFlag = true
+    super._partialHardReset(action, isLoading)
+  }
+
+  //#endregion reset-destroy-methods
 }
