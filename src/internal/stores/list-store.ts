@@ -312,11 +312,13 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   public update(id: Id, value: S, isOverride: true, actionName?: string): boolean
   public update(ids: Id[], value: Partial<S>, actionName?: string): number
   public update(ids: Id[], value: S, isOverride: true, actionName?: string): number
+  public update(ids: Id[], value: Partial<S>[], actionName?: string): number
+  public update(ids: Id[], value: S[], isOverride: true, actionName?: string): number
   public update(predicate: Predicate<S>, value: Partial<S>, actionName?: string): number
   public update(predicate: Predicate<S>, value: S, isOverride: true, actionName?: string): number
   public update(
     idOrIdsOrPredicate: Id | Id[] | Predicate<S>,
-    newItem: Partial<S> | S,
+    newItemOrItems: Partial<S> | S | Partial<S>[] | S[],
     isOverrideOrActionName?: boolean | string,
     actionName?: string
   ): boolean | number {
@@ -329,7 +331,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     let newValue: Readonly<S>[] = []
     let updateCounter = 0
     const idKey = this._idKey
-    const update = (oldItem: Readonly<S>, key?: string | number | symbol): Readonly<S> => {
+    const update = (oldItem: Readonly<S>, newItem: Partial<S> | S, key?: string | number | symbol): Readonly<S> => {
       let clonedNewItem = this._clone(newItem)
       let tempId: string | number | symbol | null = null
       if (key) tempId = oldItem[key] as any
@@ -337,17 +339,17 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       if (!isNull(tempId)) clonedNewItem[key as any] = tempId
       return this._freeze(clonedNewItem) as Readonly<S>
     }
-    const updateByKey = (id: Id, key: string | number | symbol): void => {
+    const updateByKey = (newItem: Partial<S> | S, id: Id, key: string | number | symbol): void => {
       const index: number | void = this._idIndexMap[id]
       if (isNumber(index)) {
-        newValue[index] = update(oldValue[index], key)
+        newValue[index] = update(oldValue[index], newItem, key)
         updateCounter++
       }
     }
     if (isFunction(idOrIdsOrPredicate)) {
       oldValue.forEach((x, i, a) => {
         if (idOrIdsOrPredicate(x, i, a)) {
-          x = update(x)
+          x = update(x, newItemOrItems as Partial<S> | S)
           updateCounter++
         }
         newValue.push(x)
@@ -355,12 +357,13 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     } else if (!idKey) {
     } else if (isArray(idOrIdsOrPredicate)) {
       newValue = [...oldValue]
-      idOrIdsOrPredicate.forEach(x => {
-        updateByKey(x, idKey)
+      idOrIdsOrPredicate.forEach((x, i) => {
+        const newItem: Partial<S> | S | undefined = newItemOrItems[i]
+        if (newItem) updateByKey(newItem, x, idKey)
       })
     } else {
       newValue = [...oldValue]
-      updateByKey(idOrIdsOrPredicate, idKey)
+      updateByKey(newItemOrItems as Partial<S> | S, idOrIdsOrPredicate, idKey)
     }
     this._setState({
       valueFnOrState: { value: this._freezeHandler(newValue, true) },
