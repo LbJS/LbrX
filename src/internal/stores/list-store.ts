@@ -118,7 +118,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     const deletePerformanceThreshold = 100
     const idsToDelete = this._idsToDelete
     if (idsToDelete.length > deletePerformanceThreshold
-      && idsToDelete.length > value.length / 3
+      && idsToDelete.length > value.length / 2
     ) {
       this._clearIdHelpers()
     } else {
