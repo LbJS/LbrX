@@ -23,15 +23,19 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       logError(`Store: "${this._storeName}" has called "_state" setter not from "_setState" method.`)
     }
     if (value.value) {
-      value.value = this._sortHandler(value.value)
+      value.value = this._sortHandler(value.value) // TODO: better sort logic if possible
+      const list: readonly S[] = value.value
       const idKey = this._idKey
       if (idKey) {
         this._keyIndexMap = {}
+        const set = new Set<string | number | symbol>()
         // tslint:disable-next-line: prefer-for-of
         for (let i = 0; i < value.value.length; i++) {
-          this._keyIndexMap[idKey] = i
+          const id: Id = list[i][idKey] as any
+          this._keyIndexMap[id] = i
+          set.add(id)
         }
-        this._assertUniqueIds(value.value)
+        this._assertUniqueIds(value.value, set)
       }
     }
     this._stateSource = value
@@ -100,20 +104,8 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   }
 
   /** @internal */
-  protected _assertUniqueIds(value: S[] | readonly S[]): boolean | never {
-    const idKey = this._idKey
-    if (!idKey) return false
-    const errorMsg = `Store: "${this._storeName}" has received a duplicate key.`
-    if (this._keyIndexMap) {
-      assert(value.length != Object.keys(this._keyIndexMap).length, errorMsg)
-    } else {
-      const set = new Set<any>()
-      // tslint:disable-next-line: prefer-for-of
-      for (let i = 0; i < value.length; i++) {
-        set.add(value[i][idKey])
-      }
-      assert(value.length != set.size, errorMsg)
-    }
+  protected _assertUniqueIds(value: S[] | readonly S[], set: Set<string | number | symbol>): boolean | never {
+    assert(value.length == set.size, `Store: "${this._storeName}" has received a duplicate key.`)
     return true
   }
   //#endregion helper-methods
