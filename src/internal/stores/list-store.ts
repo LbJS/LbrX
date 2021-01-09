@@ -276,6 +276,15 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#endregion delete-methods
   //#region add-or-update-methods
 
+  public set(items: S[], actionName?: string): void {
+    if (this.isPaused) return
+    assert(this.isInitialized, `Store: "${this._storeName}" can't set items to store before it was initialized.`)
+    this._setState({
+      valueFnOrState: { value: items },
+      actionName: actionName || Actions.set,
+    })
+  }
+
   public add(item: S, actionName?: string): void
   public add(items: S[], actionName?: string): void
   public add(itemOrItems: S | S[], actionName?: string): void {
@@ -296,15 +305,6 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       actionName: actionName || Actions.add,
       doSkipFreeze: true,
       doSkipClone: true,
-    })
-  }
-
-  public set(items: S[], actionName?: string): void {
-    if (this.isPaused) return
-    assert(this.isInitialized, `Store: "${this._storeName}" can't set items to store before it was initialized.`)
-    this._setState({
-      valueFnOrState: { value: items },
-      actionName: actionName || Actions.set,
     })
   }
 
@@ -369,6 +369,39 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       doSkipClone: true,
     })
     return isSingleId ? !!updateCounter : updateCounter
+  }
+
+  public updateAll(updateFn: (value: S, index: number, arr: S[]) => S, actionName?: string): number
+  public updateAll(value: Partial<S>, actionName?: string): number
+  public updateAll(value: S, isOverride: true, actionName?: string): number
+  public updateAll(
+    updateFnOrValue: S | Partial<S> | ((value: S, index: number, arr: S[]) => S),
+    isOverrideOrActionName?: boolean | string,
+    actionName?: string
+  ): number {
+    if (this.isPaused) return 0
+    assert(this.isInitialized, `Store: "${this._storeName}" can't update items before it was initialized.`)
+    const isOverride: boolean = isBool(isOverrideOrActionName) ? isOverrideOrActionName : false
+    actionName = isString(isOverrideOrActionName) ? isOverrideOrActionName : actionName || Actions.updateAll
+    let newValue: S[] = this._clone(this._assertValue) as S[]
+    if (!newValue.length) return 0
+    const idKey = this._idKey
+    const updateFn = isFunction(updateFnOrValue) ?
+      updateFnOrValue :
+      (oldItem: S) => isOverride ? updateFnOrValue as S : this._merge(oldItem, this._clone(updateFnOrValue)) as S
+    newValue = idKey ? newValue.map((x, i, a) => {
+      const id: Id = x[idKey as any]
+      x = updateFn(x, i, a)
+      x[idKey as any] = id
+      return x
+    }) : newValue.map(updateFn)
+    if (isFunction(updateFnOrValue)) newValue = this._clone(newValue)
+    this._setState({
+      valueFnOrState: { value: newValue },
+      actionName,
+      doSkipFreeze: true,
+    })
+    return newValue.length
   }
 
   //#endregion add-or-update-methods
