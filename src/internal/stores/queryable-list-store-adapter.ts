@@ -55,10 +55,12 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
         orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<Readonly<R>> | SortOptions<Readonly<R>>[],
           token?: SortingAlgorithmToken) => this._orderBy(partialSortOptions, token, queryableListStore),
         toList: (predicate?: Predicate<R>) => this._toList(predicate, queryableListStore),
+        count: (predicate?: Predicate<R>) => this._count(predicate, queryableListStore),
         firstOrDefault: (predicate?: Predicate<R>) => this._firstOrDefault(predicate, queryableListStore),
         first: (predicate?: Predicate<R>) => this._first(predicate, queryableListStore),
         any: (predicate?: Predicate<R>) => this._any(predicate, queryableListStore),
         toList$: (predicate?: Predicate<R>) => this._toList$(predicate, queryableListStore),
+        count$: (predicate?: Predicate<R>) => this._count$(predicate, queryableListStore),
         firstOrDefault$: (predicate?: Predicate<R>) => this._firstOrDefault$(predicate, queryableListStore),
         first$: (predicate?: Predicate<R>) => this._first$(predicate, queryableListStore),
         any$: (predicate?: Predicate<R>) => this._any$(predicate, queryableListStore),
@@ -76,10 +78,10 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _setCompare<R>(
+  protected _setCompare<T>(
     compare: Compare,
-    queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, Readonly<S>>
-  ): ChainableListStoreQuery<Readonly<R>> {
+    queryableListStore?: ChainableListStoreQuery<T> | ChainableListStoreQueryExtended<T, Readonly<S>>
+  ): ChainableListStoreQuery<Readonly<T>> {
     if (!queryableListStore) queryableListStore = this._getQueryableListStore()
     if (this._isQLSE(queryableListStore)) queryableListStore._compare = compare
     return queryableListStore
@@ -90,10 +92,10 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _when<R>(
+  protected _when<T>(
     actionOrActions: Actions | string | (Actions | string)[],
-    queryableListStore?: ChainableListStoreQuery<R>
-  ): ChainableListStoreQuery<R> {
+    queryableListStore?: ChainableListStoreQuery<T>
+  ): ChainableListStoreQuery<T> {
     return this._getQueryableListStore(isArray(actionOrActions) ? actionOrActions : [actionOrActions], queryableListStore)
   }
 
@@ -139,14 +141,14 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _orderBy<R>(
-    partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<Readonly<R>> | SortOptions<Readonly<R>>[],
+  protected _orderBy<T>(
+    partialSortOptions?: true | false | KeyOrNever<T> | SortOptions<Readonly<T>> | SortOptions<Readonly<T>>[],
     token?: SortingAlgorithmToken,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>>
-  ): ChainableListStoreQuery<Readonly<R>> {
-    const sortingApi: SortMethodApi<R> = SortFactory.create(partialSortOptions)
+    queryableListStore?: ChainableListStoreQuery<Readonly<T>>
+  ): ChainableListStoreQuery<Readonly<T>> {
+    const sortingApi: SortMethodApi<T> = SortFactory.create(partialSortOptions)
     if (token) sortingApi.setSortingAlgorithm(token)
-    const sort: Pipe<readonly R[], readonly R[]> = (arr: readonly R[]) => {
+    const sort: Pipe<readonly T[], readonly T[]> = (arr: readonly T[]) => {
       const result = sortingApi([...arr])
       return this._freezeHandler(result, true)
     }
@@ -170,88 +172,99 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _toList<T, R>(
-    predicate?: (Predicate<T, R>),
-    queryableListStore?: ChainableListStoreQuery<R> | ChainableListStoreQueryExtended<R, S>,
-  ): R[] {
-    if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
-    let value: S[] | R[] | readonly R[] | readonly S[] | null = this._value
+  protected _toList<T>(
+    predicate?: (Predicate<T>),
+    queryableListStore?: ChainableListStoreQuery<T> | ChainableListStoreQueryExtended<T, S>,
+  ): T[] {
+    if (predicate) queryableListStore = this._where<T>(predicate, queryableListStore)
+    let value: S[] | T[] | readonly T[] | readonly S[] | null = this._value
     assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
     if (queryableListStore && this._isQLSE(queryableListStore)) {
-      value = queryableListStore._pipe(value, queryableListStore._pipMethods) as readonly R[]
+      value = queryableListStore._pipe(value, queryableListStore._pipMethods) as readonly T[]
     }
-    return this._clone(value) as R[]
+    return this._clone(value) as T[]
   }
 
   public toList(): S[]
-  public toList<R>(): R[]
   public toList(predicate: Predicate<S>): S[]
-  public toList<R>(predicate: Predicate<S>): R[]
-  public toList<R>(predicate?: Predicate<S, R>
-  ): S[] | R[] {
-    return this._toList<S, R>(predicate)
+  public toList(predicate?: Predicate<S>): S[] {
+    return this._toList(predicate)
   }
 
   /** @internal */
-  protected _firstOrDefault<T, R>(
-    predicate?: Predicate<T, R>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>> | ChainableListStoreQueryExtended<R, S>,
-  ): R | null {
-    let value: S[] | R[] | readonly R[] | readonly S[] | null = this._value
-    if (isNull(value)) return value
-    if (queryableListStore && this._isQLSE<R>(queryableListStore)) {
-      value = queryableListStore._pipe(value, queryableListStore._pipMethods) as readonly R[]
+  protected _count<T>(
+    predicate?: (Predicate<T>),
+    queryableListStore?: ChainableListStoreQuery<T> | ChainableListStoreQueryExtended<T, S>,
+  ): number {
+    if (predicate) queryableListStore = this._where<T>(predicate, queryableListStore)
+    let value: S[] | T[] | readonly T[] | readonly S[] | null = this._value
+    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
+    if (queryableListStore && this._isQLSE(queryableListStore)) {
+      value = queryableListStore._pipe(value, queryableListStore._pipMethods) as readonly T[]
     }
-    let result: T | R | null = null
+    return value.length
+  }
+
+  public count(): number
+  public count(predicate: Predicate<S>): number
+  public count(predicate?: Predicate<S>): number {
+    return this._count(predicate)
+  }
+
+  /** @internal */
+  protected _firstOrDefault<T>(
+    predicate?: Predicate<T>,
+    queryableListStore?: ChainableListStoreQuery<Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): T | null {
+    let value: S[] | T[] | readonly T[] | readonly S[] | null = this._value
+    if (isNull(value)) return value
+    if (queryableListStore && this._isQLSE<T>(queryableListStore)) {
+      value = queryableListStore._pipe(value, queryableListStore._pipMethods) as readonly T[]
+    }
+    let result: T | null = null
     if (predicate) {
-      result = (value as R[]).find(predicate) ?? null
+      result = (value as T[]).find(predicate) ?? null
     } else if (value[0]) {
-      result = value[0] as R
+      result = value[0] as T
     }
     return isObject(result) ? this._clone(result) : null
   }
 
   public firstOrDefault(): S | null
-  public firstOrDefault<R>(): R | null
   public firstOrDefault(predicate: Predicate<S>): S | null
-  public firstOrDefault<R>(predicate: Predicate<R>): R | null
-  public firstOrDefault<R>(predicate?: Predicate<S, R>
-  ): S | R | null {
-    return this._firstOrDefault<S, R>(predicate)
+  public firstOrDefault(predicate?: Predicate<S>
+  ): S | null {
+    return this._firstOrDefault(predicate)
   }
 
   /** @internal */
-  protected _first<R>(
-    predicate?: Predicate<R>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>> | ChainableListStoreQueryExtended<R, S>,
-  ): R | never {
-    const result: R | null = this._firstOrDefault(predicate, queryableListStore)
+  protected _first<T>(
+    predicate?: Predicate<T>,
+    queryableListStore?: ChainableListStoreQuery<Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): T | never {
+    const result: T | null = this._firstOrDefault(predicate, queryableListStore)
     return isEmpty(result) ? throwError(`Store: "${this._storeName}" has resolved a null value by first method.`) : result
   }
 
   public first(): S | never
-  public first<R>(): R | never
   public first(predicate: Predicate<S>): S | never
-  public first<R>(predicate: Predicate<R>): R | never
-  public first<R>(predicate?: Predicate<S, R>
-  ): S | R | never {
+  public first(predicate?: Predicate<S>
+  ): S | never {
     return this._first(predicate)
   }
 
   /** @internal */
-  protected _any<R>(
-    predicate?: Predicate<R>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>> | ChainableListStoreQueryExtended<R, S>,
+  protected _any<T>(
+    predicate?: Predicate<T>,
+    queryableListStore?: ChainableListStoreQuery<Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
   ): boolean {
-    const result: R | null = this._firstOrDefault(predicate, queryableListStore)
+    const result: T | null = this._firstOrDefault(predicate, queryableListStore)
     return !isNull(result)
   }
 
   public any(): boolean
-  public any<R>(): boolean
   public any(predicate: Predicate<S>): boolean
-  public any<R>(predicate: Predicate<R>): boolean
-  public any<R>(predicate?: Predicate<S, R>): boolean {
+  public any(predicate?: Predicate<S>): boolean {
     return this._any(predicate)
   }
 
@@ -272,71 +285,79 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   /** @internal */
-  protected _toList$<T, R>(
-    predicate?: Predicate<T, R>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>> | ChainableListStoreQueryExtended<R, S>,
-  ): Observable<T[] | R[]> {
-    if (predicate) queryableListStore = this._where<R>(predicate, queryableListStore)
-    return this._getObs$<T[] | R[]>(queryableListStore)
+  protected _toList$<T>(
+    predicate?: Predicate<T>,
+    queryableListStore?: ChainableListStoreQuery<Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): Observable<T[]> {
+    if (predicate) queryableListStore = this._where<T>(predicate, queryableListStore)
+    return this._getObs$<T[]>(queryableListStore)
   }
 
   public toList$(): Observable<S[]>
-  public toList$<R>(): Observable<R[]>
   public toList$(predicate: Predicate<S>): Observable<S[]>
-  public toList$<R>(predicate: Predicate<S>): Observable<R[]>
-  public toList$<R>(predicate?: Predicate<S, R>
-  ): Observable<S[] | R[]> {
-    return this._toList$<S, R>(predicate)
+  public toList$(predicate?: Predicate<S>): Observable<S[]> {
+    return this._toList$(predicate)
   }
 
   /** @internal */
-  protected _getQueryableListStoreForSingle<T, R extends T | any>(
+  protected _count$<T>(
     predicate?: Predicate<T>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<R>> | ChainableListStoreQueryExtended<T | R, S>,
-  ): ChainableListStoreQuery<Readonly<T> | Readonly<R>> {
+    queryableListStore?: ChainableListStoreQuery<Readonly<T> | number> | ChainableListStoreQueryExtended<T | number, S>,
+  ): Observable<number> {
+    if (predicate) queryableListStore = this._where<T>(predicate, queryableListStore as ChainableListStoreQuery<Readonly<T>>)
+    const count: Pipe<T[], number> = (value: readonly T[]) => value.length
+    queryableListStore = this._getQueryableListStore<T, number>(count, queryableListStore as ChainableListStoreQuery<number>)
+    return this._getObs$<number>(queryableListStore)
+  }
+
+  public count$(): Observable<number>
+  public count$(predicate: Predicate<S>): Observable<number>
+  public count$(predicate?: Predicate<S>): Observable<number> {
+    return this._count$(predicate)
+  }
+
+  /** @internal */
+  protected _getQueryableListStoreForSingle<T>(
+    predicate?: Predicate<T>,
+    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): ChainableListStoreQuery<Readonly<T> | Readonly<T>> {
     const find: Pipe<T[], Readonly<T> | null> = predicate ?
       ((arr: readonly T[]) => arr.find(predicate) || null) :
       ((arr: readonly T[]) => arr.length ? arr[0] : null)
-    return this._getQueryableListStore<T, T | R | null>(find, queryableListStore) as ChainableListStoreQuery<Readonly<T> | Readonly<R>>
+    return this._getQueryableListStore<T, T | null>(find, queryableListStore) as ChainableListStoreQuery<Readonly<T> | Readonly<T>>
   }
 
   /** @internal */
-  protected _firstOrDefault$<T, R extends T | any>(
+  protected _firstOrDefault$<T>(
     predicate?: Predicate<T>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<R>> | ChainableListStoreQueryExtended<T | R, S>,
-  ): Observable<T | R | null> {
-    queryableListStore = this._getQueryableListStoreForSingle<T, R>(predicate, queryableListStore)
-    return this._getObs$<T | R | null>(queryableListStore)
+    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): Observable<T | null> {
+    queryableListStore = this._getQueryableListStoreForSingle<T>(predicate, queryableListStore)
+    return this._getObs$<T | null>(queryableListStore)
   }
 
   public firstOrDefault$(): Observable<S | null>
-  public firstOrDefault$<R>(): Observable<R | null>
   public firstOrDefault$(predicate: Predicate<S>): Observable<S | null>
-  public firstOrDefault$<R>(predicate: Predicate<R>): Observable<R | null>
-  public firstOrDefault$<R>(predicate?: Predicate<S, R>): Observable<S | R | null> {
-    return this._firstOrDefault$<S, R>(predicate)
+  public firstOrDefault$(predicate?: Predicate<S>): Observable<S | null> {
+    return this._firstOrDefault$(predicate)
   }
 
   /** @internal */
-  protected _first$<T, R extends T | any>(
+  protected _first$<T>(
     predicate?: Predicate<T>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<R>> | ChainableListStoreQueryExtended<T | R, S>,
-  ): Observable<T | R | never> {
-    queryableListStore = this._getQueryableListStoreForSingle<T, R>(predicate, queryableListStore)
-    const mergeMapOperator = mergeMap((x: R) => iif(() => isNull(x),
+    queryableListStore?: ChainableListStoreQuery<Readonly<T> | Readonly<T>> | ChainableListStoreQueryExtended<T, S>,
+  ): Observable<T | never> {
+    queryableListStore = this._getQueryableListStoreForSingle<T>(predicate, queryableListStore)
+    const mergeMapOperator = mergeMap((x: T) => iif(() => isNull(x),
       rxjsThrowError(`Store: "${this._storeName}" has resolved a null value by first$ observable.`),
       of(x)))
-    return this._getObs$<T | R | never>(queryableListStore, [mergeMapOperator])
+    return this._getObs$<T | never>(queryableListStore, [mergeMapOperator])
   }
 
   public first$(): Observable<S | never>
-  public first$<R>(): Observable<R | never>
   public first$(predicate: Predicate<S>): Observable<S | never>
-  public first$<R>(predicate: Predicate<R>): Observable<R | never>
-  public first$<R>(
-    predicate?: Predicate<S, R>
-  ): Observable<S | R | never> {
-    return this._first$<S, R>(predicate)
+  public first$(predicate?: Predicate<S>): Observable<S | never> {
+    return this._first$(predicate)
   }
 
   /** @internal */
@@ -352,12 +373,9 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   }
 
   public any$(): Observable<boolean>
-  public any$<R>(): Observable<boolean>
   public any$(predicate: Predicate<S>): Observable<boolean>
-  public any$<R>(predicate: Predicate<R>): Observable<boolean>
-  public any$<R>(predicate?: Predicate<S, R>
-  ): Observable<boolean> {
-    return this._any$<S>(predicate)
+  public any$(predicate?: Predicate<S>): Observable<boolean> {
+    return this._any$(predicate)
   }
 
   //#endregion query-methods
