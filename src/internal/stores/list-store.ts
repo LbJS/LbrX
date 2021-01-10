@@ -308,14 +308,14 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     })
   }
 
-  public update(id: Id, value: Partial<S>, actionName?: string): boolean
-  public update(id: Id, value: S, isOverride: true, actionName?: string): boolean
-  public update(ids: Id[], value: Partial<S>, actionName?: string): number
-  public update(ids: Id[], value: S, isOverride: true, actionName?: string): number
-  public update(ids: Id[], value: Partial<S>[], actionName?: string): number
-  public update(ids: Id[], value: S[], isOverride: true, actionName?: string): number
-  public update(predicate: Predicate<S>, value: Partial<S>, actionName?: string): number
-  public update(predicate: Predicate<S>, value: S, isOverride: true, actionName?: string): number
+  public update(id: Id, item: Partial<S>, actionName?: string): boolean
+  public update(id: Id, item: S, isOverride: true, actionName?: string): boolean
+  public update(ids: Id[], item: Partial<S>, actionName?: string): number
+  public update(ids: Id[], item: S, isOverride: true, actionName?: string): number
+  public update(ids: Id[], items: Partial<S>[], actionName?: string): number
+  public update(ids: Id[], items: S[], isOverride: true, actionName?: string): number
+  public update(predicate: Predicate<S>, item: Partial<S>, actionName?: string): number
+  public update(predicate: Predicate<S>, item: S, isOverride: true, actionName?: string): number
   public update(
     idOrIdsOrPredicate: Id | Id[] | Predicate<S>,
     newItemOrItems: Partial<S> | S | Partial<S>[] | S[],
@@ -407,11 +407,36 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return newValue.length
   }
 
+  public addOrUpdate(item: S, addActionName?: string | null, updateActionName?: string | null): [number, number]
+  public addOrUpdate(items: S[], addActionName?: string | null, updateActionName?: string | null): [number, number]
+  public addOrUpdate(itemOrItems: S | S[], addActionName?: string | null, updateActionName?: string | null): [number, number] {
+    if (this.isPaused) return [0, 0]
+    assert(this.isInitialized, `Store: "${this._storeName}" can't update or add items before it was initialized.`)
+    if (!isArray(itemOrItems)) itemOrItems = [itemOrItems]
+    const itemsToAdd: S[] = []
+    const itemsToUpdate: { items: S[], ids: Id[] } = { items: [], ids: [] }
+    const idKey = this._idKey;
+    (itemOrItems as S[]).forEach(item => {
+      if (idKey) {
+        const id: Id = item[idKey as any]
+        if (this._idsSet.has(id)) {
+          itemsToUpdate.ids.push(id)
+          itemsToUpdate.items.push(item)
+          return
+        }
+      }
+      itemsToAdd.push(item)
+    })
+    this.add(itemsToAdd, addActionName || undefined)
+    this.update(itemsToUpdate.ids, itemsToUpdate.items, true, updateActionName || undefined)
+    return [itemsToAdd.length, itemsToUpdate.ids.length]
+  }
+
   //#endregion add-or-update-methods
   //#region query-methods
 
   public has(id: Id): boolean {
-    return isNumber(this._idIndexMap[id]) || false
+    return this._idsSet.has(id)
   }
 
   //#endregion query-methods
