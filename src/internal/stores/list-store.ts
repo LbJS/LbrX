@@ -1,10 +1,11 @@
+import { Observable } from 'rxjs'
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
 import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { Actions, Predicate, SetStateParam, State } from './store-accessories'
+import { Actions, Pipe, Predicate, SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -437,6 +438,16 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
 
   public has(id: Id): boolean {
     return this._idsSet.has(id)
+  }
+
+  public has$(id: Id, onAction?: Actions | string): Observable<boolean>
+  public has$(id: Id, onActions?: (Actions | string)[]): Observable<boolean>
+  public has$(id: Id, onActionOrActions?: Actions | string | (Actions | string)[]): Observable<boolean> {
+    const has: Pipe<any, boolean> = () => this._idsSet.has(id)
+    return this._get$({
+      onActionOrActions,
+      pipe: has
+    })
   }
 
   //#endregion query-methods

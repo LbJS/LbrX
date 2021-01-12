@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 import { assert, isFunction } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, GetObservableParam, GetReturnType, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, GetObservableParam, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -128,7 +128,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * }
    */
   public get$<R>(dynamic?: ProjectsOrKeys<S, R>): Observable<R>
-  public get$<R>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<GetReturnType<S, R>> {
+  public get$<R>(projectsOrKeys?: ProjectsOrKeys<S, R>): Observable<S | R | R[] | S[keyof S] | Pick<S, keyof S>> {
     return this._get$<R>({ projectsOrKeys })
   }
 
@@ -151,7 +151,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
     return {
       get$: <R>(projectsOrKeys?: ProjectsOrKeys<S, R>) =>
-        this._get$<R>({ actionOrActions, projectsOrKeys })
+        this._get$<R>({ onActionOrActions: actionOrActions, projectsOrKeys })
     }
   }
 

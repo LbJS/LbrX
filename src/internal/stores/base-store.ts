@@ -5,7 +5,7 @@ import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectFreeze, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, GetObservableParam, GetReturnType, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, GetObservableParam, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
   ResettableStore<S, M, E>,
@@ -467,11 +467,11 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   /** @internal */
   protected _get$<R>({
     pipe,
-    actionOrActions,
+    onActionOrActions: actionOrActions,
     projectsOrKeys,
     compare,
     operators,
-  }: GetObservableParam<S, R>): Observable<GetReturnType<S, R>> {
+  }: GetObservableParam<S, R>): Observable<R> {
     const takeWhilePredicate = () => {
       return !observableQueryContext.isDisposed
     }
@@ -484,7 +484,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     }
     const project: Project<S, R> | Pipe<S, R> = pipe || this._getProjectionMethod(projectsOrKeys)
     compare ||= this._compare
-    const observableQueryContext: ObservableQueryContext<S | R> = {
+    const observableQueryContext: ObservableQueryContext<R> = {
       doSkipOneChangeCheck: false,
       isDisposed: false,
       observable: this._value$.asObservable()

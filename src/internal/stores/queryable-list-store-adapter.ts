@@ -318,13 +318,13 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   ): Observable<T> {
     if (queryableListStore && this._isQLSE(queryableListStore)) {
       return this._get$({
-        actionOrActions: queryableListStore._actions,
+        onActionOrActions: queryableListStore._actions,
         pipe: this._createPipe(queryableListStore),
         compare: queryableListStore._compare,
         operators
-      }) as Observable<T>
+      })
     }
-    return this._get$({}) as Observable<T>
+    return this._get$({})
   }
 
   /** @internal */

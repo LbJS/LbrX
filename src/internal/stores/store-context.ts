@@ -23,7 +23,7 @@ export class StoreContext<S extends object> {
   public get value$(): Observable<S> {
     if (this._getObservable) return this._getObservable
     const observable = this._get({
-      actionOrActions: this._onAction,
+      onActionOrActions: this._onAction,
       operators: [tap((x: S) => this._lastValue = x)]
     })
     if (!this._isDisposed) this._getObservable = observable
