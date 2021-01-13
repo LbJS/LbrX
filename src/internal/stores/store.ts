@@ -137,18 +137,18 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * @example
    * onAction('update').get$(projector)
    */
-  public onAction<R>(action: Actions | string): Pick<QueryableStore<S, E>, 'get$'>
+  public onAction<R>(action: Actions | string): Pick<QueryableStore<S>, 'get$'>
   /**
    * Will invoke the chained method only on the provided action.
    * @example
    * onAction(['update', 'myCustomActionName']).get$(projector)
    */
-  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
+  public onAction<R>(actions: (Actions | string)[]): Pick<QueryableStore<S>, 'get$'>
   /**
    * Dynamic overload.
    */
-  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'>
-  public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S, E>, 'get$'> {
+  public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S>, 'get$'>
+  public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S>, 'get$'> {
     return {
       get$: <R>(projectsOrKeys?: ProjectsOrKeys<S, R>) =>
         this._get$<R>({ onActionOrActions: actionOrActions, projectsOrKeys })
@@ -182,7 +182,7 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public get<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(projects: M[]): R[]
   /**
-   * Returns an array values based on the provided projections methods.
+   * Returns an array values based on the provided projection methods.
    * - This overload allows to manually define the return type.
    * @example
    * const [isRaining, precipitation] = weatherStore.get([value => value.isRaining, value => value.precipitation])
@@ -209,11 +209,9 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    */
   public get<R>(dynamic?: ProjectsOrKeys<S, R>): R
   public get<R, K extends keyof S>(projectsOrKeys?: ProjectsOrKeys<S, R>): S | R | R[] | S[K] | Pick<S, K> {
-    const mapProject = this._getProjectionMethod(projectsOrKeys)
-    const value = this._value
-    assert(value, `Store: "${this._storeName}" has tried to access state's value before initialization.`)
-    const mappedValue = mapProject(value)
-    return this._cloneIfObject(mappedValue)
+    const project = this._getProjectionMethod(projectsOrKeys)
+    const projectedValue = project(this._assertValue)
+    return this._cloneIfObject(projectedValue)
   }
 
   //#endregion query-methods
@@ -267,7 +265,6 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Use the `set()` method instead.
    */
   public override(newValue: S, actionName?: string): void {
-    // tslint:disable-next-line: deprecation
     this._update(newValue, /** isMerge */ false, actionName || Actions.set)
   }
 
@@ -275,7 +272,6 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Overrides the current state's value completely.
    */
   public set(newValue: S, actionName?: string): void {
-    // tslint:disable-next-line: deprecation
     this._update(newValue, /** isMerge */ false, actionName || Actions.set)
   }
 

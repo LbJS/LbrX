@@ -5,7 +5,7 @@ import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { Actions, Pipe, Predicate, SetStateParam, State } from './store-accessories'
+import { Actions, Pipe, Predicate, ProjectsOrKeys, SetStateParam, State } from './store-accessories'
 
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -27,7 +27,10 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#region id-helpers
   //#region state
 
-  /** @internal */
+  /**
+   * @internal
+   * @override
+   */
   protected get _state(): State<S[], E> {
     return objectAssign({}, this._stateSource)
   }
@@ -162,7 +165,10 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   //#endregion id-helpers-methods
   //#region state-methods
 
-  /** @internal */
+  /**
+   * @internal
+   * @override
+   */
   protected _setState({
     valueFnOrState,
     actionName,
@@ -440,14 +446,61 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return this._idsSet.has(id)
   }
 
-  public has$(id: Id, onAction?: Actions | string): Observable<boolean>
-  public has$(id: Id, onActions?: (Actions | string)[]): Observable<boolean>
-  public has$(id: Id, onActionOrActions?: Actions | string | (Actions | string)[]): Observable<boolean> {
+  public get(id: Id): S
+  public get(ids: Id[]): S[]
+  public get<R>(ids: Id, project: (value: Readonly<S>) => R): R
+  public get<R>(ids: Id[], project: (value: Readonly<S>) => R): R[]
+  public get<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(ids: Id, projects: M[]): R[]
+  public get<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(ids: Id[], projects: M[]): R[][]
+  public get<R extends any[]>(id: Id, projects: ((value: Readonly<S>) => any)[]): R
+  public get<R extends any[]>(ids: Id[], projects: ((value: Readonly<S>) => any)[]): R[]
+  public get<K extends keyof S>(id: Id[], key: K): S[K]
+  public get<K extends keyof S>(ids: Id[], key: K): S[K][]
+  public get<K extends keyof S>(id: Id[], keys: K[]): Pick<S, K>
+  public get<K extends keyof S>(ids: Id[], keys: K[]): Pick<S, K>[]
+  public get<R>(id: Id[], dynamic?: ProjectsOrKeys<S, R>): R
+  public get<R>(ids: Id[], dynamic?: ProjectsOrKeys<S, R>): R[]
+  public get<R, K extends keyof S>(idOrIds: Id | Id[], projectsOrKeys?: ProjectsOrKeys<S, R>
+  ): S | S[] | R[] | R[][] | S[K][] | Pick<S, K>[] {
+    const projectOrNull = this._getProjectionMethod(projectsOrKeys)
+    if (isArray(idOrIds)) {
+      const result: any[] = []
+      idOrIds.forEach(x => {
+        if (this._idsSet.has(x)) {
+          const index = this._idIndexMap[x]
+          const item = this._assertValue[index]
+          const projectedItem = projectOrNull(item)
+          result.push(this._cloneIfObject(projectedItem))
+        }
+      })
+      return result
+    } else {
+      if (!this._idsSet.has(idOrIds)) throwError(`Store: "${this._storeName}" doesn't have an item with id: "${idOrIds}".`)
+      const index = this._idIndexMap[idOrIds]
+      const item = this._assertValue[index]
+      const projectedItem = projectOrNull(item)
+      return this._cloneIfObject(projectedItem)
+    }
+  }
+
+  public onAction(onAction?: Actions | string): Pick<ListStore<S, Id>, `has$`>
+  public onAction(onActions?: (Actions | string)[]): Pick<ListStore<S, Id>, `has$`>
+  public onAction(onActionOrActions?: Actions | string | (Actions | string)[]): Pick<ListStore<S, Id>, `has$`> {
+    return {
+      has$: (id: Id) => this._has$(id, onActionOrActions)
+    }
+  }
+
+  public _has$(id: Id, onActionOrActions?: Actions | string | (Actions | string)[]): Observable<boolean> {
     const has: Pipe<any, boolean> = () => this._idsSet.has(id)
     return this._get$({
       onActionOrActions,
       pipe: has
     })
+  }
+
+  public has$(id: Id): Observable<boolean> {
+    return this._has$(id)
   }
 
   //#endregion query-methods

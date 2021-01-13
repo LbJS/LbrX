@@ -16,18 +16,14 @@ describe(`StoreContext - value:`, () => {
 
   it(`should return store's state value by invoking the get method.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get`)
     const storeContext = store.getContext()
     expect(storeContext.value).toStrictEqual(createInitialState())
-    expect(getSpy).toBeCalledTimes(1)
   })
 
   it(`should return store's state value by invoking the get method even id disposed.`, () => {
     const store = StoresFactory.createStore(createInitialState())
-    const getSpy = jest.spyOn(store, `get`)
     const storeContext = store.getContext()
     storeContext.dispose()
     expect(storeContext.value).toStrictEqual(createInitialState())
-    expect(getSpy).toBeCalledTimes(1)
   })
 })
