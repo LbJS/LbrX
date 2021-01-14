@@ -4,8 +4,9 @@ import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNu
 import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
+import { ListStoreContext } from './list-store-context'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { Actions, Pipe, Predicate, ProjectsOrKeys, SetStateParam, State } from './store-accessories'
+import { Actions, Pipe, Predicate, ProjectsOrKeys, SetStateParam, State, ValueObservableMethodParam } from './store-accessories'
 
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -521,4 +522,21 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   }
 
   //#endregion reset-destroy-methods
+  //#region store-context
+
+  public getContext(saveChangesActionName?: string | null, onActionOrActions?: Actions | string | (Actions | string)[]
+  ): ListStoreContext<S, Id> {
+    const idKey = this._idKey
+    assert(idKey, `Store: "${this._storeName}" can't instantiate "ListStoreContext" if "idKey" is not configured.`)
+    return new ListStoreContext({
+      store: this,
+      get$: (value: ValueObservableMethodParam<S[], any>) => this._get$(value),
+      queryContextList: this._observableQueryContextsList,
+      saveActionName: saveChangesActionName || undefined,
+      onActionOrActions,
+      idKey,
+    })
+  }
+
+  //#endregion store-context
 }

@@ -4,8 +4,9 @@ import { isDev, isStackTracingErrors } from '../core'
 import { DevToolsAdapter, isDevTools, StoreDevToolsApi } from '../dev-tools'
 import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromiseState, handleClasses, isArray, isBool, isCalledBy, isError, isFunction, isNull, isObject, isString, isUndefined, logError, logWarn, mergeObjects, newError, objectAssign, objectFreeze, objectKeys, PromiseStates, shallowCloneObject, shallowCompareObjects, throwError } from '../helpers'
 import { Class, Unpack } from '../types'
+import { BaseStoreContext } from './base-store-context'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, GetObservableParam, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify, ValueObservableMethodParam } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
   ResettableStore<S, M, E>,
@@ -471,7 +472,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     projectsOrKeys,
     compare,
     operators,
-  }: GetObservableParam<S, R>): Observable<R> {
+  }: ValueObservableMethodParam<S, R>): Observable<R> {
     const takeWhilePredicate = () => {
       return !observableQueryContext.isDisposed
     }
@@ -881,4 +882,10 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
   protected onReset?(nextState: S, currState: Readonly<S>): void | S
 
   //#endregion hooks
+  //#region store-context
+
+  public abstract getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]
+  ): BaseStoreContext<S, S>
+
+  //#endregion store-context
 }

@@ -2,7 +2,7 @@ import { Observable } from 'rxjs'
 import { assert, isFunction } from '../helpers'
 import { BaseStore } from './base-store'
 import { StoreConfigOptions } from './config'
-import { Actions, GetObservableParam, ProjectsOrKeys, QueryableStore, WriteableStore } from './store-accessories'
+import { Actions, ProjectsOrKeys, QueryableStore, ValueObservableMethodParam, WriteableStore } from './store-accessories'
 import { StoreContext } from './store-context'
 
 /**
@@ -279,13 +279,13 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
   //#region store-context
 
   public getContext(saveChangesActionName?: string | null, onAction?: Actions | string | (Actions | string)[]): StoreContext<S> {
-    return new StoreContext<S>(
-      this,
-      (value: GetObservableParam<S, any>) => this._get$(value),
-      this._observableQueryContextsList,
-      saveChangesActionName || undefined,
-      onAction,
-    )
+    return new StoreContext<S>({
+      store: this,
+      get$: (value: ValueObservableMethodParam<S, any>) => this._get$(value),
+      queryContextList: this._observableQueryContextsList,
+      saveActionName: saveChangesActionName || undefined,
+      onActionOrActions: onAction
+    })
   }
 
   //#endregion store-context
