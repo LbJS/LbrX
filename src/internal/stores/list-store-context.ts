@@ -30,9 +30,20 @@ export class ListStoreContext<S extends object, Id extends string | number | sym
   public get(id: Id): S
   public get(ids: Id[]): S[]
   public get(idOrIds: Id | Id[]): S | S[] {
-    if (!isArray(idOrIds)) idOrIds = [idOrIds]
-    const value = this._store.get(idOrIds)
-    if (!this._isDisposed) this._lastValue = value
+    const value = this._store.get<S | S[]>(idOrIds)
+    if (!this._isDisposed) this._lastValue = isArray(value) ? value : [value]
     return value
   }
+
+  // public get$(id: Id): Observable<S>
+  // public get$(ids: Id[]): Observable<S[]>
+  // public get$(idOrIds: Id | Id[]): Observable<S | S[]> {
+  //   if (this._valueObservable) return this._valueObservable
+  //   const observable = this._get$({
+  //     onActionOrActions: this._onActionOrActions,
+  //     operators: this._isDisposed ? undefined : [tap((x: S[]) => this._lastValue = x)]
+  //   })
+  //   if (!this._isDisposed) this._valueObservable = observable
+  //   return this._valueObservable || observable
+  // }
 }

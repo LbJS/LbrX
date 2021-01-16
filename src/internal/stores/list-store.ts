@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs'
+import { iif, Observable, of, throwError as rxjsThrowError } from 'rxjs'
+import { mergeMap } from 'rxjs/operators'
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
 import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { KeyValue } from '../types'
@@ -6,7 +7,7 @@ import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
 import { ListStoreContext } from './list-store-context'
 import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
-import { Actions, Pipe, Predicate, ProjectsOrKeys, SetStateParam, State, ValueObservableMethodParam } from './store-accessories'
+import { Actions, Predicate, Project, ProjectsOrKeys, SetStateParam, State, ValueObservableMethodParam } from './store-accessories'
 
 
 export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
@@ -455,22 +456,21 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
   public get<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(ids: Id[], projects: M[]): R[][]
   public get<R extends any[]>(id: Id, projects: ((value: Readonly<S>) => any)[]): R
   public get<R extends any[]>(ids: Id[], projects: ((value: Readonly<S>) => any)[]): R[]
-  public get<K extends keyof S>(id: Id[], key: K): S[K]
+  public get<K extends keyof S>(id: Id, key: K): S[K]
   public get<K extends keyof S>(ids: Id[], key: K): S[K][]
-  public get<K extends keyof S>(id: Id[], keys: K[]): Pick<S, K>
+  public get<K extends keyof S>(id: Id, keys: K[]): Pick<S, K>
   public get<K extends keyof S>(ids: Id[], keys: K[]): Pick<S, K>[]
-  public get<R>(id: Id[], dynamic?: ProjectsOrKeys<S, R>): R
-  public get<R>(ids: Id[], dynamic?: ProjectsOrKeys<S, R>): R[]
+  public get<R>(idOrIds: Id | Id[], dynamic?: ProjectsOrKeys<S, R>): R
   public get<R, K extends keyof S>(idOrIds: Id | Id[], projectsOrKeys?: ProjectsOrKeys<S, R>
   ): S | S[] | R[] | R[][] | S[K][] | Pick<S, K>[] {
-    const projectOrNull = this._getProjectionMethod(projectsOrKeys)
+    const project = this._getProjectionMethod(projectsOrKeys)
     if (isArray(idOrIds)) {
       const result: any[] = []
       idOrIds.forEach(x => {
         if (this._idsSet.has(x)) {
           const index = this._idIndexMap[x]
           const item = this._assertValue[index]
-          const projectedItem = projectOrNull(item)
+          const projectedItem = project(item)
           result.push(this._cloneIfObject(projectedItem))
         }
       })
@@ -479,26 +479,94 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       if (!this._idsSet.has(idOrIds)) throwError(`Store: "${this._storeName}" doesn't have an item with id: "${idOrIds}".`)
       const index = this._idIndexMap[idOrIds]
       const item = this._assertValue[index]
-      const projectedItem = projectOrNull(item)
+      const projectedItem = project(item)
       return this._cloneIfObject(projectedItem)
     }
   }
 
-  public onAction(onAction?: Actions | string): Pick<ListStore<S, Id>, `has$`>
-  public onAction(onActions?: (Actions | string)[]): Pick<ListStore<S, Id>, `has$`>
-  public onAction(onActionOrActions?: Actions | string | (Actions | string)[]): Pick<ListStore<S, Id>, `has$`> {
+  public onAction(onAction?: Actions | string): Pick<ListStore<S, Id>, `has$` | `get$`>
+  public onAction(onActions?: (Actions | string)[]): Pick<ListStore<S, Id>, `has$` | `get$`>
+  public onAction(onActionOrActions?: Actions | string | (Actions | string)[]): Pick<ListStore<S, Id>, `has$` | `get$`> {
     return {
-      has$: (id: Id) => this._has$(id, onActionOrActions)
+      has$: (id: Id) => this._has$(id, onActionOrActions),
+      get$: <R>(idOrIds: Id | Id[], projectsOrKeys?: ProjectsOrKeys<S, R>) => {
+        const subProject = this._getProjectionMethod(projectsOrKeys)
+        const finalProject = this._projectBasedByIds(idOrIds, subProject)
+        const mergeMapOperator = mergeMap((x: any) => iif(() => isNull(x),
+          rxjsThrowError(`Store: "${this._storeName}" has resolved a null value by get$ observable.`),
+          of(x)))
+        return this._get$({
+          onActionOrActions,
+          projectsOrKeys: finalProject,
+          operators: [mergeMapOperator],
+        })
+      }
     }
   }
 
   public _has$(id: Id, onActionOrActions?: Actions | string | (Actions | string)[]): Observable<boolean> {
-    const has: Pipe<any, boolean> = () => this._idsSet.has(id)
+    const has: Project<any, boolean> = () => this._idsSet.has(id)
     return this._get$({
       onActionOrActions,
-      pipe: has
+      projectsOrKeys: has
     })
   }
+
+  /** @internal */
+  protected _projectBasedByIds<R>(idOrIds: Id | Id[], project: Project<S, R>): Project<S | S[], any> {
+    if (isArray(idOrIds)) {
+      return () => {
+        const result: any[] = []
+        idOrIds.forEach(x => {
+          if (this._idsSet.has(x)) {
+            const index = this._idIndexMap[x]
+            const item = this._assertValue[index]
+            const projectedItem = project(item)
+            result.push(this._cloneIfObject(projectedItem))
+          }
+        })
+        return result
+      }
+    } else {
+      return () => {
+        if (this._idsSet.has(idOrIds)) {
+          const index = this._idIndexMap[idOrIds]
+          const item = this._assertValue[index]
+          return project(item)
+        } else {
+          return null
+        }
+      }
+    }
+  }
+
+  public get$(id: Id): Observable<S>
+  public get$(ids: Id[]): Observable<S[]>
+  public get$<R>(ids: Id, project: (value: Readonly<S>) => R): Observable<R>
+  public get$<R>(ids: Id[], project: (value: Readonly<S>) => R): Observable<R[]>
+  public get$<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(ids: Id, projects: M[]): Observable<R[]>
+  public get$<R extends ReturnType<M>, M extends ((value: Readonly<S>) => any)>(ids: Id[], projects: M[]): Observable<R[][]>
+  public get$<R extends any[]>(id: Id, projects: ((value: Readonly<S>) => any)[]): Observable<R>
+  public get$<R extends any[]>(ids: Id[], projects: ((value: Readonly<S>) => any)[]): Observable<R[]>
+  public get$<K extends keyof S>(id: Id[], key: K): Observable<S[K]>
+  public get$<K extends keyof S>(ids: Id[], key: K): Observable<S[K][]>
+  public get$<K extends keyof S>(id: Id[], keys: K[]): Observable<Pick<S, K>>
+  public get$<K extends keyof S>(ids: Id[], keys: K[]): Observable<Pick<S, K>[]>
+  public get$<R>(id: Id[], dynamic?: ProjectsOrKeys<S, R>): Observable<R>
+  public get$<R>(ids: Id[], dynamic?: ProjectsOrKeys<S, R>): Observable<R[]>
+  public get$<R, K extends keyof S>(idOrIds: Id | Id[], projectsOrKeys?: ProjectsOrKeys<S, R>
+  ): Observable<S | S[] | R[] | R[][] | S[K][] | Pick<S, K>[]> {
+    const subProject = this._getProjectionMethod(projectsOrKeys)
+    const finalProject = this._projectBasedByIds(idOrIds, subProject)
+    const mergeMapOperator = mergeMap((x: any) => iif(() => isNull(x),
+      rxjsThrowError(`Store: "${this._storeName}" has resolved a null value by get$ observable.`),
+      of(x)))
+    return this._get$({
+      projectsOrKeys: finalProject,
+      operators: [mergeMapOperator]
+    })
+  }
+
 
   public has$(id: Id): Observable<boolean> {
     return this._has$(id)

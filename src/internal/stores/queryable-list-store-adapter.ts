@@ -319,9 +319,9 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     if (queryableListStore && this._isQLSE(queryableListStore)) {
       return this._get$({
         onActionOrActions: queryableListStore._actions,
-        pipe: this._createPipe(queryableListStore),
+        projectsOrKeys: this._createPipe(queryableListStore),
         compare: queryableListStore._compare,
-        operators
+        operators,
       })
     }
     return this._get$({})

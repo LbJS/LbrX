@@ -6,7 +6,7 @@ import { assert, cloneError, cloneObject, compareObjects, deepFreeze, getPromise
 import { Class, Unpack } from '../types'
 import { BaseStoreContext } from './base-store-context'
 import { ObjectCompareTypes, Storages, StoreConfig, StoreConfigCompleteInfo, StoreConfigOptions, STORE_CONFIG_KEY } from './config'
-import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Pipe, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify, ValueObservableMethodParam } from './store-accessories'
+import { Actions, Clone, CloneError, Compare, createPromiseContext, Freeze, getDefaultState, HandleClasses, InitializableStore, LazyInitContext, Merge, ObservableQueryContext, ObservableQueryContextsList, Parse, Project, ProjectsOrKeys, PromiseContext, ResettableStore, SetStateParam, State, StoreTags, Stringify, ValueObservableMethodParam } from './store-accessories'
 
 export abstract class BaseStore<S extends object, M extends Unpack<S> | object, E = any> implements
   ResettableStore<S, M, E>,
@@ -467,8 +467,7 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
 
   /** @internal */
   protected _get$<R>({
-    pipe,
-    onActionOrActions: actionOrActions,
+    onActionOrActions,
     projectsOrKeys,
     compare,
     operators,
@@ -476,14 +475,14 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
     const takeWhilePredicate = () => {
       return !observableQueryContext.isDisposed
     }
-    if (actionOrActions && !isArray(actionOrActions)) actionOrActions = [actionOrActions]
-    const actionFilterPredicate = () => !actionOrActions || (<(Actions | string)[]>actionOrActions).some(x => x === this._lastAction)
+    if (onActionOrActions && !isArray(onActionOrActions)) onActionOrActions = [onActionOrActions]
+    const actionFilterPredicate = () => !onActionOrActions || (<(Actions | string)[]>onActionOrActions).some(x => x === this._lastAction)
     const mainFilterPredicate = (value: Readonly<S> | null): value is Readonly<S> => {
       return !this.isPaused
         && !observableQueryContext.isDisposed
         && !!value
     }
-    const project: Project<S, R> | Pipe<S, R> = pipe || this._getProjectionMethod(projectsOrKeys)
+    const project: Project<S, R> = this._getProjectionMethod(projectsOrKeys)
     compare ||= this._compare
     const observableQueryContext: ObservableQueryContext<R> = {
       doSkipOneChangeCheck: false,

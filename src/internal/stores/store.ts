@@ -148,10 +148,10 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
    * Dynamic overload.
    */
   public onAction<R>(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S>, 'get$'>
-  public onAction(actionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S>, 'get$'> {
+  public onAction(onActionOrActions: Actions | string | (Actions | string)[]): Pick<QueryableStore<S>, 'get$'> {
     return {
       get$: <R>(projectsOrKeys?: ProjectsOrKeys<S, R>) =>
-        this._get$<R>({ onActionOrActions: actionOrActions, projectsOrKeys })
+        this._get$<R>({ onActionOrActions, projectsOrKeys })
     }
   }
 
