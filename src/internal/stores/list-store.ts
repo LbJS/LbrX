@@ -531,7 +531,6 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
     return new ListStoreContext({
       store: this,
       get$: (value: ValueObservableMethodParam<S[], any>) => this._get$(value),
-      queryContextList: this._observableQueryContextsList,
       saveActionName: saveChangesActionName || undefined,
       onActionOrActions,
       idKey,

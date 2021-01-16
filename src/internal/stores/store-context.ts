@@ -8,17 +8,16 @@ export class StoreContext<S extends object> extends BaseStoreContext<S, S> {
   constructor({
     store,
     get$,
-    queryContextList,
     saveActionName: saveAction,
     onActionOrActions,
   }: StoreContextParam<S>) {
-    super({ baseStore: store, get$, queryContextList, saveActionName: saveAction, onActionOrActions })
+    super({ baseStore: store, get$, saveActionName: saveAction, onActionOrActions })
     this._store = store
   }
 
   /** @override */
   public save(): void {
     this._assertSavable(this._lastValue)
-    this._store.update(this._lastValue, this._saveAction || undefined)
+    this._store.update(this._lastValue, this._saveActionName || undefined)
   }
 }

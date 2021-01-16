@@ -282,7 +282,6 @@ export class Store<S extends object, E = any> extends BaseStore<S, S, E> impleme
     return new StoreContext<S>({
       store: this,
       get$: (value: ValueObservableMethodParam<S, any>) => this._get$(value),
-      queryContextList: this._observableQueryContextsList,
       saveActionName: saveChangesActionName || undefined,
       onActionOrActions: onAction
     })
