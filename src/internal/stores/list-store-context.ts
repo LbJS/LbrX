@@ -1,11 +1,15 @@
+import { Observable } from 'rxjs'
+import { tap } from 'rxjs/operators'
 import { isArray } from '../helpers'
 import { BaseStoreContext } from './base-store-context'
 import { ListStore } from './list-store'
+import { Project } from './store-accessories'
 import { ListStoreContextParam } from './store-accessories/types/value/list-store-context-param'
 
 export class ListStoreContext<S extends object, Id extends string | number | symbol> extends BaseStoreContext<S[], S> {
   protected readonly _store: ListStore<S, Id>
   protected readonly _idKey: keyof S
+  protected readonly _projectBasedByIds: <R>(idOrIds: Id | Id[], project: Project<S, R>) => Project<S | S[], any>
 
   constructor({
     store,
@@ -13,10 +17,12 @@ export class ListStoreContext<S extends object, Id extends string | number | sym
     saveActionName,
     onActionOrActions,
     idKey,
+    projectBasedByIds,
   }: ListStoreContextParam<S, Id>) {
     super({ baseStore: store, get$, saveActionName, onActionOrActions })
     this._store = store
     this._idKey = idKey
+    this._projectBasedByIds = projectBasedByIds
   }
 
   /** @override */
@@ -35,15 +41,16 @@ export class ListStoreContext<S extends object, Id extends string | number | sym
     return value
   }
 
-  // public get$(id: Id): Observable<S>
-  // public get$(ids: Id[]): Observable<S[]>
-  // public get$(idOrIds: Id | Id[]): Observable<S | S[]> {
-  //   if (this._valueObservable) return this._valueObservable
-  //   const observable = this._get$({
-  //     onActionOrActions: this._onActionOrActions,
-  //     operators: this._isDisposed ? undefined : [tap((x: S[]) => this._lastValue = x)]
-  //   })
-  //   if (!this._isDisposed) this._valueObservable = observable
-  //   return this._valueObservable || observable
-  // }
+  public get$(id: Id): Observable<S>
+  public get$(ids: Id[]): Observable<S[]>
+  public get$(idOrIds: Id | Id[]): Observable<S | S[]> {
+    if (this._valueObservable) return this._valueObservable
+    const observable = this._get$({
+      projectsOrKeys: this._projectBasedByIds(idOrIds, (x) => x),
+      onActionOrActions: this._onActionOrActions,
+      operators: this._isDisposed ? undefined : [tap((x: S[]) => this._lastValue = isArray(x) ? x : [x])]
+    })
+    if (!this._isDisposed) this._valueObservable = observable
+    return this._valueObservable || observable
+  }
 }

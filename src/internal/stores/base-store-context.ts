@@ -8,7 +8,7 @@ import { BaseStoreContextParam } from './store-accessories/types/value/base-stor
 
 export abstract class BaseStoreContext<S extends object, M extends object> {
   protected readonly _baseStore: BaseStore<S, Unpack<S> | object>
-  protected readonly _get$: (value: ValueObservableMethodParam<S, S>) => Observable<S>
+  protected readonly _get$: (value: ValueObservableMethodParam<S | Unpack<S>, S>) => Observable<S>
   protected readonly _saveActionName: string | null
   protected readonly _onActionOrActions: Actions | string | (Actions | string)[] | null
 
@@ -43,7 +43,7 @@ export abstract class BaseStoreContext<S extends object, M extends object> {
     onActionOrActions,
   }: BaseStoreContextParam<S, M>) {
     this._baseStore = baseStore
-    this._get$ = get$
+    this._get$ = get$ as any
     this._saveActionName = saveAction || null
     this._onActionOrActions = onActionOrActions || null
   }

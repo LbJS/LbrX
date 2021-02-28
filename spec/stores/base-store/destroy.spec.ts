@@ -129,9 +129,9 @@ describe(`Base Store - destroy():`, () => {
   })
 
   it(`should not _setState if the store is destroyed.`, async () => {
-    const store = StoresFactory.createStore(null)
+    const store = StoresFactory.createStore<{ foo: string }>(null)
     await store.destroy()
-    store[`_setState`]({ value: { foo: `foo` } }, Actions.update)
+    store[`_setState`]({ valueFnOrState: { value: { foo: `foo` } }, actionName: Actions.update })
     expect(store.rawValue).toBeNull()
   })
 

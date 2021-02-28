@@ -3,46 +3,46 @@ import { AllStoreHooks } from '__test__/types'
 
 export class StoresFactory {
 
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     storeName: string
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     options: StoreConfigOptions
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     withHooks: false
   ): Store<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     storeName: string,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     storeName: string,
     withHooks: false
   ): Store<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     options: StoreConfigOptions,
     withHooks: true
   ): Store<T, E> & AllStoreHooks<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     options: StoreConfigOptions,
     withHooks: false
   ): Store<T, E>
-  public static createStore<T extends object, E = any>(
+  public static createStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T | null,
     storeNameOrWithHooksOrOptions?: string | boolean | StoreConfigOptions,
     withHooks?: boolean,
@@ -78,50 +78,50 @@ export class StoresFactory {
     }
   }
 
-  public static createListStore<T extends object, E = any>(
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     storeName: string
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     options: ListStoreConfigOptions<T>
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     withHooks: true
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     withHooks: false
-  ): ListStore<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     storeName: string,
     withHooks: true
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     storeName: string,
     withHooks: false
-  ): ListStore<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     options: ListStoreConfigOptions<T>,
     withHooks: true
-  ): ListStore<T, E> & AllStoreHooks<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E> & AllStoreHooks<T, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     options: ListStoreConfigOptions<T>,
     withHooks: false
-  ): ListStore<T, E>
-  public static createListStore<T extends object, E = any>(
+  ): ListStore<T, Id, E>
+  public static createListStore<T extends object, Id extends string | number | symbol = string, E = any>(
     initialValue: T[] | null,
     storeNameOrWithHooksOrOptions?: string | boolean | ListStoreConfigOptions<T>,
     withHooks?: boolean,
-  ): ListStore<T, E> | ListStore<T, E> & AllStoreHooks<T, E> {
+  ): ListStore<T, Id, E> | ListStore<T, Id, E> & AllStoreHooks<T, E> {
     const storeName = typeof storeNameOrWithHooksOrOptions == `string` ? storeNameOrWithHooksOrOptions : `TEST-STORE`
     const options: ListStoreConfigOptions<T> = typeof storeNameOrWithHooksOrOptions == `object` && storeNameOrWithHooksOrOptions ?
       storeNameOrWithHooksOrOptions : { name: storeName }
@@ -130,7 +130,7 @@ export class StoresFactory {
         storeNameOrWithHooksOrOptions : false
     if (withHooks) {
       @ListStoreConfig(options)
-      class TestStore extends ListStore<T, E> {
+      class TestStore extends ListStore<T, Id, E> {
         constructor() {
           super(initialValue)
         }
@@ -144,7 +144,7 @@ export class StoresFactory {
       return new TestStore()
     } else {
       @ListStoreConfig(options)
-      class TestStore extends ListStore<T, E> {
+      class TestStore extends ListStore<T, Id, E> {
         constructor() {
           super(initialValue)
         }

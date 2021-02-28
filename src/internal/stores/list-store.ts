@@ -602,6 +602,7 @@ export class ListStore<S extends object, Id extends string | number | symbol = s
       saveActionName: saveChangesActionName || undefined,
       onActionOrActions,
       idKey,
+      projectBasedByIds: <R>(idOrIds: Id | Id[], project: Project<S, R>) => this._projectBasedByIds(idOrIds, project)
     })
   }
 
