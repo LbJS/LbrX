@@ -53,7 +53,7 @@ export class SortFactory {
   public static create<T = any>(sortOptions: SortOptions<T>[]): SortMethodApi<T>
   public static create<T = any>(partialSortOptions?: true | false | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T>
   public static create<T = any>(partialSortOptions?: true | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]): SortMethodApi<T> {
-    const sortOptions: CompleteSortOptions<T>[] = SortFactory._getCompleteSortOptions(partialSortOptions)
+    const sortOptions: CompleteSortOptions<T>[] = SortFactory._getFullSortOptions(partialSortOptions)
     const maxDepth = sortOptions.length - 1
     const isDesc = isBool(partialSortOptions) && partialSortOptions
     const compareFn: (a: any, b: any) => number = !sortOptions.length ?
@@ -84,7 +84,7 @@ export class SortFactory {
     return objectAssign(_f, _o)
   }
 
-  private static _getCompleteSortOptions<T extends any>(
+  private static _getFullSortOptions<T extends any>(
     partialSortOptions?: true | KeyOrNever<T> | SortOptions<T> | SortOptions<T>[]
   ): CompleteSortOptions<T>[] {
     const sortOptions: CompleteSortOptions<T>[] = []
@@ -93,7 +93,7 @@ export class SortFactory {
     } else if (isPlainObject<SortOptions<T>>(partialSortOptions)) {
       sortOptions.push(objectAssign(SortFactory._defaultOptions,
         cloneObject(partialSortOptions),
-        { isKey: isFunction(partialSortOptions.key) }))
+        { isKey: !isFunction(partialSortOptions.key) }))
     } else if (isArray(partialSortOptions) && partialSortOptions.length) {
       cloneObject(partialSortOptions).forEach((x, i) => {
         if (i > 0 && sortOptions[i - 1].cascade) {

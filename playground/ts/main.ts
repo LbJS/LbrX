@@ -1,179 +1,216 @@
-import { Actions, ObjectCompareTypes, Storages, Store, StoreConfig } from 'lbrx'
-import { LbrXManager } from 'lbrx/core'
-import { QueryableStore } from 'lbrx/query'
-import { getNestedProp } from 'lbrx/utils'
-import { of } from 'rxjs'
+import { ListStore, ListStoreConfig } from 'lbrx'
+import { LbrXManager, SortDirections } from 'lbrx/core'
 
 const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
 LbrXManager.initializeDevTools({ showStackTrace: false })
 
-class Address {
-  place: string | null = null
+const TODO_LIST: TodoItem[] = [
+  {
+    id: 1,
+    name: `abc`,
+    done: false,
+  },
+  {
+    id: 2,
+    name: `abc`,
+    done: true,
+  },
+  {
+    id: 3,
+    name: `abc`,
+    done: false,
+  }
+]
+
+interface TodoItem {
+  id: number
+  name: string
+  done: boolean
 }
 
-class User {
-  firstName: string | null = null
-  lastName: string | null = null
-  address: Address | null = null
-  date: Date = new Date()
-}
-
-function createLeon(): User {
-  return Object.assign(new User(), {
-    firstName: `Leon`,
-    address: Object.assign(new Address(), {
-      place: `Hell of a place`
-    })
-  })
-}
-
-@StoreConfig({
-  name: `LEON-STORE`,
-  objectCompareType: ObjectCompareTypes.advanced,
-  isResettable: true,
-  storageType: Storages.session,
-  storageDebounceTime: 500
+@ListStoreConfig({
+  name: `TODO-STORE`,
+  idKey: `id`
 })
-class UserStore extends Store<User> {
-
+class TodoStore extends ListStore<TodoItem, `id`> {
   constructor() {
-    super(createLeon())
-  }
-
-  public onBeforeInit(initialState: User): void {
-    console.log(`ON BEFORE INIT: `, initialState)
+    super(TODO_LIST)
   }
 }
 
-@StoreConfig({
-  name: `BETTER-LEON-STORE`,
-  objectCompareType: ObjectCompareTypes.advanced,
-  isResettable: true,
-  storageType: Storages.session,
-  storageDebounceTime: 500
-})
-class BetterUserStore extends Store<User> {
+const todoStore = new TodoStore()
 
-  constructor() {
-    super(createLeon())
-  }
-}
+todoStore.where(x => x.id >= 2).orderBy({ key: `id`, dir: SortDirections.DESC }).toList$().subscribe(d => console.log(d))
 
-const userStore = new UserStore()
-const betterUserStore = new BetterUserStore();
+// console.log(todoStore.value)
 
-(betterUserStore as QueryableStore<User>)
-  .onAction(Actions.update)
-  .get$(x => x.address)
-  .subscribe(x => console.log(x))
+// class Address {
+//   place: string | null = null
+// }
 
-userStore
-  .onAction(Actions.update)
-  .get$(state => state.firstName)
-  .subscribe(x => console.log(`-----Update only: ` + x))
+// class User {
+//   firstName: string | null = null
+//   lastName: string | null = null
+//   address: Address | null = null
+//   date: Date = new Date()
+// }
 
-userStore
-  .get$()
-  .subscribe(x => console.log(x))
-userStore
-  .get$(state => state.firstName)
-  .subscribe(x => console.log(`firstName: ` + x))
-userStore
-  .get$(`lastName`)
-  .subscribe(x => console.log(`lastName: ` + x))
-userStore
-  .get$(state => getNestedProp(state, `address`, `place`))
-  .subscribe(x => console.log(`address: ` + x))
+// function createLeon(): User {
+//   return Object.assign(new User(), {
+//     firstName: `Leon`,
+//     address: Object.assign(new Address(), {
+//       place: `Hell of a place`
+//     })
+//   })
+// }
 
-userStore
-  .get$([`date`, `address`])
-  .subscribe(x => console.log(x))
+// @StoreConfig({
+//   name: `LEON-STORE`,
+//   objectCompareType: ObjectCompareTypes.advanced,
+//   isResettable: true,
+//   storageType: Storages.session,
+//   storageDebounceTime: 500
+// })
+// class UserStore extends Store<User> {
 
-userStore
-  .get$<[string | null, string | null, Date]>([state => state.firstName, state => state.lastName, state => state.date])
-  .subscribe(x => console.log(x))
+//   constructor() {
+//     super(createLeon())
+//   }
 
-userStore
-  .isLoading$.subscribe(value => {
-    if (!value) {
-      console.log(`From is loading: `, userStore.value)
-    }
-  })
-setTimeout(() => {
-  userStore.update({
-    firstName: `Some other name`,
-    lastName: `My first lastName`
-  })
-}, 200)
+//   public onBeforeInit(initialState: User): void {
+//     console.log(`ON BEFORE INIT: `, initialState)
+//   }
+// }
 
-setTimeout(() => {
-  userStore.update({
-    address: null
-  })
-}, 250)
+// @StoreConfig({
+//   name: `BETTER-LEON-STORE`,
+//   objectCompareType: ObjectCompareTypes.advanced,
+//   isResettable: true,
+//   storageType: Storages.session,
+//   storageDebounceTime: 500
+// })
+// class BetterUserStore extends Store<User> {
 
-setTimeout(() => {
-  userStore.update({
-    firstName: `Some other name`,
-    lastName: `My second lastName`,
-    address: {
-      place: `Some other place`
-    }
-  })
-}, 500)
+//   constructor() {
+//     super(createLeon())
+//   }
+// }
 
-setTimeout(() => {
-  userStore.set({
-    firstName: `Some other name1`,
-    lastName: `My second lastName1`,
-    date: new Date(),
-    address: {
-      place: `Some other place1`
-    }
-  })
-}, 510)
+// const userStore = new UserStore()
+// const betterUserStore = new BetterUserStore();
 
-setTimeout(() => {
-  userStore.reset()
-}, 530)
+// (betterUserStore as QueryableStore<User>)
+//   .onAction(Actions.update)
+//   .get$(x => x.address)
+//   .subscribe(x => console.log(x))
 
-setTimeout(() => {
-  userStore.reset()
-}, 550)
+// userStore
+//   .onAction(Actions.update)
+//   .get$(state => state.firstName)
+//   .subscribe(x => console.log(`-----Update only: ` + x))
 
-setTimeout(async () => {
-  (await userStore.hardReset())
-    .initializeAsync(of(createLeon()))
-}, 600)
+// userStore
+//   .get$()
+//   .subscribe(x => console.log(x))
+// userStore
+//   .get$(state => state.firstName)
+//   .subscribe(x => console.log(`firstName: ` + x))
+// userStore
+//   .get$(`lastName`)
+//   .subscribe(x => console.log(`lastName: ` + x))
+// userStore
+//   .get$(state => getNestedProp(state, `address`, `place`))
+//   .subscribe(x => console.log(`address: ` + x))
 
-setTimeout(() => {
-  userStore.isPaused = true
-}, 800)
+// userStore
+//   .get$([`date`, `address`])
+//   .subscribe(x => console.log(x))
 
-setTimeout(() => {
-  userStore.isPaused = false
-}, 850)
+// userStore
+//   .get$<[string | null, string | null, Date]>([state => state.firstName, state => state.lastName, state => state.date])
+//   .subscribe(x => console.log(x))
 
-setTimeout(() => {
-  userStore.set({
-    firstName: `Some other name1`,
-    lastName: `My second lastName1`,
-    date: new Date(),
-    address: {
-      place: `Some other place1`
-    }
-  })
-}, 5000)
+// userStore
+//   .isLoading$.subscribe(value => {
+//     if (!value) {
+//       console.log(`From is loading: `, userStore.value)
+//     }
+//   })
+// setTimeout(() => {
+//   userStore.update({
+//     firstName: `Some other name`,
+//     lastName: `My first lastName`
+//   })
+// }, 200)
 
-setTimeout(() => {
-  userStore.update(x => ({ firstName: x.firstName + `123` }))
-}, 10000)
+// setTimeout(() => {
+//   userStore.update({
+//     address: null
+//   })
+// }, 250)
 
-setTimeout(() => {
-  userStore.update(x => ({ firstName: x.firstName + `4` }))
-}, 10010)
+// setTimeout(() => {
+//   userStore.update({
+//     firstName: `Some other name`,
+//     lastName: `My second lastName`,
+//     address: {
+//       place: `Some other place`
+//     }
+//   })
+// }, 500)
 
-setTimeout(() => {
-  userStore.error = new Error(`Some error`)
-}, 10015)
+// setTimeout(() => {
+//   userStore.set({
+//     firstName: `Some other name1`,
+//     lastName: `My second lastName1`,
+//     date: new Date(),
+//     address: {
+//       place: `Some other place1`
+//     }
+//   })
+// }, 510)
+
+// setTimeout(() => {
+//   userStore.reset()
+// }, 530)
+
+// setTimeout(() => {
+//   userStore.reset()
+// }, 550)
+
+// setTimeout(async () => {
+//   (await userStore.hardReset())
+//     .initializeAsync(of(createLeon()))
+// }, 600)
+
+// setTimeout(() => {
+//   userStore.isPaused = true
+// }, 800)
+
+// setTimeout(() => {
+//   userStore.isPaused = false
+// }, 850)
+
+// setTimeout(() => {
+//   userStore.set({
+//     firstName: `Some other name1`,
+//     lastName: `My second lastName1`,
+//     date: new Date(),
+//     address: {
+//       place: `Some other place1`
+//     }
+//   })
+// }, 5000)
+
+// setTimeout(() => {
+//   userStore.update(x => ({ firstName: x.firstName + `123` }))
+// }, 10000)
+
+// setTimeout(() => {
+//   userStore.update(x => ({ firstName: x.firstName + `4` }))
+// }, 10010)
+
+// setTimeout(() => {
+//   userStore.error = new Error(`Some error`)
+// }, 10015)
