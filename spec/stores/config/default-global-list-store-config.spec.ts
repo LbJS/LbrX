@@ -6,7 +6,7 @@ describe(`Store Accessories - default  global list store config:`, () => {
 
   it(`should return the expected default global list store config.`, () => {
     const expectedDefaultGlobalStoreConfig = {
-      idKey: `_id`,
+      idKey: null,
       isResettable: false,
       storageType: Storages.none,
       storageDebounceTime: 2000,

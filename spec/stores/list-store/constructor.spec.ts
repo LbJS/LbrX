@@ -22,7 +22,7 @@ describe(`List Store - constructor():`, () => {
   it(`should throw if a duplicate id is found.`, () => {
     const data = [...createTestSubjects(), ...createTestSubjects()]
     expect(() => {
-      StoresFactory.createListStore(data)
+      StoresFactory.createListStore(data, { name: `TEST-STORE`, idKey: `_id` })
     }).toThrow()
   })
 
