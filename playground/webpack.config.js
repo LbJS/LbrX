@@ -6,7 +6,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 /** @type {import('webpack').Configuration} */
 const COMMON_CONFIG = {
   entry: {
-    main: './playground/ts/main.ts',
+    main: './playground/ts/main.tsx',
   },
   module: {
     rules: [
@@ -23,7 +23,7 @@ const COMMON_CONFIG = {
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.tsx', '.jsx'],
     alias: {
       lbrx: path.resolve(__dirname, '../src'),
     }
@@ -74,4 +74,9 @@ const PROD_CONFIG = {
   }
 }
 
-module.exports = (env, argv) => merge(COMMON_CONFIG, argv.mode === 'production' ? PROD_CONFIG : DEV_CONFIG)
+module.exports = (env, argv) => {
+  const isProd = argv.mode === 'production'
+  const finalConfig = merge(COMMON_CONFIG, isProd ? PROD_CONFIG : DEV_CONFIG)
+  finalConfig.resolve.alias.environment = path.resolve(__dirname, './ts/environment/' + (isProd ? 'prod' : 'dev') + '.ts')
+  return finalConfig
+}

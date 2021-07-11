@@ -1,47 +1,66 @@
-import { ListStore, ListStoreConfig } from 'lbrx'
-import { LbrXManager, SortDirections } from 'lbrx/core'
+import { PROD_MODE } from 'environment'
+import { LbrXManager } from 'lbrx/core'
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './App'
 
-const PROD_MODE = false
 if (PROD_MODE) LbrXManager.enableProdMode()
-LbrXManager.initializeDevTools({ showStackTrace: false })
+else LbrXManager.initializeDevTools({ showStackTrace: false })
 
-const TODO_LIST: TodoItem[] = [
-  {
-    id: 1,
-    name: `abc`,
-    done: false,
-  },
-  {
-    id: 2,
-    name: `abc`,
-    done: true,
-  },
-  {
-    id: 3,
-    name: `abc`,
-    done: false,
-  }
-]
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById(`app-root`)
+)
 
-interface TodoItem {
-  id: number
-  name: string
-  done: boolean
-}
 
-@ListStoreConfig({
-  name: `TODO-STORE`,
-  idKey: `id`
-})
-class TodoStore extends ListStore<TodoItem, `id`> {
-  constructor() {
-    super(TODO_LIST)
-  }
-}
 
-const todoStore = new TodoStore()
 
-todoStore.where(x => x.id >= 2).orderBy({ key: `id`, dir: SortDirections.DESC }).toList$().subscribe(d => console.log(d))
+// import { ListStore, ListStoreConfig } from 'lbrx'
+// import { LbrXManager, SortDirections } from 'lbrx/core'
+
+// const PROD_MODE = false
+// if (PROD_MODE) LbrXManager.enableProdMode()
+// LbrXManager.initializeDevTools({ showStackTrace: false })
+
+// const TODO_LIST: TodoItem[] = [
+//   {
+//     id: 1,
+//     name: `abc`,
+//     done: false,
+//   },
+//   {
+//     id: 2,
+//     name: `abc`,
+//     done: true,
+//   },
+//   {
+//     id: 3,
+//     name: `abc`,
+//     done: false,
+//   }
+// ]
+
+// interface TodoItem {
+//   id: number
+//   name: string
+//   done: boolean
+// }
+
+// @ListStoreConfig({
+//   name: `TODO-STORE`,
+//   idKey: `id`
+// })
+// class TodoStore extends ListStore<TodoItem, `id`> {
+//   constructor() {
+//     super(TODO_LIST)
+//   }
+// }
+
+// const todoStore = new TodoStore()
+
+// todoStore.where(x => x.id >= 2).orderBy({ key: `id`, dir: SortDirections.DESC }).toList$().subscribe(d => console.log(d))
 
 // console.log(todoStore.value)
 

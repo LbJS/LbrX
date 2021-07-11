@@ -19,10 +19,17 @@
       "lbrx/query": [
         "../src/query/index.ts"
       ],
-    }
+      "environment": [
+        "./ts/environment/dev.ts",
+        "./ts/environment/prod.ts",
+      ],
+    },
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "../src/**/*.ts",
-    "./ts/**/*.ts"
+    "./ts/**/*.ts",
+    "./ts/**/*.tsx"
   ]
 }
