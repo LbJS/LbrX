@@ -24,14 +24,13 @@ describe(`Store onAsyncInitSuccess():`, () => {
     expect(onAsyncInitSuccessSpy).toBeCalled()
   })
 
-  it(`should get the async result as an argument.`, async done => {
+  it(`should get the async result as an argument.`, async () => {
     const store = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
     const onAsyncInitSuccessSpy = jest.spyOn(store, `onAsyncInitSuccess`)
-    onAsyncInitSuccessSpy.mockImplementation((result: TestSubject): void => {
-      expect(result).toStrictEqual(createInitialState())
-      done()
-    })
+    let result: TestSubject
+    onAsyncInitSuccessSpy.mockImplementation((x: TestSubject) => result = x)
     await store.initializeAsync(Promise.resolve(createInitialState()))
+    expect(result!).toStrictEqual(createInitialState())
   })
 
   it(`should allow changing the async result.`, async () => {

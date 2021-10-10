@@ -80,7 +80,7 @@ describe(`Store onAfterInit():`, () => {
     })
     store.initializeAsync(Promise.resolve(createInitialState()))
     await Promise.resolve()
-    assertNotNullable(tmpState)
+    assertNotNullable(tmpState as unknown as TestSubject)
     assertNotNullable(tmpState!.innerTestObject)
     assertNotNullable(tmpState!.innerTestObject.obj)
     tmpState!.innerTestObject.obj.date.setFullYear(1900)

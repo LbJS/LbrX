@@ -22,14 +22,15 @@ describe(`Store onAsyncInitError():`, () => {
     expect(onAsyncInitErrorSpy).toBeCalled()
   })
 
-  it(`should get the async error as an argument and the error should not bubble if not returned.`, async done => {
+  it(`should get the async error as an argument and the error should not bubble if not returned.`, async () => {
     const store = StoresFactory.createStore<TestSubject>(null, /*with hooks*/true)
     const onAsyncInitErrorSpy = jest.spyOn(store, `onAsyncInitError`)
-    onAsyncInitErrorSpy.mockImplementation((error: Error): void => {
-      expect(error).toBeInstanceOf(Error)
-      done()
+    let error: Error
+    onAsyncInitErrorSpy.mockImplementation(x => {
+      error = x
     })
     await store.initializeAsync(Promise.reject(new Error()))
+    expect(error!).toBeInstanceOf(Error)
   })
 
   it(`should allow changing the async error.`, async () => {

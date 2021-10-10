@@ -45,7 +45,7 @@ module.exports = {
     '<rootDir>/spec/performance-test-report.log.json',
   ],
   setupFilesAfterEnv: [
-    "<rootDir>/spec/__test__/setup/jasmine-env-add-reporter.ts",
+    // "<rootDir>/spec/__test__/setup/jasmine-env-add-reporter.ts",
     "<rootDir>/spec/__test__/setup/global-before-each.ts",
     "<rootDir>/spec/__test__/setup/global-after-each.ts",
   ],
@@ -63,5 +63,11 @@ module.exports = {
         sort: "status"
       }
     ]
-  ]
+  ],
+  // transform: {
+  //   "^.+\\.jsx?$": "babel-jest"
+  // },
+  // transformIgnorePatterns: [
+  //   "/node_modules/(?!(node-fetch|fetch-blob)/)"
+  // ]
 }

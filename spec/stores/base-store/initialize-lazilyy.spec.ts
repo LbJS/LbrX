@@ -7,7 +7,9 @@ import { Todo } from '__test__/test-subjects'
 
 describe(`Base Store - initializeLazily():`, () => {
 
-  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
+  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`)
+    .then(r => r.json())
+    .catch(() => { }) as Promise<Todo>
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
   let StoresFactory: typeof StoresFactory_type
 
@@ -32,46 +34,42 @@ describe(`Base Store - initializeLazily():`, () => {
     expect(await getPromiseState(lazyInitPromise)).toBe(PromiseStates.pending)
   })
 
-  it(`should initialize when using observable if there are subscribers to get$.`, async done => {
+  it(`should initialize when using observable if there are subscribers to get$.`, async () => {
     const store = StoresFactory.createStore(null)
-    store.get$().subscribe(value => {
-      expect(store.value).toStrictEqual(createInitialValue())
-      expect(value).toStrictEqual(createInitialValue())
-      done()
-    })
+    let value: object
+    store.get$().subscribe(x => value = x)
     await store.initializeLazily(of(createInitialValue()))
+    expect(store.value).toStrictEqual(createInitialValue())
+    expect(value!).toStrictEqual(createInitialValue())
   })
 
-  it(`should initialize when using promise if there are subscribers to get$.`, async done => {
+  it(`should initialize when using promise if there are subscribers to get$.`, async () => {
     const store = StoresFactory.createStore(null)
-    store.get$().subscribe(value => {
-      expect(store.value).toStrictEqual(createInitialValue())
-      expect(value).toStrictEqual(createInitialValue())
-      done()
-    })
+    let value: object
+    store.get$().subscribe(x => value = x)
     await store.initializeLazily(Promise.resolve(createInitialValue()))
+    expect(store.value).toStrictEqual(createInitialValue())
+    expect(value!).toStrictEqual(createInitialValue())
   })
 
-  it(`should initialize when using observable as someone subscribes using get$.`, async done => {
+  it(`should initialize when using observable as someone subscribes using get$.`, async () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(of(createInitialValue()))
-    store.get$().subscribe(value => {
-      expect(store.value).toStrictEqual(createInitialValue())
-      expect(value).toStrictEqual(createInitialValue())
-      done()
-    })
+    let value: object
+    store.get$().subscribe(x => value = x)
     await lazyInitPromise
+    expect(store.value).toStrictEqual(createInitialValue())
+    expect(value!).toStrictEqual(createInitialValue())
   })
 
-  it(`should initialize when using promise as someone subscribes using get$.`, async done => {
+  it(`should initialize when using promise as someone subscribes using get$.`, async () => {
     const store = StoresFactory.createStore(null)
     const lazyInitPromise = store.initializeLazily(Promise.resolve(createInitialValue()))
-    store.get$().subscribe(value => {
-      expect(store.value).toStrictEqual(createInitialValue())
-      expect(value).toStrictEqual(createInitialValue())
-      done()
-    })
+    let value: object
+    store.get$().subscribe(x => value = x)
     await lazyInitPromise
+    expect(value!).toStrictEqual(createInitialValue())
+    expect(store.value).toStrictEqual(createInitialValue())
   })
 
   it(`should reject if promise is rejected.`, async () => {

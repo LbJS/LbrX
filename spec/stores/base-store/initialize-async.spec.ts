@@ -8,7 +8,9 @@ import { TestSubject, Todo } from '__test__/test-subjects'
 
 describe(`Base Store - initializeAsync():`, () => {
 
-  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(r => r.json()).catch(() => { })
+  const geTodoItem = (): Promise<Todo> => fetch(`https://jsonplaceholder.typicode.com/todos/1`)
+    .then(r => r.json())
+    .catch(() => { }) as Promise<Todo>
   const createInitialValue = () => TestSubjectFactory.createTestSubject_initial()
   const createInitialListValue = () => TestSubjectFactory.createTestSubject_list_initial()
   let StoresFactory: typeof StoresFactory_type

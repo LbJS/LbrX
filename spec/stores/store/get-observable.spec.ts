@@ -238,7 +238,7 @@ describe(`Store - get$():`, () => {
     expect(mockCb).toBeCalledTimes(1)
   })
 
-  it(`should emit the initial state after hard reset even if it is the same state.`, async done => {
+  it(`should emit the initial state after hard reset even if it is the same state.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     const jestMatcherState = expect.getState()
     const expectedValues = [
@@ -251,8 +251,9 @@ describe(`Store - get$():`, () => {
       expect(value).toStrictEqual(expectedValues[jestMatcherState.assertionCalls])
       if (jestMatcherState.assertionCalls == numOfAssertions) done()
     })
-    await store.hardReset()
-    store.initialize(createInitialState())
+    store.hardReset().then(() => {
+      store.initialize(createInitialState())
+    })
   })
 
   it(`should emit a value after the store is initialized.`, done => {
@@ -268,7 +269,7 @@ describe(`Store - get$():`, () => {
     store.initialize(createInitialState())
   })
 
-  it(`should emit a value after the store is initialized after hard reset.`, async done => {
+  it(`should emit a value after the store is initialized after hard reset.`, done => {
     const store = StoresFactory.createStore(null)
     expect.assertions(4)
     store.get$().subscribe(value => {
@@ -280,8 +281,9 @@ describe(`Store - get$():`, () => {
       if (jestState.assertionCalls == jestState.expectedAssertionsNumber) done()
     })
     store.initialize(createInitialState())
-    await store.hardReset()
-    await store.initializeLazily(Promise.resolve(createInitialState()))
+    store.hardReset().then(() => {
+      store.initializeLazily(Promise.resolve(createInitialState()))
+    })
   })
 
   it(`should compile when provided with an optional parameter.`, () => {
@@ -300,7 +302,7 @@ describe(`Store - get$():`, () => {
     stateProjectionFactory([`stringValue`, `numberValue`, `dateValue`])
   })
 
-  it(`it should emit the whole value if the provided paramter is invalid array.`, done => {
+  it(`it should emit the whole value if the provided parameter is invalid array.`, done => {
     const store = StoresFactory.createStore(createInitialState())
     expect.assertions(2)
     store.get$([]).subscribe(value => {
