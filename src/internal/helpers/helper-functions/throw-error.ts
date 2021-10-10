@@ -1,4 +1,4 @@
-import { newError } from '../shortened-functions'
+import { newError } from '../shortened-functions/new-error'
 import { isError } from './is-error'
 
 export function throwError(error?: Error): never

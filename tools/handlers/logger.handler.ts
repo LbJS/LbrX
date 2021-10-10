@@ -27,7 +27,7 @@ export class LoggerHandler {
     console.log()
   }
 
-  public logError(e: AppError | Error | string): void {
+  public logError(e: AppError | Error | string | unknown): void {
     if (!this._config.isActive) return
     if ([LogLevels.log, LogLevels.warn, LogLevels.error].includes(this._config.consoleLogLevel)) {
       this._logErrTonConsole(`ERROR!!!`)

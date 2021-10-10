@@ -1,5 +1,5 @@
 import { Subscription } from 'rxjs'
-import { isDev } from '../core'
+import { isDev } from '../core/lbrx-mode'
 import { cloneError, compareObjects, countObjectChanges, filterObject, isBrowser, isError, isObject, isString, logWarn, mergeObjects, newError, objectKeys, parse, shallowCloneObject, stringify } from '../helpers'
 import { BaseStore } from '../stores'
 import { Actions, getDefaultState, State } from '../stores/store-accessories'
