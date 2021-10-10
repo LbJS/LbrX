@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom'
 import App from './App'
 
 if (PROD_MODE) LbrXManager.enableProdMode()
-else LbrXManager.initializeDevTools({ showStackTrace: false })
+LbrXManager.initializeDevTools({ showStackTrace: false })
 
 ReactDOM.render(
   <React.StrictMode>
