@@ -2,7 +2,7 @@ import { PROD_MODE } from 'environment'
 import { LbrXManager } from 'lbrx/core'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
+import App from './app.component'
 
 if (PROD_MODE) LbrXManager.enableProdMode()
 LbrXManager.initializeDevTools({ showStackTrace: false })

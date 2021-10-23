@@ -20,8 +20,8 @@
         "../src/query/index.ts"
       ],
       "environment": [
-        "./ts/environment/dev.ts",
-        "./ts/environment/prod.ts",
+        "./src/environment/dev.ts",
+        "./src/environment/prod.ts",
       ],
     },
     "jsx": "react-jsx",
@@ -29,7 +29,7 @@
   },
   "include": [
     "../src/**/*.ts",
-    "./ts/**/*.ts",
-    "./ts/**/*.tsx"
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
   ]
 }
