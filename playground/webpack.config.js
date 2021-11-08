@@ -5,20 +5,47 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { argv } = require('process')
 
+const FOLDERS = {
+  playground: __dirname,
+  src: path.resolve(__dirname, 'src'),
+  environment: path.resolve(__dirname, 'src/environment'),
+  styles: path.resolve(__dirname, 'src/styles'),
+  lbrxSrc: path.resolve(__dirname, '../src'),
+  dist: path.resolve(__dirname, '../dist'),
+}
+const ENTRIES = {
+  mainTSX: path.resolve(FOLDERS.src, 'main.tsx'),
+  styles: path.resolve(FOLDERS.src, 'styles.scss'),
+  loadingScript: path.resolve(FOLDERS.src, 'loading-script.ts')
+}
+const REGEXES = {
+  tsx: /\.tsx?$/,
+  scss: /\.(s[ac]|c)ss$/i,
+  js: /\.js(\?.*)?$/i,
+  nodeModules: /node_modules/,
+}
+const CONFIGS = {
+  ts: path.resolve(FOLDERS.playground, 'tsconfig.json')
+}
+const DEV_TOOLS_OPTION = 'inline-source-map'
+const OUTPUT = {
+  fileNameFormat: '[name].js'
+}
+
 /** @type {import('webpack').Configuration} */
 const COMMON_CONFIG = {
   entry: {
     main: [
-      './playground/src/main.tsx',
-      './playground/src/styles.scss',
+      ENTRIES.mainTSX,
+      ENTRIES.styles,
     ],
   },
   module: {
     rules: [
       {
-        test: /\.(s[ac]|c)ss$/i,
+        test: REGEXES.scss,
         exclude: [
-          path.resolve(__dirname, 'src/styles.scss'),
+          ENTRIES.styles,
         ],
         sideEffects: true,
         use: [
@@ -28,10 +55,10 @@ const COMMON_CONFIG = {
         ]
       },
       {
-        test: /\.(s[ac]|c)ss$/i,
+        test: REGEXES.scss,
         include: [
-          path.resolve(__dirname, 'src/styles.scss'),
-          path.resolve(__dirname, 'src/styles'),
+          ENTRIES.styles,
+          FOLDERS.styles,
         ],
         use: [
           MiniCssExtractPlugin.loader,
@@ -40,14 +67,14 @@ const COMMON_CONFIG = {
         ]
       },
       {
-        test: /\.tsx?$/,
+        test: REGEXES.tsx,
         use: [{
           loader: 'ts-loader',
           options: {
-            configFile: 'playground/tsconfig.json',
+            configFile: CONFIGS.ts,
           }
         }],
-        exclude: /node_modules/,
+        exclude: REGEXES.nodeModules,
       },
     ],
   },
@@ -56,25 +83,25 @@ const COMMON_CONFIG = {
       filename: 'styles.css',
     }),
     new HtmlWebpackPlugin({
-      filename: path.resolve(__dirname, '../dist/index.html'),
-      template: './playground/src/index.html'
+      filename: path.resolve(FOLDERS.dist, 'index.html'),
+      template: path.resolve(FOLDERS.src, 'index.html'),
     }),
   ],
   resolve: {
     extensions: ['.ts', '.js', '.tsx', '.jsx'],
     alias: {
-      lbrx: path.resolve(__dirname, '../src'),
+      lbrx: FOLDERS.lbrxSrc,
     }
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, '../dist'),
+    filename: OUTPUT.fileNameFormat,
+    path: FOLDERS.dist,
   },
 }
 
 /** @type {import('webpack').Configuration} */
 const DEV_CONFIG = {
-  devtool: 'inline-source-map',
+  devtool: DEV_TOOLS_OPTION,
 }
 
 /** @type {import('webpack').Configuration} */
@@ -83,7 +110,7 @@ const PROD_CONFIG = {
     minimize: true,
     minimizer: [
       new TerserPlugin({
-        test: /\.js(\?.*)?$/i,
+        test: REGEXES.js,
         extractComments: false,
         terserOptions: {
           mangle: true
@@ -101,7 +128,7 @@ const PROD_CONFIG = {
 /** @type {import('webpack').Configuration} */
 const COMMON_LOADING_SCRIPT_CONFIG = {
   entry: {
-    'loading-script': './playground/src/loading-script.ts'
+    'loading-script': ENTRIES.loadingScript
   },
   target: ['web', 'es5'],
   module: {
@@ -111,10 +138,10 @@ const COMMON_LOADING_SCRIPT_CONFIG = {
         use: [{
           loader: 'ts-loader',
           options: {
-            configFile: 'playground/tsconfig.json',
+            configFile: CONFIGS.ts,
           }
         }],
-        exclude: /node_modules/,
+        exclude: REGEXES.nodeModules,
       },
     ],
   },
@@ -122,14 +149,14 @@ const COMMON_LOADING_SCRIPT_CONFIG = {
     extensions: ['.ts', '.js', '.tsx', '.jsx'],
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, '../dist'),
+    filename: OUTPUT.fileNameFormat,
+    path: FOLDERS.dist,
   },
 }
 
 /** @type {import('webpack').Configuration} */
 const DEV_LOADING_SCRIPT_CONFIG = {
-  devtool: 'inline-source-map',
+  devtool: DEV_TOOLS_OPTION,
 }
 
 /** @type {import('webpack').Configuration} */
@@ -138,7 +165,7 @@ const PROD_LOADING_SCRIPT_CONFIG = {
     minimize: true,
     minimizer: [
       new TerserPlugin({
-        test: /\.js(\?.*)?$/i,
+        test: REGEXES.js,
         extractComments: false,
         terserOptions: {
           mangle: true
@@ -181,8 +208,8 @@ function buildConfigs(configs) {
 
 function buildMainConfig() {
   const mainConfig = merge(COMMON_CONFIG, IS_PROD ? PROD_CONFIG : DEV_CONFIG)
-  const envFilePath = `./src/environment/${IS_PROD ? 'prod' : 'dev'}.ts`
-  mainConfig.resolve.alias['environment'] = path.resolve(__dirname, envFilePath)
+  const envFileName = `${IS_PROD ? 'prod' : 'dev'}.ts`
+  mainConfig.resolve.alias['environment'] = path.resolve(FOLDERS.environment, envFileName)
   return mainConfig
 }
 
