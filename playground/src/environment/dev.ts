@@ -1,3 +1,3 @@
 
-export const PROD_MODE = false
-export const DEV_MODE = true
+export const IS_PROD = false
+export const IS_DEV = true

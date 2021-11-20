@@ -5,6 +5,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { argv } = require('process')
 
+const IS_PROD = (() => {
+  const mode = getMode()
+  return mode === 'production'
+})()
 const FOLDERS = {
   playground: __dirname,
   src: path.resolve(__dirname, 'src'),
@@ -31,6 +35,8 @@ const DEV_TOOLS_OPTION = 'inline-source-map'
 const OUTPUT = {
   fileNameFormat: '[name].js'
 }
+const CDN = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize${IS_PROD ? '.min' : ''}.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize${IS_PROD ? '.min' : ''}.js"></script>`
 
 /** @type {import('webpack').Configuration} */
 const COMMON_CONFIG = {
@@ -85,6 +91,7 @@ const COMMON_CONFIG = {
     new HtmlWebpackPlugin({
       filename: path.resolve(FOLDERS.dist, 'index.html'),
       template: path.resolve(FOLDERS.src, 'index.html'),
+      cdn: CDN
     }),
   ],
   resolve: {
@@ -176,11 +183,6 @@ const PROD_LOADING_SCRIPT_CONFIG = {
 }
 
 const ENABLE_CLEAN = true
-
-const IS_PROD = (() => {
-  const mode = getMode()
-  return mode === 'production'
-})()
 
 module.exports = buildFinalConfig()
 

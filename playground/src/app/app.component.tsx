@@ -1,9 +1,12 @@
+import React from 'react'
+import Footer from './components/footer/footer.component'
 import Header from './components/header/header.component'
-import TaskItem from './components/task-item/task-item.component'
+import Main from './components/main/main.component'
 
 export default function App(): JSX.Element {
-  return <div>
+  return <React.Fragment>
     <Header></Header>
-    <TaskItem></TaskItem>
-  </div>
+    <Main></Main>
+    <Footer></Footer>
+  </React.Fragment>
 }
