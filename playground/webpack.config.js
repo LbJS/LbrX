@@ -16,6 +16,7 @@ const FOLDERS = {
   styles: path.resolve(__dirname, 'src/styles'),
   lbrxSrc: path.resolve(__dirname, '../src'),
   dist: path.resolve(__dirname, '../dist'),
+  nodeModules: path.resolve(__dirname, '../node_modules'),
 }
 const ENTRIES = {
   mainTSX: path.resolve(FOLDERS.src, 'main.tsx'),
@@ -98,7 +99,11 @@ const COMMON_CONFIG = {
     extensions: ['.ts', '.js', '.tsx', '.jsx'],
     alias: {
       lbrx: FOLDERS.lbrxSrc,
-    }
+    },
+    modules: [
+      FOLDERS.playground,
+      FOLDERS.nodeModules,
+    ]
   },
   output: {
     filename: OUTPUT.fileNameFormat,

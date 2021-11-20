@@ -1,8 +1,14 @@
+import AddBtn from 'src/components/add-btn/add-btn'
+import './main.component.scss'
+
 
 export default function Main(): JSX.Element {
-  return <main>
-    <a className="btn-floating btn-large waves-effect waves-light cyan lighten-2">
-      <i className="material-icons">add</i>
-    </a>
+  return <main style={{ display: `flex` }}>
+    <div className="container"
+      style={{ position: `relative` }}>
+      <div className="add-task-btn">
+        <AddBtn></AddBtn>
+      </div>
+    </div>
   </main>
 }
