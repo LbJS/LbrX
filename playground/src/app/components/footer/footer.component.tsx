@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import './footer.component.scss'
 
 const BADGES = [
@@ -24,13 +25,25 @@ const BADGES = [
 ]
 
 export default function Footer(): JSX.Element {
+  // tslint:disable-next-line: typedef
+  const [version, setVersion] = useState(`--`)
+
+  useEffect(() => {
+    getAppVersion()
+  })
+
+  async function getAppVersion(): Promise<void> {
+    const result = (await fetch(`https://raw.githubusercontent.com/LbJS/LbrX/master/package.json`).then(r => r.json())).version as string
+    setVersion(result)
+  }
+
   return <footer className="page-footer deep-purple lighten-3">
     <div className="container">
       <div className="row">
         <div className="col s6">
           <span className="hide-on-med-and-down footer-title">Info</span>
           <span>Version: </span>
-          <b style={{ marginRight: `.5em` }}>1.0.0</b>
+          <b style={{ marginRight: `.5em` }}>{version}</b>
           <span>By: </span>
           <b>LbJS</b>
         </div>
