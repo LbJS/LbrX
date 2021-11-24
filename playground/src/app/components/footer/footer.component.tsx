@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import './footer.component.scss'
 
 const BADGES = [
@@ -24,13 +24,14 @@ const BADGES = [
   }
 ]
 
+type VersionState = [string, Dispatch<SetStateAction<string>>]
+
 export default function Footer(): JSX.Element {
-  // tslint:disable-next-line: typedef
-  const [version, setVersion] = useState(`--`)
+  const [version, setVersion]: VersionState = useState(`--`)
 
   useEffect(() => {
     getAppVersion()
-  })
+  }, [])
 
   async function getAppVersion(): Promise<void> {
     const result = (await fetch(`https://raw.githubusercontent.com/LbJS/LbrX/master/package.json`).then(r => r.json())).version as string

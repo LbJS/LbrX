@@ -1,5 +1,5 @@
 import { UiService } from 'src/app/services/ui.service'
-import AddBtn from 'src/components/add-btn/add-btn'
+import Btn from 'src/generic-components/add-btn/btn'
 import './main.component.scss'
 
 export default function Main(): JSX.Element {
@@ -13,7 +13,9 @@ export default function Main(): JSX.Element {
     <div className="container"
       style={{ position: `relative` }}>
       <div className="add-task-btn">
-        <AddBtn classList={[`cyan`, `lighten-2`]} action={openAddTaskForm}></AddBtn>
+        <Btn classList={[`cyan`, `lighten-2`, `btn-floating`, `btn-large`]}
+          action={openAddTaskForm}
+          icon="add"></Btn>
       </div>
     </div>
   </main>

@@ -15,8 +15,6 @@ ReactDOM.render(
 )
 
 
-
-
 // import { ListStore, ListStoreConfig } from 'lbrx'
 // import { LbrXManager, SortDirections } from 'lbrx/core'
 
