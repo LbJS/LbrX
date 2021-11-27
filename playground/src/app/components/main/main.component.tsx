@@ -6,7 +6,7 @@ export default function Main(): JSX.Element {
   const uiService: UiService = UiService.getUiService()
 
   function openAddTaskForm(): void {
-    uiService.uiStore.update({ isTaskFormOpen: true }, `main->open-task-form`)
+    uiService.uiStore.update({ isTaskFormOpen: true }, `${Main.name}->open-task-form`)
   }
 
   return <main style={{ display: `flex` }}>

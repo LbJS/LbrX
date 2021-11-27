@@ -1,3 +1,4 @@
+import { toClassesString } from 'src/utils/to-classes-string'
 
 export interface BtnProps {
   classList?: string[],
@@ -6,7 +7,7 @@ export interface BtnProps {
 }
 
 export default function Btn({ classList, action, icon }: BtnProps): JSX.Element {
-  return <a className={`waves-effect waves-light ${classList?.join(` `)}`}
+  return <a className={`waves-effect waves-light${toClassesString(classList)}`}
     onClick={action}>
     <i className="material-icons">{icon}</i>
   </a>
