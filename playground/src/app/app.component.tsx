@@ -13,10 +13,16 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     subscribeToIsTaskFormOpen()
+    setBaseUrl()
   }, [])
 
   function subscribeToIsTaskFormOpen(): void {
     uiService.uiStore.get$(value => value.isTaskFormOpen).subscribe(setIsTaskFormOpen)
+  }
+
+  function setBaseUrl(): void {
+    const baseUrl = document.getElementsByTagName(`base`)[0].href
+    window.history.replaceState({}, document.title, baseUrl)
   }
 
   return <React.StrictMode>

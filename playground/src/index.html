@@ -9,6 +9,18 @@
   <meta http-equiv="X-UA-Compatible"
         content="ie=edge">
   <title>LbrX - Playground</title>
+  <script type="text/javascript"
+          id="baseHrefScript">
+            (function () {
+              var isIE = window.document.documentMode;
+              if (isIE) return;
+              var baseElem = document.createElement('base');
+              var baseHref = window.location.pathname.split('/')[1];
+              baseElem.href = baseHref ? ('/' + baseHref + '/') : '/';
+              document.head.append(baseElem);
+              document.getElementById('baseHrefScript').remove()
+            })();
+          </script>
   <script async
           src="loading-script.js"
           id="loadingScript"></script>
@@ -16,7 +28,7 @@
       %>
 </head>
 
-<body style="background-color: #343a40;">
+<body>
   <div id="app-root"></div>
 </body>
 
