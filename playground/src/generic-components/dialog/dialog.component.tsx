@@ -1,6 +1,6 @@
 import { assert, isString } from 'lbrx/utils'
 import React, { CSSProperties, Dispatch, MutableRefObject, SetStateAction, useEffect, useImperativeHandle, useState } from 'react'
-import Btn from 'src/generic-components/add-btn/btn'
+import Btn from 'src/generic-components/btn/btn'
 import { toClassesString } from 'src/utils/to-classes-string'
 import { v4 as uuidv4 } from 'uuid'
 import './dialog.component.scss'
@@ -67,7 +67,10 @@ export default function Dialog({
   if (isString(header)) {
     header = <React.Fragment>
       <h3>{header}</h3>
-      <Btn icon="close" action={closeModal}></Btn>
+      <Btn icon="close"
+        action={closeModal}
+        classList={[`btn-floating`, `btn-large`, `btn-flat`]}
+        styles={{ paddingTop: `2px` }}></Btn>
     </React.Fragment>
   }
 

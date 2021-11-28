@@ -1,5 +1,5 @@
 import { UiService } from 'src/app/services/ui.service'
-import Btn from 'src/generic-components/add-btn/btn'
+import Btn from 'src/generic-components/btn/btn'
 import './main.component.scss'
 
 export default function Main(): JSX.Element {

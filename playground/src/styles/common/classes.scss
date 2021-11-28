@@ -29,3 +29,7 @@
 .btn-floating.cyan > i {
   color: rgba(0, 0, 0, 0.87);
 }
+
+.btn-floating.btn-flat:hover {
+  background-color: rgba(127, 127, 127, 0.33);
+}

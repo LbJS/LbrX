@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import TaskItemFormContent from 'src/app/components/task-item/task-item-form-content.component'
 import { UiService } from 'src/app/services/ui.service'
 import Dialog from 'src/generic-components/dialog/dialog.component'
+import './task-item-form.dialog.scss'
 
 export default function TaskItemFormDialog(): JSX.Element {
   const uiService: UiService = UiService.getUiService()
@@ -16,6 +17,7 @@ export default function TaskItemFormDialog(): JSX.Element {
   }
 
   return <Dialog modalOptions={taskFormDialogOptions}
+    modalClasses={[`task-item-form-dialog`]}
     header="New Task"
     content={<TaskItemFormContent></TaskItemFormContent>}
     modalRef={modalRef}></Dialog>
