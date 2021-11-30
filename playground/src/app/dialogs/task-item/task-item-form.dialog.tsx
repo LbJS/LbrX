@@ -1,28 +1,42 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { Subscriber } from 'rxjs'
-import TaskItemFormContent from 'src/app/components/task-item/task-item-form-content.component'
 import Dialog from 'src/generic-components/dialog/dialog.component'
+import FormField from 'src/generic-components/form-field/form-field.component'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
-import { TaskItemStore } from 'src/stores/task-items.store'
+import { getNewTaskItemModel, TaskItemStore } from 'src/stores/task-items.store'
 import { UiStore } from 'src/stores/ui.store'
+import { onChangeHandler } from 'src/utils/on-change-handler'
 import './task-item-form.dialog.scss'
 
-type TaskItemModelState = [TaskItemModel | null, Dispatch<SetStateAction<TaskItemModel | null>>]
+export interface TaskItemFormDialogOptions {
+  task?: TaskItemModel
+}
 
-export default function TaskItemFormDialog(): JSX.Element {
+type TaskItemModelState = [TaskItemModel, Dispatch<SetStateAction<TaskItemModel>>]
+
+export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions): JSX.Element {
   const uiStore: UiStore = STORES.get(UiStore)
   const taskItemStore: TaskItemStore = STORES.get(TaskItemStore)
   const modalRef = useRef<M.Modal>()
-  const [taskItem, setTaskItem]: TaskItemModelState = useState<TaskItemModel | null>(null)
+  const [taskItem, setTaskItem]: TaskItemModelState = useState<TaskItemModel>(task || getNewTaskItemModel())
   const sub = new Subscriber()
 
   useEffect(() => {
-    subscribeToTaskItem()
+    initItemStore().then(subscribeToTaskItem)
     return () => {
       sub.unsubscribe()
     }
   }, [])
+
+  async function initItemStore(): Promise<void> {
+    if (taskItemStore.isInitialized && taskItem.id !== taskItemStore.value.id) {
+      await taskItemStore.hardReset()
+      taskItemStore.initialize(taskItem)
+    } else if (!taskItemStore.isInitialized) {
+      taskItemStore.initialize(taskItem)
+    }
+  }
 
   function subscribeToTaskItem(): void {
     sub.add(taskItemStore.get$().subscribe(setTaskItem))
@@ -38,7 +52,14 @@ export default function TaskItemFormDialog(): JSX.Element {
 
   return <Dialog modalOptions={taskFormDialogOptions}
     modalClasses={[`task-item-form-dialog`]}
-    header={taskItem?.id ? `Task ${taskItem.id}` : `New Task`}
-    content={<TaskItemFormContent></TaskItemFormContent>}
+    header={taskItem.id ? `Task ${taskItem.id}` : `New Task`}
+    content={<div>
+      <FormField>
+        <React.Fragment>
+          <input type="text" value={taskItem.title} onChange={onChangeHandler(taskItemStore.setTitle)} />
+          <label>Title</label>
+        </React.Fragment>
+      </FormField>
+    </div>}
     modalRef={modalRef}></Dialog>
 }

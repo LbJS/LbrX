@@ -1,7 +1,7 @@
 
 export interface TaskItemModel {
   id: number
-  name: string
+  title: string
   isCompleted: boolean
   description: string | null
   dueDate: Date | null

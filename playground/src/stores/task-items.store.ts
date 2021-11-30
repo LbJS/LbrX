@@ -1,20 +1,14 @@
 import { Storages, Store, StoreConfig } from 'lbrx'
 import { TaskItemModel } from 'src/models/task-item.model'
-import { STORES } from 'src/services/stores.service'
-import { UiStore } from 'src/stores/ui.store'
 
 export function getNewTaskItemModel(): TaskItemModel {
   return {
     id: 0,
-    name: ``,
+    title: ``,
     isCompleted: false,
     description: null,
     dueDate: null,
   }
-}
-
-function resolveInitialValue(): TaskItemModel | null {
-  return STORES.get(UiStore).value.isTaskFormOpen ? getNewTaskItemModel() : null
 }
 
 @StoreConfig({
@@ -25,6 +19,8 @@ function resolveInitialValue(): TaskItemModel | null {
 })
 export class TaskItemStore extends Store<TaskItemModel> {
   constructor() {
-    super(resolveInitialValue())
+    super(null)
   }
+
+  public setTitle = (title: string) => this.update({ title })
 }
