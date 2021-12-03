@@ -32,14 +32,40 @@ export default function App(): JSX.Element {
 
   function createInitialTasks(): TaskItemModel[] {
     return [
-      {
-        id: 1,
-        title: `Create your first task.`,
-        description: ``,
-        dueDate: null,
-        isCompleted: false,
-      }
+      createYourFirstTaskTask(),
+      tryTheSearchFieldTask(),
+      sortTheTableTask(),
     ]
+  }
+
+  function createYourFirstTaskTask(): TaskItemModel {
+    return {
+      id: 1,
+      title: `Create your first task.`,
+      description: `Click the 'add' button on the right bottom corner of the screen, fill up the 'new task' form and save.`,
+      dueDate: null,
+      isCompleted: false,
+    }
+  }
+
+  function tryTheSearchFieldTask(): TaskItemModel {
+    return {
+      id: 2,
+      title: `Try the search field.`,
+      description: `Type anything into the search field and see how the rows are filtered using the 'where' method.`,
+      dueDate: null,
+      isCompleted: false,
+    }
+  }
+
+  function sortTheTableTask(): TaskItemModel {
+    return {
+      id: 3,
+      title: `Sort the tasks.`,
+      description: `Click on the table's headers to sort the the rows using the 'orderBy' method.`,
+      dueDate: null,
+      isCompleted: false,
+    }
   }
 
   return <React.StrictMode>
