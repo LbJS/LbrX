@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Subscriber } from 'rxjs'
 import Btn from 'src/generic-components/btn/btn'
 import Dialog from 'src/generic-components/dialog/dialog.component'
@@ -14,54 +14,41 @@ export interface TaskItemFormDialogOptions {
   task?: TaskItemModel
 }
 
-type TaskItemModelState = [TaskItemModel, Dispatch<SetStateAction<TaskItemModel>>]
+type TaskItemDispatcher = Dispatch<SetStateAction<TaskItemModel>>
+type TaskItemModelState = [TaskItemModel, TaskItemDispatcher]
+
+async function initItemStore(taskItemStore: TaskItemStore, taskItem: TaskItemModel): Promise<void> {
+  if (taskItemStore.isInitialized && taskItem.id !== taskItemStore.value.id) {
+    await taskItemStore.hardReset()
+    taskItemStore.initialize(taskItem)
+  } else if (!taskItemStore.isInitialized) {
+    taskItemStore.initialize(taskItem)
+  }
+}
 
 export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions): JSX.Element {
-  const uiStore: UiStore = STORES.get(UiStore)
-  const taskItemStore: TaskItemStore = STORES.get(TaskItemStore)
+  const sub = useMemo(() => new Subscriber(), [])
+  const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
+  const taskItemStore: TaskItemStore = useMemo(() => STORES.get(TaskItemStore), [])
+  const taskFormDialogOptions: Partial<M.ModalOptions> = useMemo(() => ({
+    onCloseEnd: () => modalCloseCb()
+  }), [])
+
   const modalRef = useRef<M.Modal>()
+
   const [taskItem, setTaskItem]: TaskItemModelState = useState<TaskItemModel>(task || getNewTaskItemModel())
-  const sub = new Subscriber()
+
+  const subscribeToTaskItem = useCallback(() => sub.add(taskItemStore.get$().subscribe(setTaskItem)), [])
+  const componentCleanUp = useCallback(() => { sub.unsubscribe() }, [])
+  const modalCloseCb = useCallback(() => uiStore.closeTaskForm(`close-task-form`), [])
+  const saveTask = useCallback(() => console.log(taskItem), [])
+  const closeForm = useCallback(() => modalRef.current?.close(), [])
+  const clearForm = useCallback(() => taskItemStore.set(getNewTaskItemModel()), [])
 
   useEffect(() => {
-    initItemStore().then(subscribeToTaskItem)
-    return () => {
-      sub.unsubscribe()
-    }
+    initItemStore(taskItemStore, taskItem).then(subscribeToTaskItem)
+    return componentCleanUp
   }, [])
-
-  async function initItemStore(): Promise<void> {
-    if (taskItemStore.isInitialized && taskItem.id !== taskItemStore.value.id) {
-      await taskItemStore.hardReset()
-      taskItemStore.initialize(taskItem)
-    } else if (!taskItemStore.isInitialized) {
-      taskItemStore.initialize(taskItem)
-    }
-  }
-
-  function subscribeToTaskItem(): void {
-    sub.add(taskItemStore.get$().subscribe(setTaskItem))
-  }
-
-  const taskFormDialogOptions: Partial<M.ModalOptions> = {
-    onCloseEnd: () => closeTaskForm()
-  }
-
-  function closeTaskForm(): void {
-    updateIsTaskFormOpen(false)
-  }
-
-  function updateIsTaskFormOpen(isTaskFormOpen: boolean): void {
-    uiStore.update({ isTaskFormOpen }, `${TaskItemFormDialog.name}->${isTaskFormOpen ? `open` : `close`}-task-from`)
-  }
-
-  function saveTask(taskToSave: TaskItemModel): void {
-    console.log(taskToSave)
-  }
-
-  function clear(): void {
-    taskItemStore.set(getNewTaskItemModel())
-  }
 
   return <Dialog modalOptions={taskFormDialogOptions}
     modalClasses={[`task-item-form-dialog`]}
@@ -76,10 +63,10 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
       </FormField>
     </div>}
     footer={<React.Fragment>
-      <Btn action={() => { clear() }}
+      <Btn action={clearForm}
         classList={[`btn-flat`]}>Clear</Btn>
-      <Btn action={() => { saveTask(taskItem) }}>Save</Btn>
-      <Btn action={() => { saveTask(taskItem); closeTaskForm() }}>Save & Close</Btn>
+      <Btn action={saveTask}>Save</Btn>
+      <Btn action={[saveTask, closeForm]}>Save & Close</Btn>
     </React.Fragment>}
     footerClasses={[`btns-container-pull-right`]}
     modalRef={modalRef}></Dialog>

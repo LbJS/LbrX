@@ -17,6 +17,15 @@ function getInitialState(): UiState {
   storageDebounceTime: 500,
 })
 export class UiStore extends Store<UiState> {
+
+  public openTaskForm = (actionName?: string) => {
+    this.update({ isTaskFormOpen: true }, actionName)
+  }
+
+  public closeTaskForm = (actionName?: string) => {
+    this.update({ isTaskFormOpen: false }, actionName)
+  }
+
   constructor() {
     super(getInitialState())
   }

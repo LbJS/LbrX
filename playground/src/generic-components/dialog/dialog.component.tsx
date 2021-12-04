@@ -1,5 +1,5 @@
 import { assert, isString } from 'lbrx/utils'
-import React, { CSSProperties, Dispatch, MutableRefObject, SetStateAction, useEffect, useImperativeHandle, useState } from 'react'
+import React, { CSSProperties, Dispatch, MutableRefObject, SetStateAction, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import Btn from 'src/generic-components/btn/btn'
 import { toClassesString } from 'src/utils/to-classes-string'
 import { v4 as uuidv4 } from 'uuid'
@@ -23,6 +23,12 @@ export interface DialogOptions {
 
 type ModalState = [M.Modal | null, Dispatch<SetStateAction<M.Modal | null>>]
 
+function createModal(modalId: string, modalOptions?: Partial<M.ModalOptions>): M.Modal {
+  const modalElem: HTMLElement | null = document.getElementById(modalId)
+  assert(modalElem instanceof HTMLElement, `Cannot find modal's root element.`)
+  return M.Modal.init(modalElem, modalOptions)
+}
+
 export default function Dialog({
   modalOptions,
   modalClasses,
@@ -39,11 +45,11 @@ export default function Dialog({
   modalRef,
 }: DialogOptions
 ): JSX.Element {
-  const modalId = uuidv4()
+  const modalId = useMemo(() => uuidv4(), [])
   const [modal, setModal]: ModalState = useState<M.Modal | null>(null)
 
   useEffect(() => {
-    setModal(createModal())
+    setModal(createModal(modalId, modalOptions))
   }, [])
 
   useEffect(() => {
@@ -54,15 +60,7 @@ export default function Dialog({
 
   useImperativeHandle(modalRef, () => modal!, [modal])
 
-  function createModal(): M.Modal {
-    const modalElem: HTMLElement | null = document.getElementById(modalId)
-    assert(modalElem instanceof HTMLElement, `Cannot find modal's root element.`)
-    return M.Modal.init(modalElem, modalOptions)
-  }
-
-  function closeModal(): void {
-    modal?.close()
-  }
+  const closeModal = useCallback(() => modal?.close(), [modal])
 
   if (isString(header)) {
     header = <React.Fragment>

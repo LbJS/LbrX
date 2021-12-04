@@ -26,17 +26,17 @@ const BADGES = [
 
 type VersionState = [string, Dispatch<SetStateAction<string>>]
 
+async function getAppVersion(setVersion: Dispatch<SetStateAction<string>>): Promise<void> {
+  const result = (await fetch(`https://raw.githubusercontent.com/LbJS/LbrX/master/package.json`).then(r => r.json())).version as string
+  setVersion(result)
+}
+
 export default function Footer(): JSX.Element {
   const [version, setVersion]: VersionState = useState(`--`)
 
   useEffect(() => {
-    getAppVersion()
+    getAppVersion(setVersion)
   }, [])
-
-  async function getAppVersion(): Promise<void> {
-    const result = (await fetch(`https://raw.githubusercontent.com/LbJS/LbrX/master/package.json`).then(r => r.json())).version as string
-    setVersion(result)
-  }
 
   return <footer className="page-footer deep-purple lighten-3">
     <div className="container">
