@@ -3,7 +3,7 @@ import { TaskItemModel } from 'src/models/task-item.model'
 
 @ListStoreConfig({
   name: `TASK-ITEM-LIST`,
-  storageType: Storages.session,
+  storageType: Storages.local,
   storageKey: `TASK-ITEM-LIST-STORE`,
   storageDebounceTime: 1000,
   idKey: `id`,

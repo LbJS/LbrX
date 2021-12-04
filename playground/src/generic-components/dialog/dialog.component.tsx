@@ -66,10 +66,10 @@ export default function Dialog({
 
   if (isString(header)) {
     header = <React.Fragment>
-      <h3>{header}</h3>
+      <h5 className="modal-header-title">{header}</h5>
       <Btn icon="close"
         action={closeModal}
-        classList={[`btn-floating`, `btn-large`, `btn-flat`]}
+        classList={[`modal-header-close-btn`, `btn-floating`, `btn-large`, `btn-flat`]}
         styles={{ paddingTop: `2px` }}></Btn>
     </React.Fragment>
   }

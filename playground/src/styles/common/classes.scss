@@ -33,3 +33,12 @@
 .btn-floating.btn-flat:hover {
   background-color: rgba(127, 127, 127, 0.33);
 }
+
+.btns-container-pull-right {
+  display: flex;
+  justify-content: end;
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  > a:not(:first-child) {
+    margin-left: 1rem !important;
+  }
+}

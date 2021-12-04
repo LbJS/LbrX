@@ -2,5 +2,8 @@
 
 .task-item-form-dialog {
   background-color: lighten($greyBackground, 15);
-  color: rgb(255, 255, 255);
+  color: $lightFont;
+  input {
+    color: $lightFont;
+  }
 }

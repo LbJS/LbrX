@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { Subscriber } from 'rxjs'
+import Btn from 'src/generic-components/btn/btn'
 import Dialog from 'src/generic-components/dialog/dialog.component'
 import FormField from 'src/generic-components/form-field/form-field.component'
 import { TaskItemModel } from 'src/models/task-item.model'
@@ -43,16 +44,29 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
   }
 
   const taskFormDialogOptions: Partial<M.ModalOptions> = {
-    onCloseEnd: () => updateIsTaskFormOpen(false)
+    onCloseEnd: () => closeTaskForm()
+  }
+
+  function closeTaskForm(): void {
+    updateIsTaskFormOpen(false)
   }
 
   function updateIsTaskFormOpen(isTaskFormOpen: boolean): void {
     uiStore.update({ isTaskFormOpen }, `${TaskItemFormDialog.name}->${isTaskFormOpen ? `open` : `close`}-task-from`)
   }
 
+  function saveTask(taskToSave: TaskItemModel): void {
+    console.log(taskToSave)
+  }
+
+  function clear(): void {
+    taskItemStore.set(getNewTaskItemModel())
+  }
+
   return <Dialog modalOptions={taskFormDialogOptions}
     modalClasses={[`task-item-form-dialog`]}
     header={taskItem.id ? `Task ${taskItem.id}` : `New Task`}
+    headerClasses={[`cyan`, `darken-1`]}
     content={<div>
       <FormField>
         <React.Fragment>
@@ -61,5 +75,12 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
         </React.Fragment>
       </FormField>
     </div>}
+    footer={<React.Fragment>
+      <Btn action={() => { clear() }}
+        classList={[`btn-flat`]}>Clear</Btn>
+      <Btn action={() => { saveTask(taskItem) }}>Save</Btn>
+      <Btn action={() => { saveTask(taskItem); closeTaskForm() }}>Save & Close</Btn>
+    </React.Fragment>}
+    footerClasses={[`btns-container-pull-right`]}
     modalRef={modalRef}></Dialog>
 }
