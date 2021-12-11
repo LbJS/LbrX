@@ -34,7 +34,7 @@
       "name": "Attach to 127.0.0.1",
       "request": "attach",
       "type": "pwa-chrome",
-      "url": "127.0.0.1:5500*",
+      "url": "127.0.0.1:5501*",
       "port": 9222,
       "sourceMaps": true,
       "disableNetworkCache": false,
@@ -43,12 +43,6 @@
         "*.js"
       ],
       "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "webpack:///./*": "${workspaceFolder}/*",
-        "webpack:///src/*": "${workspaceFolder}/*",
-        "webpack:///*": "*",
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*"
-      }
     },
     {
       "name": "Launch Jest",
