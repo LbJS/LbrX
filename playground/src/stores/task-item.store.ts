@@ -23,4 +23,7 @@ export class TaskItemStore extends Store<TaskItemModel> {
   }
 
   public setTitle = (title: string) => this.update({ title })
+  public setIsCompleted = (isCompleted: boolean) => this.update({ isCompleted })
+  public setDescription = (description: string) => this.update({ description })
+  public setDueDate = (dueDate: Date | null) => this.update({ dueDate })
 }

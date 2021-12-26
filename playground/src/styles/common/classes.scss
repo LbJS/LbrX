@@ -1,3 +1,5 @@
+@import "./colors.scss";
+
 .app-badge {
   display: inline-block;
   padding: 0.25em 0.4em;
@@ -30,7 +32,7 @@
   color: rgba(0, 0, 0, 0.87);
 }
 
-.btn-floating.btn-flat:hover {
+.btn-flat:hover {
   background-color: rgba(127, 127, 127, 0.33);
 }
 
@@ -41,4 +43,8 @@
   > a:not(:first-child) {
     margin-left: 1rem !important;
   }
+}
+
+.cyan-font {
+  color: $appCyan;
 }
