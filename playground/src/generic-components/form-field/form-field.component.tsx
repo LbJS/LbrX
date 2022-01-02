@@ -1,4 +1,4 @@
-import { CSSProperties, MutableRefObject, useEffect, useImperativeHandle, useState } from 'react'
+import { CSSProperties, ForwardedRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { initDatepicker } from 'src/utils/init-datepicker'
 import { initTimepicker } from 'src/utils/init-timepicker'
 import { toClassesString } from 'src/utils/to-classes-string'
@@ -16,58 +16,52 @@ export interface FormFieldOptions {
   styles?: CSSProperties,
   classes?: string[],
   inputType?: InputTypes,
-  datepickerOptions?: M.DatepickerOptions,
-  datepickerRef?: MutableRefObject<M.Datepicker | undefined>,
-  timepickerOptions?: M.TimepickerOptions,
-  timepickerRef?: MutableRefObject<M.Timepicker | undefined>,
+  datepickerOptions?: Partial<M.DatepickerOptions>,
+  timepickerOptions?: Partial<M.TimepickerOptions>,
+  forceUpdateState?: React.Dispatch<React.SetStateAction<number>>,
 }
 
-type DatepickerState = [M.Datepicker | null, React.Dispatch<React.SetStateAction<M.Datepicker | null>>]
-type TimepickerState = [M.Timepicker | null, React.Dispatch<React.SetStateAction<M.Timepicker | null>>]
+type PickerState = [M.Datepicker | M.Timepicker | null, React.Dispatch<React.SetStateAction<M.Datepicker | M.Timepicker | null>>]
 
-export default function FormField({
+export const FormField = forwardRef(({
   children,
   styles,
   classes,
   inputType,
   inputElement,
   datepickerOptions,
-  datepickerRef,
   timepickerOptions,
-  timepickerRef,
-}: FormFieldOptions): JSX.Element {
+  forceUpdateState,
+}: FormFieldOptions, ref: ForwardedRef<M.Datepicker | M.Timepicker | undefined>) => {
 
   if (!inputType) inputType = InputTypes.text
 
-  const [datepicker, setDatepicker]: DatepickerState = useState<M.Datepicker | null>(null)
-  const [timepicker, setTimepicker]: TimepickerState = useState<M.Timepicker | null>(null)
+  const [picker, setPicker]: PickerState = useState<M.Datepicker | M.Timepicker | null>(null)
 
   useEffect(() => {
-    if (!inputElement) return
     switch (inputType) {
       case InputTypes.date:
-        setDatepicker(initDatepicker(inputElement, datepickerOptions))
+        // tslint:disable-next-line: no-unused-expression
+        inputElement && setPicker(initDatepicker(inputElement, datepickerOptions))
         break
       case InputTypes.time:
-        setTimepicker(initTimepicker(inputElement, timepickerOptions))
+        // tslint:disable-next-line: no-unused-expression
+        inputElement && setPicker(initTimepicker(inputElement, timepickerOptions))
         break
       default: updateTextFields()
     }
   }, [inputElement])
 
   useEffect(() => {
-    if (!datepicker) return
-    return () => datepicker.destroy()
-  }, [datepicker])
+    if (!picker) return
+    return () => picker.destroy()
+  }, [picker])
 
-  useEffect(() => {
-    if (!timepicker) return
-    return () => timepicker.destroy()
-  }, [timepicker])
-
-  useImperativeHandle(datepickerRef, () => datepicker!, [datepicker])
-  useImperativeHandle(timepickerRef, () => timepicker!, [timepicker])
+  useImperativeHandle(ref, () => {
+    forceUpdateState?.(Math.random())
+    return picker!
+  }, [picker])
 
   return <div className={`input-field${toClassesString(classes)}`}
     style={styles}>{children}</div>
-}
+})

@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRe
 import { Subscriber } from 'rxjs'
 import Btn from 'src/generic-components/btn/btn'
 import Dialog from 'src/generic-components/dialog/dialog.component'
-import FormField, { InputTypes } from 'src/generic-components/form-field/form-field.component'
+import { FormField, InputTypes } from 'src/generic-components/form-field/form-field.component'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
 import { getNewTaskItemModel, TaskItemStore } from 'src/stores/task-item.store'
@@ -17,6 +17,7 @@ export interface TaskItemFormDialogOptions {
 type TaskItemDispatcher = Dispatch<SetStateAction<TaskItemModel>>
 type HtmlElementDispatch = [HTMLElement | null, Dispatch<SetStateAction<HTMLElement | null>>]
 type TaskItemModelState = [TaskItemModel, TaskItemDispatcher]
+type ForceUpdateState = [number, React.Dispatch<React.SetStateAction<number>>]
 
 async function initItemStore(taskItemStore: TaskItemStore, taskItem: TaskItemModel): Promise<void> {
   if (taskItemStore.isInitialized && taskItem.id !== taskItemStore.value.id) {
@@ -39,6 +40,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
   const datepickerRef = useRef<M.Datepicker>()
   const timepickerRef = useRef<M.Timepicker>()
 
+  const [_, forceUpdate]: ForceUpdateState = useState(0)
   const [taskItem, setTaskItem]: TaskItemModelState = useState<TaskItemModel>(task || getNewTaskItemModel())
   const [datepickerElem, setDatepickerElem]: HtmlElementDispatch = useState<HTMLElement | null>(null)
   const [timepickerElem, setTimepickerElem]: HtmlElementDispatch = useState<HTMLElement | null>(null)
@@ -54,6 +56,14 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
     initItemStore(taskItemStore, taskItem).then(subscribeToTaskItem)
     return componentCleanUp
   }, [])
+
+  useEffect(() => {
+    if (!datepickerRef.current || !taskItemStore.isInitialized) return
+    sub.add(taskItemStore.get$(x => x.dueDate).subscribe(dueDate => {
+      datepickerRef.current?.setDate(dueDate || undefined)
+      datepickerRef.current?.setInputValue()
+    }))
+  }, [datepickerRef.current, taskItemStore.isInitialized])
 
   return <Dialog modalOptions={taskFormDialogOptions}
     modalClasses={[`task-item-form-dialog`]}
@@ -85,7 +95,12 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
         <FormField styles={{ flex: `1` }}
           inputType={InputTypes.date}
           inputElement={datepickerElem}
-          datepickerRef={datepickerRef}>
+          ref={datepickerRef}
+          forceUpdateState={forceUpdate}
+          datepickerOptions={{
+            showClearBtn: true,
+            onSelect: taskItemStore.setDueDate,
+          }}>
           <React.Fragment>
             <input type="text"
               id="dueDate"
@@ -96,7 +111,8 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
         <FormField styles={{ flex: `1` }}
           inputType={InputTypes.time}
           inputElement={timepickerElem}
-          timepickerRef={timepickerRef}>
+          ref={timepickerRef}
+          timepickerOptions={{ showClearBtn: true }}>
           <React.Fragment>
             <input type="text"
               id="dueTime"
