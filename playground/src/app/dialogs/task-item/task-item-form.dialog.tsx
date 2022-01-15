@@ -104,18 +104,20 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
             <label>
               <input type="checkbox"
                 className="filled-in"
+                checked={taskItem.isCompleted}
                 onChange={onChangeHandler(taskItemStore.setIsCompleted)} />
               <span>Completed</span>
             </label>
           </p>
         </FormField>
       </div>
-      <div style={{ display: `flex` }}>
+      <div style={{ display: `flex`, alignItems: `flex-start` }}>
         <FormField styles={{ flex: `1` }}
           inputType={InputTypes.date}
           inputElement={datepickerElem}
           ref={datepickerRef}
           forceUpdateState={forceUpdate}
+          updateLabels$={taskItemStore.get$(x => x.dueDate)}
           datepickerOptions={{
             onSelect: taskItemStore.setDueDate,
           }}>
@@ -131,6 +133,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
           inputElement={timepickerElem}
           ref={timepickerRef}
           forceUpdateState={forceUpdate}
+          updateLabels$={taskItemStore.get$(x => x.dueDate)}
           timepickerOptions={{
             onSelect: (h, m) => taskItemStore.setDueDate(taskItemStore.value.dueDate, h, m)
           }}>
@@ -143,6 +146,12 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
             <label htmlFor="dueTime">Due time</label>
           </React.Fragment>
         </FormField>
+        <div style={{ borderBottom: `1px solid #9e9e9e`, marginTop: `4px` }}>
+          <Btn icon="close"
+            action={() => { taskItemStore.setDueDate(null) }}
+            classList={[`modal-header-close-btn`, `btn-floating`, `btn-large`, `btn-flat`]}
+            styles={{ paddingTop: `2px` }}></Btn>
+        </div>
       </div>
       <FormField>
         <React.Fragment>

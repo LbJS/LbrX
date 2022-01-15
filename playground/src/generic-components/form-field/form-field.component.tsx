@@ -1,4 +1,6 @@
 import { CSSProperties, ForwardedRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { Observable, Subscription } from 'rxjs'
+import { debounceTime } from 'rxjs/operators'
 import { initDatepicker } from 'src/utils/init-datepicker'
 import { initTimepicker } from 'src/utils/init-timepicker'
 import { toClassesString } from 'src/utils/to-classes-string'
@@ -19,6 +21,7 @@ export interface FormFieldOptions {
   datepickerOptions?: Partial<M.DatepickerOptions>,
   timepickerOptions?: Partial<M.TimepickerOptions>,
   forceUpdateState?: React.Dispatch<React.SetStateAction<number>>,
+  updateLabels$?: Observable<any>,
 }
 
 type PickerState = [M.Datepicker | M.Timepicker | null, React.Dispatch<React.SetStateAction<M.Datepicker | M.Timepicker | null>>]
@@ -32,11 +35,20 @@ export const FormField = forwardRef(({
   datepickerOptions,
   timepickerOptions,
   forceUpdateState,
+  updateLabels$,
 }: FormFieldOptions, ref: ForwardedRef<M.Datepicker | M.Timepicker | undefined>) => {
 
   if (!inputType) inputType = InputTypes.text
 
   const [picker, setPicker]: PickerState = useState<M.Datepicker | M.Timepicker | null>(null)
+
+  useEffect(() => {
+    if (!updateLabels$) return
+    const updateLabelsSub: Subscription = updateLabels$
+      .pipe(debounceTime(30))
+      .subscribe(M.updateTextFields)
+    return () => updateLabelsSub.unsubscribe()
+  }, [])
 
   useEffect(() => {
     switch (inputType) {
