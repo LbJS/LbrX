@@ -6,6 +6,7 @@ import { FormField, InputTypes } from 'src/generic-components/form-field/form-fi
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
 import { getNewTaskItemModel, TaskItemStore } from 'src/stores/task-item.store'
+import { TaskItemsListStore } from 'src/stores/task-items-list.store'
 import { UiStore } from 'src/stores/ui.store'
 import { onChangeHandler } from 'src/utils/on-change-handler'
 import './task-item-form.dialog.scss'
@@ -42,6 +43,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
   const sub = useMemo(() => new Subscriber(), [])
   const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
   const taskItemStore: TaskItemStore = useMemo(() => STORES.get(TaskItemStore), [])
+  const taskItemsListStore: TaskItemsListStore = useMemo(() => STORES.get(TaskItemsListStore), [])
   const taskFormDialogOptions: Partial<M.ModalOptions> = useMemo(() => ({
     onCloseEnd: () => modalCloseCb()
   }), [])
@@ -60,9 +62,15 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
   const subscribeToTaskItem = useCallback(() => sub.add(taskItemStore.get$().subscribe(setTaskItem)), [])
   const componentCleanUp = useCallback(() => { sub.unsubscribe() }, [])
   const modalCloseCb = useCallback(() => uiStore.closeTaskForm(`close-task-form`), [])
-  const saveTask = useCallback(() => console.log(taskItem), [])
   const closeForm = useCallback(() => modalRef.current?.close(), [])
   const clearForm = useCallback(() => taskItemStore.set(getNewTaskItemModel()), [])
+  const saveTask = useCallback(() => {
+    if (!taskItem.id) {
+      const currMaxId = taskItemsListStore.select(x => x.id).orderBy(/*desc*/true).firstOrDefault()
+      taskItem.id = currMaxId ? currMaxId + 1 : 1
+    }
+    taskItemsListStore.addOrUpdate(taskItem)
+  }, [taskItem])
 
   useEffect(() => {
     initItemStore(taskItemStore, taskItem).then(subscribeToTaskItem)

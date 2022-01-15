@@ -9,7 +9,7 @@ import { TaskItemModel } from 'src/models/task-item.model'
   idKey: `id`,
   isClassHandler: false,
 })
-export class TaskItemListStore extends ListStore<TaskItemModel> {
+export class TaskItemsListStore extends ListStore<TaskItemModel> {
   constructor() {
     super([])
   }

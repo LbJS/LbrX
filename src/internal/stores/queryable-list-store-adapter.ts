@@ -1,7 +1,7 @@
 import { iif, MonoTypeOperatorFunction, Observable, of, throwError as rxjsThrowError } from 'rxjs'
 import { mergeMap } from 'rxjs/operators'
 import { SortFactory, SortingAlgorithmToken, SortMethodApi, SortOptions } from '../core'
-import { assert, isArray, isEmpty, isNull, isObject, throwError } from '../helpers'
+import { assert, isArray, isEmpty, isNull, isObject, isUndefined, throwError } from '../helpers'
 import { KeyOrNever, NoVoid } from '../types'
 import { BaseStore } from './base-store'
 import { ListStoreConfigOptions } from './config'
@@ -228,10 +228,10 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     let result: T | null = null
     if (predicate) {
       result = (value as T[]).find(predicate) ?? null
-    } else if (value[0]) {
+    } else if (!isUndefined(value[0])) {
       result = value[0] as T
     }
-    return isObject(result) ? this._clone(result) : null
+    return isObject(result) ? this._clone(result) : result
   }
 
   public firstOrDefault(): S | null
@@ -254,7 +254,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
     let result: T | null = null
     if (predicate) value = (value as T[]).filter(predicate) ?? null
     if (value.length) result = value[value.length - 1] as T
-    return isObject(result) ? this._clone(result) : null
+    return isObject(result) ? this._clone(result) : result
   }
 
   public lastOrDefault(): S | null

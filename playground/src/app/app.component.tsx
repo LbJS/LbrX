@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'r
 import TaskItemFormDialog from 'src/app/dialogs/task-item/task-item-form.dialog'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
-import { TaskItemListStore } from 'src/stores/task-item-list.store'
+import { TaskItemsListStore } from 'src/stores/task-items-list.store'
 import { UiStore } from 'src/stores/ui.store'
 import Footer from './components/footer/footer.component'
 import Header from './components/header/header.component'
@@ -60,7 +60,7 @@ function sortTheTableTask(): TaskItemModel {
 
 export default function App(): JSX.Element {
   const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
-  const tasksListStore: TaskItemListStore = useMemo(() => STORES.get(TaskItemListStore), [])
+  const tasksListStore: TaskItemsListStore = useMemo(() => STORES.get(TaskItemsListStore), [])
   const [isTaskItemFormDialogOpen, setIsTaskFormOpen]: IsTaskFormOpenState = useState<boolean>(false)
 
   useEffect(() => {
