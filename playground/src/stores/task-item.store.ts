@@ -26,6 +26,13 @@ interface SetDueDate {
 export class TaskItemStore extends Store<TaskItemModel> {
   constructor() {
     super(null)
+    this._setInstancedValue()
+  }
+
+  private _setInstancedValue(): void {
+    const model = getNewTaskItemModel()
+    model.dueDate = newDate()
+    this.setInstancedValue(model)
   }
 
   public setTitle = (title: string) => this.update({ title })
