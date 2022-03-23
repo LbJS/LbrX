@@ -1,14 +1,22 @@
 import { isNull, newDate } from 'lbrx/utils'
-import React, { Dispatch, useEffect, useMemo, useState } from 'react'
+import React, { Dispatch, useCallback, useEffect, useMemo, useState } from 'react'
 import Table from 'src/generic-components/table/table'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
+import { TaskItemStore } from 'src/stores/task-item.store'
 import { TaskItemsListStore } from 'src/stores/task-items-list.store'
+import { UiStore } from 'src/stores/ui.store'
 
 type TaskItemsState = [TaskItemModel[], Dispatch<React.SetStateAction<TaskItemModel[]>>]
 
 export default function TasksList(): JSX.Element {
+  const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
   const taskItemsListStore: TaskItemsListStore = useMemo(() => STORES.get(TaskItemsListStore), [])
+  const taskItemStore: TaskItemStore = useMemo(() => STORES.get(TaskItemStore), [])
+
+  const openEditTaskForm = useCallback((task: TaskItemModel) => {
+    uiStore.openTaskForm(task)
+  }, [])
 
   const [taskItems, setTaskItems]: TaskItemsState = useState<TaskItemModel[]>(taskItemsListStore.value)
 
@@ -33,7 +41,7 @@ export default function TasksList(): JSX.Element {
       <React.Fragment>
         {taskItems.map(taskItem =>
           <tr key={taskItem.id}
-            onClick={() => { }}>
+            onClick={() => openEditTaskForm(taskItem)}>
             <td>{taskItem.id}</td>
             <td>{taskItem.isCompleted ? `Yes` : `No`}</td>
             <td>{taskItem.title}</td>

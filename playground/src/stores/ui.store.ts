@@ -1,13 +1,28 @@
 import { Storages, Store, StoreConfig } from 'lbrx'
+import { isObject, isString } from 'lbrx/utils'
+import { TaskItemModel } from 'src/models/task-item.model'
 
 export interface UiState {
+  taskFormState: TaskFormState
+}
+
+export interface TaskFormState {
   isTaskFormOpen: boolean
+  taskPayload: TaskItemModel | null
 }
 
 function getInitialState(): UiState {
   return {
-    isTaskFormOpen: false
+    taskFormState: {
+      isTaskFormOpen: false,
+      taskPayload: null,
+    }
   }
+}
+
+type OpenTaskFormOverloads = {
+  (actionName?: string): void,
+  (taskPayload: TaskItemModel, actionName?: string): void,
 }
 
 @StoreConfig({
@@ -18,12 +33,23 @@ function getInitialState(): UiState {
 })
 export class UiStore extends Store<UiState> {
 
-  public openTaskForm = (actionName?: string) => {
-    this.update({ isTaskFormOpen: true }, actionName)
+  public openTaskForm: OpenTaskFormOverloads = (taskPayloadOrActionName?: TaskItemModel | string, actionName?: string) => {
+    if (isString(taskPayloadOrActionName)) actionName = taskPayloadOrActionName
+    this.update({
+      taskFormState: {
+        isTaskFormOpen: true,
+        taskPayload: isObject(taskPayloadOrActionName) ? taskPayloadOrActionName : null,
+      }
+    }, actionName)
   }
 
   public closeTaskForm = (actionName?: string) => {
-    this.update({ isTaskFormOpen: false }, actionName)
+    this.update({
+      taskFormState: {
+        isTaskFormOpen: false,
+        taskPayload: null,
+      }
+    }, actionName)
   }
 
   constructor() {

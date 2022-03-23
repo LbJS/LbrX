@@ -3,16 +3,16 @@ import TaskItemFormDialog from 'src/app/dialogs/task-item/task-item-form.dialog'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
 import { TaskItemsListStore } from 'src/stores/task-items-list.store'
-import { UiStore } from 'src/stores/ui.store'
+import { TaskFormState, UiStore } from 'src/stores/ui.store'
 import Footer from './components/footer/footer.component'
 import Header from './components/header/header.component'
 import Main from './components/main/main.component'
 
-type IsTaskOpenDispatcher = Dispatch<SetStateAction<boolean>>
-type IsTaskFormOpenState = [boolean, IsTaskOpenDispatcher]
+type TaskFormStateDispatcher = Dispatch<SetStateAction<TaskFormState>>
+type IsTaskFormOpenState = [TaskFormState, TaskFormStateDispatcher]
 
-function subscribeToIsTaskFormOpen(uiStore: UiStore, setIsTaskFormOpen: IsTaskOpenDispatcher): void {
-  uiStore.get$(value => value.isTaskFormOpen).subscribe(setIsTaskFormOpen)
+function subscribeToIsTaskFormOpen(uiStore: UiStore, setTaskForm: TaskFormStateDispatcher): void {
+  uiStore.get$(value => value.taskFormState).subscribe(setTaskForm)
 }
 
 function setBaseUrl(): void {
@@ -23,8 +23,8 @@ function setBaseUrl(): void {
 function createInitialTasks(): TaskItemModel[] {
   return [
     createYourFirstTaskTask(),
-    tryTheSearchFieldTask(),
-    sortTheTableTask(),
+    createTryTheSearchFieldTask(),
+    createSortTheTableTask(),
   ]
 }
 
@@ -38,7 +38,7 @@ function createYourFirstTaskTask(): TaskItemModel {
   }
 }
 
-function tryTheSearchFieldTask(): TaskItemModel {
+function createTryTheSearchFieldTask(): TaskItemModel {
   return {
     id: 2,
     title: `Try the search field.`,
@@ -48,7 +48,7 @@ function tryTheSearchFieldTask(): TaskItemModel {
   }
 }
 
-function sortTheTableTask(): TaskItemModel {
+function createSortTheTableTask(): TaskItemModel {
   return {
     id: 3,
     title: `Sort the tasks.`,
@@ -61,10 +61,13 @@ function sortTheTableTask(): TaskItemModel {
 export default function App(): JSX.Element {
   const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
   const tasksListStore: TaskItemsListStore = useMemo(() => STORES.get(TaskItemsListStore), [])
-  const [isTaskItemFormDialogOpen, setIsTaskFormOpen]: IsTaskFormOpenState = useState<boolean>(false)
+  const [taskFormState, setTaskForm]: IsTaskFormOpenState = useState<TaskFormState>({
+    isTaskFormOpen: false,
+    taskPayload: null,
+  })
 
   useEffect(() => {
-    subscribeToIsTaskFormOpen(uiStore, setIsTaskFormOpen)
+    subscribeToIsTaskFormOpen(uiStore, setTaskForm)
     setBaseUrl()
     if (!tasksListStore.value.length) tasksListStore.add(createInitialTasks())
   }, [])
@@ -73,6 +76,6 @@ export default function App(): JSX.Element {
     <Header></Header>
     <Main></Main>
     <Footer></Footer>
-    {isTaskItemFormDialogOpen && <TaskItemFormDialog></TaskItemFormDialog>}
+    {taskFormState.isTaskFormOpen && <TaskItemFormDialog task={taskFormState.taskPayload}></TaskItemFormDialog>}
   </React.StrictMode>
 }

@@ -1,3 +1,4 @@
+import { mergeObjects } from 'lbrx/utils'
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Subscriber } from 'rxjs'
 import Btn from 'src/generic-components/btn/btn'
@@ -12,7 +13,7 @@ import { onChangeHandler } from 'src/utils/on-change-handler'
 import './task-item-form.dialog.scss'
 
 export interface TaskItemFormDialogOptions {
-  task?: TaskItemModel
+  task?: TaskItemModel | null
 }
 
 type TaskItemDispatcher = Dispatch<SetStateAction<TaskItemModel>>
@@ -63,7 +64,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
   const componentCleanUp = useCallback(() => { sub.unsubscribe() }, [])
   const modalCloseCb = useCallback(() => uiStore.closeTaskForm(`close-task-form`), [])
   const closeForm = useCallback(() => modalRef.current?.close(), [])
-  const clearForm = useCallback(() => taskItemStore.set(getNewTaskItemModel()), [])
+  const clearForm = useCallback(() => taskItemStore.set(mergeObjects(getNewTaskItemModel(), { id: taskItem.id })), [])
   const saveTask = useCallback(() => {
     if (!taskItem.id) {
       const currMaxId = taskItemsListStore.select(x => x.id).orderBy(/*desc*/true).firstOrDefault()
