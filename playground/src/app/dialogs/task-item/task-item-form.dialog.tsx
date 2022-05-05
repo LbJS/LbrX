@@ -30,6 +30,8 @@ async function initItemStore(taskItemStore: TaskItemStore, taskItem: TaskItemMod
   if (taskItemStore.isInitialized && taskItem.id !== taskItemStore.value.id) {
     await taskItemStore.hardReset()
     taskItemStore.initialize(taskItem)
+  } else if (taskItemStore.isInitialized && taskItem.id == taskItemStore.value.id) {
+    taskItemStore.set(taskItem)
   } else if (!taskItemStore.isInitialized) {
     taskItemStore.initialize(taskItem)
   }

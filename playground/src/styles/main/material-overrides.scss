@@ -84,6 +84,41 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
   color: $lightFont;
 }
 
-svg:not(:root) {
-  fill: white;
+.datepicker-controls svg:not(:root) {
+  fill: $lightFont;
+}
+
+.timepicker-digital-display {
+  background-color: $appCyan;
+}
+
+.timepicker-close {
+  color: $appCyan;
+}
+
+.timepicker-canvas-bg,
+.timepicker-canvas-bearing {
+  fill: $appCyan;
+}
+
+.timepicker-canvas line {
+  stroke: $appCyan;
+}
+
+.timepicker-plate {
+  background-color: lighten($color: $greyBackground, $amount: 21);
+}
+
+.timepicker-tick {
+  color: $lightFont;
+}
+
+.timepicker-tick.active,
+.timepicker-tick:hover,
+button:focus {
+  background-color: rgba($appCyan, 0.21);
+}
+
+textarea {
+  color: $lightFont;
 }
