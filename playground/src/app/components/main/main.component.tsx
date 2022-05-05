@@ -12,7 +12,7 @@ export default function Main(): JSX.Element {
 
   return <main style={{ display: `flex` }}>
     <div className="container"
-      style={{ position: `relative` }}>
+      style={{ position: `relative`, marginTop: `1.75rem` }}>
       <TasksList></TasksList>
       <div className="add-task-btn">
         <Btn classList={[`cyan`, `lighten-2`, `btn-floating`, `btn-large`]}

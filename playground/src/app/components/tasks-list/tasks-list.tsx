@@ -41,7 +41,8 @@ export default function TasksList(): JSX.Element {
       <React.Fragment>
         {taskItems.map(taskItem =>
           <tr key={taskItem.id}
-            onClick={() => openEditTaskForm(taskItem)}>
+            onClick={() => openEditTaskForm(taskItem)}
+            style={{ cursor: `pointer` }}>
             <td>{taskItem.id}</td>
             <td>{taskItem.isCompleted ? `Yes` : `No`}</td>
             <td>{taskItem.title}</td>
