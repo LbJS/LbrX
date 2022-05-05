@@ -34,32 +34,34 @@ function extendAndFixOnDrawMethod(onDrawFromUser?: ((this: Datepicker) => void) 
   }
 }
 
-function extendOnClose(
-  datepickerData: DatepickerDataHelper,
-  onCloseFromUser?: ((this: Datepicker) => void) | null,
-  onChangeFromUser?: ((this: Datepicker, newDate: Date | null) => void) | null
-): (this: Datepicker) => void {
-  return function (this: Datepicker): void {
-    onCloseFromUser?.call(this)
-    onChangeFromUser?.call(this, datepickerData.date || null)
-    if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
-    this.setDate(datepickerData.date || undefined)
-    this.setInputValue()
-  }
-}
-
 function extendOnOpen(
   datepickerData: DatepickerDataHelper,
-  onOpenFromUser?: ((this: Datepicker) => void) | null
+  onOpenFromUser?: ((this: Datepicker) => void) | null,
+  onChangeFromUser?: ((this: Datepicker, newDate: Date | null) => void) | null,
 ): (this: Datepicker) => void {
   return function (this: Datepicker): void {
     onOpenFromUser?.call(this)
     datepickerData.date ||= cloneObject(this.date)
     if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
     datepickerData.onDoneClick = () => {
-      datepickerData.date ||= cloneObject(this.date)
+      datepickerData.date = cloneObject(this.date)
+      onChangeFromUser?.call(this, datepickerData.date || null)
     }
-    this.doneBtn.addEventListener(`click`, datepickerData.onDoneClick)
+    this.doneBtn.addEventListener(`click`, datepickerData.onDoneClick, { once: true })
+  }
+}
+
+function extendOnClose(
+  datepickerData: DatepickerDataHelper,
+  onCloseFromUser?: ((this: Datepicker) => void) | null,
+): (this: Datepicker) => void {
+  return function (this: Datepicker): void {
+    onCloseFromUser?.call(this)
+    setTimeout(() => {
+      if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
+      this.setDate(datepickerData.date || undefined)
+      this.setInputValue()
+    })
   }
 }
 
@@ -74,8 +76,8 @@ export function initDatepicker(el: Element, options?: Partial<M.DatepickerOption
   options ||= {}
   const datepickerData: DatepickerDataHelper = {}
   options.onDraw = extendAndFixOnDrawMethod(options.onDraw)
-  options.onOpen = extendOnOpen(datepickerData, options.onOpen)
-  options.onClose = extendOnClose(datepickerData, options.onClose, options.onChange)
+  options.onOpen = extendOnOpen(datepickerData, options.onOpen, options.onChange)
+  options.onClose = extendOnClose(datepickerData, options.onClose)
   options = mergeObjects(getDefaultOptions(), options)
   return M.Datepicker.init(el, options)
 }

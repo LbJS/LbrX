@@ -39,10 +39,11 @@ export class TaskItemStore extends Store<TaskItemModel> {
   public setIsCompleted = (isCompleted: boolean) => this.update({ isCompleted })
   public setDescription = (description: string) => this.update({ description })
   public setDueDate: SetDueDate = (dueDate: Date | null, hours?: number, minutes?: number) => {
-    const currDueDate = this.value.dueDate
     const isTimeSelected = !isUndefined(hours) && !isUndefined(minutes)
-    if (!dueDate && isTimeSelected) dueDate = newDate()
-    if (!dueDate) return this.update({ dueDate })
+    const isDateSelected = !!dueDate
+    if (!isDateSelected && !isTimeSelected) return this.update({ dueDate: null })
+    dueDate ||= newDate()
+    const currDueDate = this.value.dueDate
     const nextDate = isDate(currDueDate) ? cloneObject(currDueDate) : newDate(currDueDate ?? dueDate)
     nextDate.setFullYear(dueDate.getFullYear())
     nextDate.setMonth(dueDate.getMonth())
