@@ -1,5 +1,14 @@
-import { mergeObjects } from 'lbrx/utils'
+import { cloneObject, mergeObjects } from 'lbrx/utils'
 import { Datepicker } from 'materialize-css'
+
+export interface DatepickerOptionsExtensions {
+  onChange?: ((this: Datepicker, newDate: Date | null) => void) | null,
+}
+
+export interface DatepickerDataHelper {
+  date?: Date | null,
+  onDoneClick?: (<K extends keyof HTMLElementEventMap>(this: HTMLButtonElement, ev: HTMLElementEventMap[K]) => any) | null,
+}
 
 function scrollToSelectedYear(yearSelectDropdownEl: HTMLElement): void {
   yearSelectDropdownEl.style.position = `fixed`
@@ -18,24 +27,55 @@ function onDraw(datepicker: Datepicker): void {
   }, 250)
 }
 
-function extendAndFixOnDrawMethod(onDrawFromUser: (this: Datepicker) => void): any {
-  // tslint:disable-next-line: only-arrow-functions
-  return function (datepicker: Datepicker): void {
-    onDrawFromUser.bind(datepicker)
+function extendAndFixOnDrawMethod(onDrawFromUser?: ((this: Datepicker) => void) | null): any {
+  return (datepicker: Datepicker) => {
+    onDrawFromUser?.call(datepicker)
     onDraw(datepicker)
-  } as unknown as any
+  }
+}
+
+function extendOnClose(
+  datepickerData: DatepickerDataHelper,
+  onCloseFromUser?: ((this: Datepicker) => void) | null,
+  onChangeFromUser?: ((this: Datepicker, newDate: Date | null) => void) | null
+): (this: Datepicker) => void {
+  return function (this: Datepicker): void {
+    onCloseFromUser?.call(this)
+    onChangeFromUser?.call(this, datepickerData.date || null)
+    if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
+    this.setDate(datepickerData.date || undefined)
+    this.setInputValue()
+  }
+}
+
+function extendOnOpen(
+  datepickerData: DatepickerDataHelper,
+  onOpenFromUser?: ((this: Datepicker) => void) | null
+): (this: Datepicker) => void {
+  return function (this: Datepicker): void {
+    onOpenFromUser?.call(this)
+    datepickerData.date ||= cloneObject(this.date)
+    if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
+    datepickerData.onDoneClick = () => {
+      datepickerData.date ||= cloneObject(this.date)
+    }
+    this.doneBtn.addEventListener(`click`, datepickerData.onDoneClick)
+  }
 }
 
 function getDefaultOptions(): Partial<M.DatepickerOptions> {
   return {
     container: document.getElementsByTagName(`body`)[0],
     yearRange: 50,
-    onDraw: onDraw as unknown as any
   }
 }
 
-export function initDatepicker(el: Element, options?: Partial<M.DatepickerOptions>): M.Datepicker {
-  if (options?.onDraw) options.onDraw = extendAndFixOnDrawMethod(options.onDraw)
-  options = options ? mergeObjects(getDefaultOptions(), options) : getDefaultOptions()
+export function initDatepicker(el: Element, options?: Partial<M.DatepickerOptions & DatepickerOptionsExtensions>): M.Datepicker {
+  options ||= {}
+  const datepickerData: DatepickerDataHelper = {}
+  options.onDraw = extendAndFixOnDrawMethod(options.onDraw)
+  options.onOpen = extendOnOpen(datepickerData, options.onOpen)
+  options.onClose = extendOnClose(datepickerData, options.onClose, options.onChange)
+  options = mergeObjects(getDefaultOptions(), options)
   return M.Datepicker.init(el, options)
 }

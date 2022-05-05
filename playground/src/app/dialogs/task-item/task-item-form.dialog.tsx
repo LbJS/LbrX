@@ -130,7 +130,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
           forceUpdateState={forceUpdate}
           updateLabels$={taskItemStore.get$(x => x.dueDate)}
           datepickerOptions={{
-            onSelect: taskItemStore.setDueDate,
+            onChange: taskItemStore.setDueDate,
           }}>
           <React.Fragment>
             <input type="text"
