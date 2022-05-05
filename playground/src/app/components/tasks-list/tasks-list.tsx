@@ -45,7 +45,7 @@ export default function TasksList(): JSX.Element {
             <td>{taskItem.id}</td>
             <td>{taskItem.isCompleted ? `Yes` : `No`}</td>
             <td>{taskItem.title}</td>
-            <td>{isNull(taskItem.dueDate) ? `--` : newDate(taskItem.dueDate).toLocaleString()}</td>
+            <td>{isNull(taskItem.dueDate) ? `--` : newDate(taskItem.dueDate).toLocaleString(`en-US`, { dateStyle: `medium`, timeStyle: `short` })}</td>
             <td>{taskItem.description}</td>
           </tr>)}
       </React.Fragment>
