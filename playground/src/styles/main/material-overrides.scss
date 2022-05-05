@@ -48,10 +48,6 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
   background-color: $appCyan;
 }
 
-.datepicker-table td.is-selected {
-  background-color: $appCyan;
-}
-
 .datepicker-cancel,
 .datepicker-clear,
 .datepicker-today,
@@ -61,6 +57,11 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 
 .datepicker-table td.is-today {
   color: $appCyan;
+}
+
+.datepicker-table td.is-selected {
+  color: $lightFont;
+  background-color: $appCyan;
 }
 
 .dropdown-content {
@@ -121,4 +122,20 @@ button:focus {
 
 textarea {
   color: $lightFont;
+}
+
+td {
+  border-radius: 0;
+}
+
+table.highlight > tbody > tr:hover {
+  background-color: rgba($appCyan, 0.21);
+}
+
+tr {
+  border-bottom: 1px solid lighten($color: $greyBackground, $amount: 25);
+}
+
+thead tr:last-child {
+  border-bottom: 1px solid lighten($color: $greyBackground, $amount: 75);
 }
