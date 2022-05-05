@@ -1,0 +1,89 @@
+@import "../common/colors.scss";
+
+[type="checkbox"].filled-in:checked + span:not(.lever):after {
+  border-color: $appCyan;
+  background-color: $appCyan;
+}
+
+input:not([type]):focus:not([readonly]),
+input[type="text"]:not(.browser-default):focus:not([readonly]),
+input[type="password"]:not(.browser-default):focus:not([readonly]),
+input[type="email"]:not(.browser-default):focus:not([readonly]),
+input[type="url"]:not(.browser-default):focus:not([readonly]),
+input[type="time"]:not(.browser-default):focus:not([readonly]),
+input[type="date"]:not(.browser-default):focus:not([readonly]),
+input[type="datetime"]:not(.browser-default):focus:not([readonly]),
+input[type="datetime-local"]:not(.browser-default):focus:not([readonly]),
+input[type="tel"]:not(.browser-default):focus:not([readonly]),
+input[type="number"]:not(.browser-default):focus:not([readonly]),
+input[type="search"]:not(.browser-default):focus:not([readonly]),
+textarea.materialize-textarea:focus:not([readonly]) {
+  border-bottom-color: $appCyan;
+  box-shadow: 0 1px 0 0 $appCyan;
+}
+
+input:not([type]):focus:not([readonly]) + label,
+input[type="text"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="password"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="email"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="url"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="time"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="date"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="datetime"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="datetime-local"]:not(.browser-default):focus:not([readonly])
+  + label,
+input[type="tel"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="number"]:not(.browser-default):focus:not([readonly]) + label,
+input[type="search"]:not(.browser-default):focus:not([readonly]) + label,
+textarea.materialize-textarea:focus:not([readonly]) + label {
+  color: $appCyan;
+}
+
+.modal {
+  color: $lightFont;
+  background-color: $greyBackground;
+}
+
+.datepicker-date-display {
+  background-color: $appCyan;
+}
+
+.datepicker-table td.is-selected {
+  background-color: $appCyan;
+}
+
+.datepicker-cancel,
+.datepicker-clear,
+.datepicker-today,
+.datepicker-done {
+  color: $appCyan;
+}
+
+.datepicker-table td.is-today {
+  color: $appCyan;
+}
+
+.dropdown-content {
+  background-color: $greyBackground;
+}
+
+.dropdown-content li > a,
+.dropdown-content li > span {
+  color: $appCyan;
+}
+
+.select-dropdown.dropdown-content li.selected {
+  background-color: $appCyan;
+}
+
+.select-dropdown.dropdown-content li.selected > span {
+  color: $lightFont;
+}
+
+.modal input.select-dropdown.dropdown-trigger {
+  color: $lightFont;
+}
+
+svg:not(:root) {
+  fill: white;
+}
