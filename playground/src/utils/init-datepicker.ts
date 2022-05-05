@@ -18,6 +18,14 @@ function onDraw(datepicker: Datepicker): void {
   }, 250)
 }
 
+function extendAndFixOnDrawMethod(onDrawFromUser: (this: Datepicker) => void): any {
+  // tslint:disable-next-line: only-arrow-functions
+  return function (datepicker: Datepicker): void {
+    onDrawFromUser.bind(datepicker)
+    onDraw(datepicker)
+  } as unknown as any
+}
+
 function getDefaultOptions(): Partial<M.DatepickerOptions> {
   return {
     container: document.getElementsByTagName(`body`)[0],
@@ -26,7 +34,8 @@ function getDefaultOptions(): Partial<M.DatepickerOptions> {
   }
 }
 
-export function initDatepicker(els: Element, options?: Partial<M.DatepickerOptions>): M.Datepicker {
+export function initDatepicker(el: Element, options?: Partial<M.DatepickerOptions>): M.Datepicker {
+  if (options?.onDraw) options.onDraw = extendAndFixOnDrawMethod(options.onDraw)
   options = options ? mergeObjects(getDefaultOptions(), options) : getDefaultOptions()
-  return M.Datepicker.init(els, options)
+  return M.Datepicker.init(el, options)
 }
