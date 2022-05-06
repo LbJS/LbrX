@@ -146,7 +146,7 @@ export default function TaskItemFormDialog({ task }: TaskItemFormDialogOptions):
           forceUpdateState={forceUpdate}
           updateLabels$={taskItemStore.get$(x => x.dueDate)}
           timepickerOptions={{
-            onSelect: (h, m) => taskItemStore.setDueDate(taskItemStore.value.dueDate, h, m)
+            onChange: (h, m) => taskItemStore.setDueDate(/*dueDate*/null, h, m)
           }}>
           <React.Fragment>
             <input type="text"

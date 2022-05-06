@@ -45,11 +45,17 @@ export class TaskItemStore extends Store<TaskItemModel> {
     dueDate ||= newDate()
     const currDueDate = this.value.dueDate
     const nextDate = isDate(currDueDate) ? cloneObject(currDueDate) : newDate(currDueDate ?? dueDate)
-    nextDate.setFullYear(dueDate.getFullYear())
-    nextDate.setMonth(dueDate.getMonth())
-    nextDate.setDate(dueDate.getDate())
-    if (hours) nextDate.setHours(hours)
-    if (minutes) nextDate.setHours(minutes)
+    if (isDateSelected) {
+      nextDate.setFullYear(dueDate.getFullYear())
+      nextDate.setMonth(dueDate.getMonth())
+      nextDate.setDate(dueDate.getDate())
+    }
+    if (isTimeSelected) {
+      nextDate.setHours(hours)
+      nextDate.setMinutes(minutes)
+    }
+    nextDate.setSeconds(0)
+    nextDate.setMilliseconds(0)
     this.update({ dueDate: nextDate })
   }
 

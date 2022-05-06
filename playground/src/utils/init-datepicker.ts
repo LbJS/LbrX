@@ -5,7 +5,7 @@ export interface DatepickerOptionsExtensions {
   onChange?: ((this: Datepicker, newDate: Date | null) => void) | null,
 }
 
-export interface DatepickerDataHelper {
+interface DatepickerDataHelper {
   date?: Date | null,
   onDoneClick?: (<K extends keyof HTMLElementEventMap>(this: HTMLButtonElement, ev: HTMLElementEventMap[K]) => any) | null,
 }
@@ -34,6 +34,20 @@ function extendAndFixOnDrawMethod(onDrawFromUser?: ((this: Datepicker) => void) 
   }
 }
 
+function onOpen(
+  this: Datepicker,
+  datepickerData: DatepickerDataHelper,
+  onChangeFromUser?: ((this: Datepicker, newDate: Date | null) => void) | null,
+): void {
+  datepickerData.date ||= cloneObject(this.date)
+  if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
+  datepickerData.onDoneClick = () => {
+    datepickerData.date = cloneObject(this.date)
+    onChangeFromUser?.call(this, datepickerData.date || null)
+  }
+  this.doneBtn.addEventListener(`click`, datepickerData.onDoneClick, { once: true })
+}
+
 function extendOnOpen(
   datepickerData: DatepickerDataHelper,
   onOpenFromUser?: ((this: Datepicker) => void) | null,
@@ -41,14 +55,19 @@ function extendOnOpen(
 ): (this: Datepicker) => void {
   return function (this: Datepicker): void {
     onOpenFromUser?.call(this)
-    datepickerData.date ||= cloneObject(this.date)
-    if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
-    datepickerData.onDoneClick = () => {
-      datepickerData.date = cloneObject(this.date)
-      onChangeFromUser?.call(this, datepickerData.date || null)
-    }
-    this.doneBtn.addEventListener(`click`, datepickerData.onDoneClick, { once: true })
+    onOpen.call(this, datepickerData, onChangeFromUser)
   }
+}
+
+function onClose(
+  this: Datepicker,
+  datepickerData: DatepickerDataHelper,
+): void {
+  setTimeout(() => {
+    if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
+    this.setDate(datepickerData.date || undefined)
+    this.setInputValue()
+  })
 }
 
 function extendOnClose(
@@ -57,11 +76,7 @@ function extendOnClose(
 ): (this: Datepicker) => void {
   return function (this: Datepicker): void {
     onCloseFromUser?.call(this)
-    setTimeout(() => {
-      if (datepickerData.onDoneClick) this.doneBtn.removeEventListener(`click`, datepickerData.onDoneClick)
-      this.setDate(datepickerData.date || undefined)
-      this.setInputValue()
-    })
+    onClose.call(this, datepickerData)
   }
 }
 

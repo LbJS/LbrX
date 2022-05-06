@@ -2,7 +2,7 @@ import { CSSProperties, ForwardedRef, forwardRef, useEffect, useImperativeHandle
 import { Observable, Subscription } from 'rxjs'
 import { debounceTime } from 'rxjs/operators'
 import { DatepickerOptionsExtensions, initDatepicker } from 'src/utils/init-datepicker'
-import { initTimepicker } from 'src/utils/init-timepicker'
+import { initTimepicker, TimepickerOptionsExtensions } from 'src/utils/init-timepicker'
 import { toClassesString } from 'src/utils/to-classes-string'
 import { updateTextFields } from 'src/utils/update-text-fields'
 
@@ -19,7 +19,7 @@ export interface FormFieldOptions {
   classes?: string[],
   inputType?: InputTypes,
   datepickerOptions?: Partial<M.DatepickerOptions & DatepickerOptionsExtensions>,
-  timepickerOptions?: Partial<M.TimepickerOptions>,
+  timepickerOptions?: Partial<M.TimepickerOptions & TimepickerOptionsExtensions>,
   forceUpdateState?: React.Dispatch<React.SetStateAction<number>>,
   updateLabels$?: Observable<any>,
 }
