@@ -1,4 +1,7 @@
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { compareObjects } from 'lbrx/utils'
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
+import { Subscriber, Subscription } from 'rxjs'
+import { pairwise } from 'rxjs/operators'
 import TaskItemFormDialog from 'src/app/dialogs/task-item/task-item-form.dialog'
 import { TaskItemModel } from 'src/models/task-item.model'
 import { STORES } from 'src/services/stores.service'
@@ -10,6 +13,8 @@ import Main from './components/main/main.component'
 
 type TaskFormStateDispatcher = Dispatch<SetStateAction<TaskFormState>>
 type IsTaskFormOpenState = [TaskFormState, TaskFormStateDispatcher]
+type SubscriptionDispatcher = Dispatch<SetStateAction<Subscription | null>>
+type YourFirstTaskTaskResolverSubState = [Subscription | null, SubscriptionDispatcher]
 
 function subscribeToIsTaskFormOpen(uiStore: UiStore, setTaskForm: TaskFormStateDispatcher): void {
   uiStore.get$(value => value.taskFormState).subscribe(setTaskForm)
@@ -61,15 +66,36 @@ function createSortTheTableTask(): TaskItemModel {
 export default function App(): JSX.Element {
   const uiStore: UiStore = useMemo(() => STORES.get(UiStore), [])
   const tasksListStore: TaskItemsListStore = useMemo(() => STORES.get(TaskItemsListStore), [])
+  const yourFirstTaskTaskResolverSub: Subscription = useMemo(() => new Subscriber(), [])
+
+
   const [taskFormState, setTaskForm]: IsTaskFormOpenState = useState<TaskFormState>({
     isTaskFormOpen: false,
     taskPayload: null,
   })
 
+  const unsubscribeFromFirstTaskTaskResolver = useCallback(() => {
+    yourFirstTaskTaskResolverSub.unsubscribe()
+  }, [])
+  const yourFirstTaskTaskResolver = useCallback(([prevTasksCount, currTasksCount]: [number, number]) => {
+    if (currTasksCount <= prevTasksCount) return
+    const yourFirstTaskTaskModel = createYourFirstTaskTask()
+    if (!tasksListStore.has(yourFirstTaskTaskModel.id)) return unsubscribeFromFirstTaskTaskResolver()
+    const yourFirstTaskTaskModelFromStore = tasksListStore.get(yourFirstTaskTaskModel.id)
+    if (!compareObjects(yourFirstTaskTaskModel, yourFirstTaskTaskModelFromStore)) return unsubscribeFromFirstTaskTaskResolver()
+    if (yourFirstTaskTaskModelFromStore.isCompleted) return unsubscribeFromFirstTaskTaskResolver()
+    tasksListStore.update(yourFirstTaskTaskModelFromStore.id, { isCompleted: true })
+    unsubscribeFromFirstTaskTaskResolver()
+  }, [])
+
   useEffect(() => {
     subscribeToIsTaskFormOpen(uiStore, setTaskForm)
     setBaseUrl()
     if (!tasksListStore.value.length) tasksListStore.add(createInitialTasks())
+    const sub = tasksListStore.count$()
+      .pipe(pairwise())
+      .subscribe(x => yourFirstTaskTaskResolver(x))
+    yourFirstTaskTaskResolverSub.add(sub)
   }, [])
 
   return <React.StrictMode>

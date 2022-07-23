@@ -6,6 +6,7 @@
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "javascript.preferences.importModuleSpecifierEnding": "minimal",
   "cSpell.words": [
+    "cssnano",
     "QLSE"
   ],
   "liveServer.settings.port": 5501,

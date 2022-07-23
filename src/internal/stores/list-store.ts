@@ -10,7 +10,7 @@ import { QueryableListStoreAdapter } from './queryable-list-store-adapter'
 import { Actions, Predicate, Project, ProjectsOrKeys, SetStateParam, State, ValueObservableMethodParam } from './store-accessories'
 
 
-export class ListStore<S extends object, Id extends string | number | symbol = string, E = any> extends QueryableListStoreAdapter<S, E> {
+export class ListStore<S extends object, Id extends string | number | symbol = number, E = any> extends QueryableListStoreAdapter<S, E> {
 
   //#region id-helpers
 
