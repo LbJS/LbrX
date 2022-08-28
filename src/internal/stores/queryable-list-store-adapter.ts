@@ -50,7 +50,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
         },
         setCompare: (compare: Compare) => this._setCompare(compare, queryableListStore),
         when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
-        select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore),
+        select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore as any), // TODO: fix type (webpack)
         where: (predicate: Predicate<R>) => this._where(predicate, queryableListStore),
         orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<Readonly<R>> | SortOptions<Readonly<R>>[],
           token?: SortingAlgorithmToken) => this._orderBy(partialSortOptions, token, queryableListStore),

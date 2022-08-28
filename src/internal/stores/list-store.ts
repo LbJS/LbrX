@@ -1,7 +1,7 @@
 import { iif, Observable, of, throwError as rxjsThrowError } from 'rxjs'
 import { mergeMap } from 'rxjs/operators'
 import { isDev, isStackTracingErrors, SortFactory } from '../core'
-import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNumber, isString, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
+import { assert, isArray, isBool, isCalledBy, isFrozen, isFunction, isNull, isNumber, isString, isSymbol, isUndefined, logError, objectAssign, objectFreeze, throwError } from '../helpers'
 import { KeyValue } from '../types'
 import { SortMethod } from '../types/sort-method'
 import { ListStoreConfigCompleteInfo, ListStoreConfigOptions } from './config'
@@ -476,7 +476,9 @@ export class ListStore<S extends object, Id extends string | number | symbol = n
       })
       return result
     } else {
-      if (!this._idsSet.has(idOrIds)) throwError(`Store: "${this._storeName}" doesn't have an item with id: "${idOrIds}".`)
+      if (!this._idsSet.has(idOrIds)) {
+        throwError(`Store: "${this._storeName}" doesn't have an item with id: "${isSymbol(idOrIds) ? idOrIds.toString() : idOrIds}".`)
+      }
       const index = this._idIndexMap[idOrIds]
       const item = this._assertValue[index]
       const projectedItem = project(item)

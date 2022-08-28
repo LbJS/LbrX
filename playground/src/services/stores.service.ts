@@ -15,7 +15,8 @@ export class StoresService {
     return this._storesService
   }
 
-  public get<T extends StoreClass<InstanceType<T>>>(store: T, ...args: any): InstanceType<T> {
+  // TODO: fix type
+  public get<T extends StoreClass<any>>(store: T, ...args: any): InstanceType<T> {
     if (this._stores.has(store)) return this._stores.get(store)!
     this._stores.set(store, new store(args))
     return this._stores.get(store)!
