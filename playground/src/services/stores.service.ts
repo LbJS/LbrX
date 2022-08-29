@@ -1,6 +1,6 @@
 import { BaseStore } from 'lbrx'
 
-export type StoreClass<T extends BaseStore<any, any>> = new (...args: any[]) => T
+export type StoreClass<T extends BaseStore<any, any>> = new (...args: any) => T
 
 export class StoresService {
   private static _storesService: StoresService
@@ -15,8 +15,7 @@ export class StoresService {
     return this._storesService
   }
 
-  // TODO: fix type
-  public get<T extends StoreClass<any>>(store: T, ...args: any): InstanceType<T> {
+  public get<T extends StoreClass<InstanceType<any>>>(store: T, ...args: any): InstanceType<T> {
     if (this._stores.has(store)) return this._stores.get(store)!
     this._stores.set(store, new store(args))
     return this._stores.get(store)!
