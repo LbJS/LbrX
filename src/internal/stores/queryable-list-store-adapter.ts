@@ -50,7 +50,7 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
         },
         setCompare: (compare: Compare) => this._setCompare(compare, queryableListStore),
         when: (actionOrActions: Actions | string | (Actions | string)[]) => this._when(actionOrActions, queryableListStore),
-        select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore as any), // TODO: fix type (webpack)
+        select: (projectsOrKeys: ProjectsOrKeys<R, any>) => this._select(projectsOrKeys, queryableListStore),
         where: (predicate: Predicate<R>) => this._where(predicate, queryableListStore),
         orderBy: (partialSortOptions?: true | false | KeyOrNever<R> | SortOptions<Readonly<R>> | SortOptions<Readonly<R>>[],
           token?: SortingAlgorithmToken) => this._orderBy(partialSortOptions, token, queryableListStore),
@@ -113,8 +113,8 @@ export abstract class QueryableListStoreAdapter<S, E = any> extends BaseStore<S[
   /** @internal */
   protected _select<T, R>(
     projectsOrKeys: ProjectsOrKeys<T, R>,
-    queryableListStore?: ChainableListStoreQuery<Readonly<R>>
-  ): ChainableListStoreQuery<Readonly<R>> {
+    queryableListStore?: ChainableListStoreQuery<R>
+  ): ChainableListStoreQuery<R> {
     const project: Project<T, R> = this._getProjectionMethod(projectsOrKeys)
     const mapper: Pipe<readonly T[], readonly R[]> = (arr: readonly T[]) => arr.map(project) as readonly R[]
     return this._getQueryableListStore<Readonly<T>, Readonly<R>>(mapper, queryableListStore)
