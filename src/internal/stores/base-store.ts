@@ -572,13 +572,13 @@ export abstract class BaseStore<S extends object, M extends Unpack<S> | object, 
         if (isArray(this._initialValue)) {
           if (this._initialValue[0]) this._instancedValue = this._initialValue[0]
         } else {
-          this._instancedValue = this._initialValue as any // TODO: fix type
+          this._instancedValue = this._initialValue as unknown as Readonly<M>
         }
       } else {
         if (isArray(initialValue)) {
           if (initialValue[0]) this._instancedValue = this._freeze(initialValue[0])
         } else {
-          this._instancedValue = this._freeze(initialValue) as any // TODO: fix type
+          this._instancedValue = this._freeze(initialValue) as unknown as Readonly<M>
         }
       }
       if (!this._instancedValue) throwError(`Store: "${this._storeName}" has instanced handler configured to true but couldn't resolve an instanced value.`)
